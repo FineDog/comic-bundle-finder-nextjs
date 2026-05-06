@@ -155,9 +155,10 @@ export default function Home() {
         <meta property="og:title" content="Comic Bundle Finder" />
         <meta property="og:description" content="Find eBay sellers who carry multiple issues from your comic want list. Save on combined shipping." />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://comic-bundle-finder.vercel.app" />
+        <meta property="og:url" content="https://www.comicbundlefinder.com" />
         <meta name="robots" content="index, follow" />
-        <link rel="canonical" href="https://comic-bundle-finder.vercel.app" />
+        <meta name="google-site-verification" content="gk8gi9ve5gW7xgq_LqiuiLSwhH4I8k8JUbsYKYRK8V4" />
+        <link rel="canonical" href="https://www.comicbundlefinder.com" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Oswald:wght@400;600&display=swap" rel="stylesheet" />
@@ -247,7 +248,7 @@ export default function Home() {
         </div>
 
         {/* About blurb */}
-        <div style={{ fontSize: "0.85rem", fontWeight: 400, lineHeight: 1.7, color: "#333", marginBottom: "1.75rem", padding: "0 0.25rem" }}>
+        <div className="panel" style={{ fontSize: "0.88rem", fontWeight: 400, lineHeight: 1.8, color: "#333" }}>
           Buying back issues on eBay? Shipping costs can turn a $2 comic into a $10 purchase. But most sellers combine shipping —
           so if you can find one seller who has several issues you need, you save big. Comic Bundle Finder searches eBay for every
           issue on your want list, then ranks sellers by how many of your issues they carry. Paste your list, hit search, and find
