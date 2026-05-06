@@ -149,7 +149,15 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>Comic Bundle Finder</title>
+        <title>Comic Bundle Finder — Find eBay Sellers With Multiple Issues You Need</title>
+        <meta name="description" content="Search eBay for comic book bundle deals. Paste your want list and find sellers who carry multiple issues — save money on combined shipping instead of paying separately for each book." />
+        <meta name="keywords" content="comic books, eBay comics, comic bundle, combined shipping, comic want list, back issues, comic collecting" />
+        <meta property="og:title" content="Comic Bundle Finder" />
+        <meta property="og:description" content="Find eBay sellers who carry multiple issues from your comic want list. Save on combined shipping." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://comic-bundle-finder.vercel.app" />
+        <meta name="robots" content="index, follow" />
+        <link rel="canonical" href="https://comic-bundle-finder.vercel.app" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Oswald:wght@400;600&display=swap" rel="stylesheet" />
@@ -236,6 +244,14 @@ export default function Home() {
         <div className="panel title-panel">
           <h1>Comic Bundle Finder</h1>
           <div className="tagline">Find sellers with multiple issues you need &mdash; save on shipping</div>
+        </div>
+
+        {/* About blurb */}
+        <div style={{ fontSize: "0.85rem", fontWeight: 400, lineHeight: 1.7, color: "#333", marginBottom: "1.75rem", padding: "0 0.25rem" }}>
+          Buying back issues on eBay? Shipping costs can turn a $2 comic into a $10 purchase. But most sellers combine shipping —
+          so if you can find one seller who has several issues you need, you save big. Comic Bundle Finder searches eBay for every
+          issue on your want list, then ranks sellers by how many of your issues they carry. Paste your list, hit search, and find
+          your best bundle deals in seconds.
         </div>
 
         {/* Search form */}
