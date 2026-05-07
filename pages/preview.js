@@ -44,7 +44,7 @@ async function parseComicGeeksXLSX(file) {
 }
 async function parseCLZCSV(file) {
   const text = await file.text();
-  const lines = text.split("\n").map(l => l.trim()).filter(Boolean);
+  const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
   if (lines.length < 2) return { issues: [], format: "unknown" };
   const headers = parseCSVLine(lines[0]).map(h => h.toLowerCase());
   const si = headers.indexOf("series"), ii = headers.indexOf("issue"), di = headers.indexOf("release date");
@@ -60,7 +60,7 @@ async function parseCLZCSV(file) {
 }
 async function parsePlainText(file) {
   const text = await file.text();
-  return { issues: text.split("\n").map(l => l.trim()).filter(Boolean), format: "plain" };
+  return { issues: text.split(/\r?\n/).map(l => l.trim()).filter(Boolean), format: "plain" };
 }
 async function parseFile(file) {
   const n = file.name.toLowerCase();
