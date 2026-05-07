@@ -44,8 +44,7 @@ async function parseComicGeeksXLSX(file) {
 }
 async function parseCLZCSV(file) {
   const text = await file.text();
-  const lines = text.split("
-").map(l => l.trim()).filter(Boolean);
+  const lines = text.split("\n").map(l => l.trim()).filter(Boolean);
   if (lines.length < 2) return { issues: [], format: "unknown" };
   const headers = parseCSVLine(lines[0]).map(h => h.toLowerCase());
   const si = headers.indexOf("series"), ii = headers.indexOf("issue"), di = headers.indexOf("release date");
