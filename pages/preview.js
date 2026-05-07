@@ -93,8 +93,7 @@ export default function Preview() {
     try {
       const result = await parseFile(file);
       if (!result.issues.length) { setUploadMsg("No issues found in that file."); return; }
-      setIssueInput(result.issues.join("
-")); setUploadMsg(formatLabel(result));
+      setIssueInput(result.issues.join("\n")); setUploadMsg(formatLabel(result));
     } catch { setUploadMsg("Could not read that file. Make sure it is a valid xlsx, csv, or txt."); }
   }
   function onFileSelected(e) { const f=e.target.files?.[0]; if(f) handleFile(f); e.target.value=""; }
@@ -112,8 +111,7 @@ export default function Preview() {
     else setProgress(p=>({...p,visible:false}));
   }
   async function handleSearch() {
-    const issues=issueInput.split("
-").map(l=>l.trim()).filter(Boolean);
+    const issues=issueInput.split("\n").map(l=>l.trim()).filter(Boolean);
     if(!issues.length){setStatus({msg:"Please enter at least one issue.",type:"error"});return;}
     pendingMaxPrice.current=parseFloat(maxPrice)||10;
     setStatus({msg:"",type:""}); setResults(null); setDym(null); setUploadMsg("");
@@ -134,8 +132,7 @@ export default function Preview() {
     } catch(err){finishProgress(false);setStatus({msg:`Error: ${err.message}. Try again in a moment.`,type:"error"});}
   }
   function searchWithCorrections(){executeSearch(dym.edits.map(e=>e.trim()).filter(Boolean));}
-  function searchWithOriginal(){executeSearch(issueInput.split("
-").map(l=>l.trim()).filter(Boolean));}
+  function searchWithOriginal(){executeSearch(issueInput.split("\n").map(l=>l.trim()).filter(Boolean));}
   function groupResults(rows){
     const s={};
     for(const r of rows){if(!s[r.seller])s[r.seller]={bundle_count:r.bundle_count,listings:[]};s[r.seller].listings.push(r);}
