@@ -253,9 +253,7 @@ export default function Preview() {
           <input ref={fileInputRef} type="file" accept=".xlsx,.xls,.csv,.txt" style={{display:"none"}} onChange={onFileSelected} />
         </div>
         <div className={`drop-zone${isDragging ? " dragging" : ""}`} onDragOver={onDragOver} onDragLeave={onDragLeave} onDrop={onDrop}>
-          <textarea id="issue-input" value={issueInput} onChange={e=>{setIssueInput(e.target.value);setUploadMsg("");}} placeholder={"Batgirl: Year One #2
-Black Widow #10
-Black Widow #11 (2014)"} />
+          <textarea id="issue-input" value={issueInput} onChange={e=>{setIssueInput(e.target.value);setUploadMsg("");}} placeholder={"Batgirl: Year One #2\nBlack Widow #10Black Widow #11 (2014)"} />
           <div className="drag-overlay">Drop file here</div>
         </div>
         {uploadMsg && <div className="upload-msg">✓ {uploadMsg}</div>}
