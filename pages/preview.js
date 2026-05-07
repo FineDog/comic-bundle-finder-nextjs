@@ -60,8 +60,7 @@ async function parseCLZCSV(file) {
 }
 async function parsePlainText(file) {
   const text = await file.text();
-  return { issues: text.split("
-").map(l=>l.trim()).filter(Boolean), format: "plain" };
+  return { issues: text.split("\n").map(l => l.trim()).filter(Boolean), format: "plain" };
 }
 async function parseFile(file) {
   const n = file.name.toLowerCase();
