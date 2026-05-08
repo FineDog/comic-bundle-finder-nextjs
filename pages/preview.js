@@ -268,6 +268,7 @@ export default function Preview() {
   const [showSlider, setShowSlider] = useState(false);
   const [gaps, setGaps] = useState(null);
   const [copyMsg, setCopyMsg] = useState("");
+  const [isCollectionDragging, setIsCollectionDragging] = useState(false);
   const collectionFileInputRef = useRef(null);
 
   // ── Search tab handlers ──────────────────────────────────────────────
@@ -344,6 +345,9 @@ export default function Preview() {
     } catch { setCollectionMsg("Could not read that file."); }
   }
   function onCollectionFileSelected(e) { const f = e.target.files?.[0]; if (f) handleCollectionFile(f); e.target.value = ""; }
+  function onCollectionDragOver(e) { e.preventDefault(); setIsCollectionDragging(true); }
+  function onCollectionDragLeave(e) { if (!e.currentTarget.contains(e.relatedTarget)) setIsCollectionDragging(false); }
+  function onCollectionDrop(e) { e.preventDefault(); setIsCollectionDragging(false); const f = e.dataTransfer.files?.[0]; if (f) handleCollectionFile(f); }
 
   function onThresholdChange(val) {
     setGapThreshold(val);
@@ -477,8 +481,12 @@ export default function Preview() {
       .promo-pill{display:inline-block;background:#cc1f00;color:#fffdf4;font-size:0.65rem;font-weight:600;padding:1px 5px;letter-spacing:0.5px;text-transform:uppercase;line-height:1.6}
       .no-results{text-align:center;padding:2rem;color:#666;font-size:0.95rem;font-weight:400}
       .disclosure{font-size:0.72rem;color:#888;text-align:center;font-weight:400;margin-top:1.25rem;line-height:1.5;border-top:1px solid #d4c9a8;padding-top:0.75rem}
-      .gap-upload-area{border:3px dashed #1a1a1a;background:#fffdf4;padding:2rem;text-align:center;margin-bottom:1.25rem}
+      .gap-upload-area{border:3px dashed #1a1a1a;background:#fffdf4;padding:2rem;text-align:center;margin-bottom:1.25rem;position:relative;transition:border-color 0.1s,background 0.1s}
+      .gap-upload-area.dragging{border-color:#003399;background:#f0f4ff}
       .gap-upload-area p{font-size:0.88rem;font-weight:400;color:#555;margin-top:0.5rem}
+      .gap-drag-overlay{display:none;position:absolute;inset:0;background:rgba(0,51,153,0.08);align-items:center;justify-content:center;font-family:'Bangers',cursive;font-size:1.4rem;letter-spacing:2px;color:#003399;pointer-events:none}
+      .gap-upload-area.dragging .gap-drag-overlay{display:flex}
+      .gap-upload-area.dragging .gap-upload-contents{visibility:hidden}
       .threshold-row{display:flex;align-items:center;gap:0.75rem;margin-bottom:1.25rem;flex-wrap:wrap}
       .threshold-label{font-size:0.82rem;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;white-space:nowrap}
       .btn-toggle{background:none;border:none;color:#003399;font-family:'Oswald',sans-serif;font-size:0.78rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;cursor:pointer;text-decoration:underline;padding:0}
@@ -627,12 +635,20 @@ export default function Preview() {
             The analyzer groups your collection by series and finds small gaps worth filling.
           </p>
 
-          <div className="gap-upload-area">
-            <button className="btn-upload" style={{ fontSize: "0.88rem", padding: "0.4rem 1.25rem" }} onClick={() => collectionFileInputRef.current?.click()}>
-              Upload Collection File
-            </button>
+          <div
+            className={`gap-upload-area${isCollectionDragging ? " dragging" : ""}`}
+            onDragOver={onCollectionDragOver}
+            onDragLeave={onCollectionDragLeave}
+            onDrop={onCollectionDrop}
+          >
+            <div className="gap-upload-contents">
+              <button className="btn-upload" style={{ fontSize: "0.88rem", padding: "0.4rem 1.25rem" }} onClick={() => collectionFileInputRef.current?.click()}>
+                Upload Collection File
+              </button>
+              <p>League of Comic Geeks (.xlsx) or CLZ (.csv) — or drag and drop here</p>
+            </div>
             <input ref={collectionFileInputRef} type="file" accept=".xlsx,.xls,.csv" style={{ display: "none" }} onChange={onCollectionFileSelected} />
-            <p>League of Comic Geeks (.xlsx) or CLZ (.csv)</p>
+            <div className="gap-drag-overlay">Drop file here</div>
           </div>
 
           {collectionMsg && <div className="upload-msg" style={{ marginBottom: "1rem" }}>✓ {collectionMsg}</div>}
