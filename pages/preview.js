@@ -260,6 +260,7 @@ export default function Preview() {
   const timerRef = useRef(null);
   const pendingMaxPrice = useRef(10);
   const fileInputRef = useRef(null);
+  const fromFile = useRef(false);
 
   // Gap analyzer tab state
   const [collectionMsg, setCollectionMsg] = useState("");
@@ -278,6 +279,7 @@ export default function Preview() {
     try {
       const result = await parseFile(file);
       if (!result.issues.length) { setUploadMsg("No issues found in that file."); return; }
+      fromFile.current = true;
       setIssueInput(result.issues.join("\n")); setUploadMsg(formatLabel(result));
     } catch { setUploadMsg("Could not read that file. Make sure it is a valid xlsx, csv, or txt."); }
   }
@@ -300,6 +302,7 @@ export default function Preview() {
     if (!issues.length) { setStatus({ msg: "Please enter at least one issue.", type: "error" }); return; }
     pendingMaxPrice.current = parseFloat(maxPrice) || 10;
     setStatus({ msg: "", type: "" }); setResults(null); setDym(null); setUploadMsg("");
+    if (fromFile.current) { fromFile.current = false; executeSearch(issues); return; }
     setStatus({ msg: "Checking for typos…", type: "loading" });
     try {
       const vRes = await fetch("/api/validate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ issues }) });
@@ -341,7 +344,9 @@ export default function Preview() {
       setCollectionItems(result.items);
       const label = formatCollectionLabel(result);
       setCollectionMsg(label || `Loaded ${result.count} issues.`);
-      setGaps(analyzeGaps(result.items, gapThreshold));
+      const foundGaps = analyzeGaps(result.items, gapThreshold);
+      setGaps(foundGaps);
+      if (foundGaps.length) runGapSearch(foundGaps);
     } catch { setCollectionMsg("Could not read that file."); }
   }
   function onCollectionFileSelected(e) { const f = e.target.files?.[0]; if (f) handleCollectionFile(f); e.target.value = ""; }
@@ -349,16 +354,20 @@ export default function Preview() {
   function onCollectionDragLeave(e) { if (!e.currentTarget.contains(e.relatedTarget)) setIsCollectionDragging(false); }
   function onCollectionDrop(e) { e.preventDefault(); setIsCollectionDragging(false); const f = e.dataTransfer.files?.[0]; if (f) handleCollectionFile(f); }
 
-  function onThresholdChange(val) {
-    setGapThreshold(val);
-    if (collectionItems) setGaps(analyzeGaps(collectionItems, val));
+  function runGapSearch(gapList) {
+    pendingMaxPrice.current = parseFloat(maxPrice) || 10;
+    setIssueInput(gapList.join("\n"));
+    setUploadMsg(`${gapList.length} gap issue${gapList.length === 1 ? "" : "s"} from Gap Analyzer.`);
+    setActiveTab("search");
+    executeSearch(gapList);
   }
 
-  function sendToSearch() {
-    if (!gaps || !gaps.length) return;
-    setIssueInput(gaps.join("\n"));
-    setUploadMsg(`Loaded ${gaps.length} gap issue${gaps.length === 1 ? "" : "s"} from Gap Analyzer.`);
-    setActiveTab("search");
+  function onThresholdChange(val) {
+    setGapThreshold(val);
+    if (!collectionItems) return;
+    const foundGaps = analyzeGaps(collectionItems, val);
+    setGaps(foundGaps);
+    if (foundGaps.length) runGapSearch(foundGaps);
   }
 
   function copyGaps() {
@@ -528,7 +537,7 @@ export default function Preview() {
             <input ref={fileInputRef} type="file" accept=".xlsx,.xls,.csv,.txt" style={{ display: "none" }} onChange={onFileSelected} />
           </div>
           <div className={`drop-zone${isDragging ? " dragging" : ""}`} onDragOver={onDragOver} onDragLeave={onDragLeave} onDrop={onDrop}>
-            <textarea id="issue-input" value={issueInput} onChange={e => { setIssueInput(e.target.value); setUploadMsg(""); }} placeholder={"Batgirl: Year One #2\nBlack Widow #10\nBlack Widow #11 (2014)"} />
+            <textarea id="issue-input" value={issueInput} onChange={e => { setIssueInput(e.target.value); setUploadMsg(""); fromFile.current = false; }} placeholder={"Batgirl: Year One #2\nBlack Widow #10\nBlack Widow #11 (2014)"} />
             <div className="drag-overlay">Drop file here</div>
           </div>
           {uploadMsg && <div className="upload-msg">✓ {uploadMsg}</div>}
@@ -680,7 +689,6 @@ export default function Preview() {
                     <>
                       <textarea readOnly value={gaps.join("\n")} style={{ height: "200px" }} />
                       <div className="gap-actions">
-                        <button className="btn-gap-action" onClick={sendToSearch}>Send to Search →</button>
                         <button className="btn-gap-secondary" onClick={copyGaps}>Copy to Clipboard</button>
                         {copyMsg && <span className="copy-msg">{copyMsg}</span>}
                       </div>
