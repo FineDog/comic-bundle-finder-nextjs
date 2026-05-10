@@ -243,6 +243,12 @@ function analyzeGaps(items, threshold = 5) {
   return gaps;
 }
 
+// ── Analytics ─────────────────────────────────────────────────────────────────
+
+function track(event, data) {
+  try { window?.umami?.track(event, data); } catch {}
+}
+
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function Preview() {
@@ -260,7 +266,7 @@ export default function Preview() {
   const timerRef = useRef(null);
   const pendingMaxPrice = useRef(10);
   const fileInputRef = useRef(null);
-  const fromFile = useRef(false);
+  const searchSource = useRef(null); // "manual"|"comicgeeks"|"clz"|"txt"|"gap_analyzer"
 
   // Gap analyzer tab state
   const [collectionMsg, setCollectionMsg] = useState("");
@@ -279,7 +285,7 @@ export default function Preview() {
     try {
       const result = await parseFile(file);
       if (!result.issues.length) { setUploadMsg("No issues found in that file."); return; }
-      fromFile.current = true;
+      searchSource.current = result.format === "plain" ? "txt" : result.format;
       setIssueInput(result.issues.join("\n")); setUploadMsg(formatLabel(result));
     } catch { setUploadMsg("Could not read that file. Make sure it is a valid xlsx, csv, or txt."); }
   }
@@ -302,12 +308,14 @@ export default function Preview() {
     if (!issues.length) { setStatus({ msg: "Please enter at least one issue.", type: "error" }); return; }
     pendingMaxPrice.current = parseFloat(maxPrice) || 10;
     setStatus({ msg: "", type: "" }); setResults(null); setDym(null); setUploadMsg("");
-    if (fromFile.current) { fromFile.current = false; executeSearch(issues); return; }
+    const source = searchSource.current || "manual";
+    track("search_started", { source, issue_count: issues.length });
+    if (searchSource.current) { searchSource.current = null; executeSearch(issues); return; }
     setStatus({ msg: "Checking for typos…", type: "loading" });
     try {
       const vRes = await fetch("/api/validate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ issues }) });
       const vData = await vRes.json(); setStatus({ msg: "", type: "" });
-      if (vData.any_changed) setDym({ corrections: vData.corrections, edits: vData.corrections.map(c => c.suggested) });
+      if (vData.any_changed) { track("validation_shown"); setDym({ corrections: vData.corrections, edits: vData.corrections.map(c => c.suggested) }); }
       else executeSearch(issues);
     } catch { setStatus({ msg: "", type: "" }); executeSearch(issues); }
   }
@@ -316,11 +324,13 @@ export default function Preview() {
     try {
       const res = await fetch("/api/search", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ issues, max_price: pendingMaxPrice.current }) });
       const data = await res.json(); if (!res.ok) throw new Error(data.error || "Server error");
+      const bundleCount = new Set(data.results.filter(r => r.bundle_count >= 2).map(r => r.seller)).size;
+      track("search_completed", { issue_count: issues.length, bundle_count: bundleCount });
       finishProgress(true); setResults({ rows: data.results, issueCount: issues.length });
     } catch (err) { finishProgress(false); setStatus({ msg: `Error: ${err.message}. Try again in a moment.`, type: "error" }); }
   }
-  function searchWithCorrections() { executeSearch(dym.edits.map(e => e.trim()).filter(Boolean)); }
-  function searchWithOriginal() { executeSearch(issueInput.split("\n").map(l => l.trim()).filter(Boolean)); }
+  function searchWithCorrections() { track("validation_accepted"); executeSearch(dym.edits.map(e => e.trim()).filter(Boolean)); }
+  function searchWithOriginal() { track("validation_skipped"); executeSearch(issueInput.split("\n").map(l => l.trim()).filter(Boolean)); }
 
   function groupResults(rows) {
     const s = {};
@@ -346,6 +356,7 @@ export default function Preview() {
       setCollectionMsg(label || `Loaded ${result.count} issues.`);
       const foundGaps = analyzeGaps(result.items, gapThreshold);
       setGaps(foundGaps);
+      track("gap_analysis_run", { source: result.format, gap_count: foundGaps.length });
       if (foundGaps.length) runGapSearch(foundGaps);
     } catch { setCollectionMsg("Could not read that file."); }
   }
@@ -359,6 +370,7 @@ export default function Preview() {
     setIssueInput(gapList.join("\n"));
     setUploadMsg(`${gapList.length} gap issue${gapList.length === 1 ? "" : "s"} from Gap Analyzer.`);
     setActiveTab("search");
+    track("search_started", { source: "gap_analyzer", issue_count: gapList.length });
     executeSearch(gapList);
   }
 
@@ -537,7 +549,7 @@ export default function Preview() {
             <input ref={fileInputRef} type="file" accept=".xlsx,.xls,.csv,.txt" style={{ display: "none" }} onChange={onFileSelected} />
           </div>
           <div className={`drop-zone${isDragging ? " dragging" : ""}`} onDragOver={onDragOver} onDragLeave={onDragLeave} onDrop={onDrop}>
-            <textarea id="issue-input" value={issueInput} onChange={e => { setIssueInput(e.target.value); setUploadMsg(""); fromFile.current = false; }} placeholder={"Batgirl: Year One #2\nBlack Widow #10\nBlack Widow #11 (2014)"} />
+            <textarea id="issue-input" value={issueInput} onChange={e => { setIssueInput(e.target.value); setUploadMsg(""); searchSource.current = null; }} placeholder={"Batgirl: Year One #2\nBlack Widow #10\nBlack Widow #11 (2014)"} />
             <div className="drag-overlay">Drop file here</div>
           </div>
           {uploadMsg && <div className="upload-msg">✓ {uploadMsg}</div>}
