@@ -1,16 +1,20 @@
 // pages/api/search.js
 // Runs on Vercel's servers — credentials and logic never reach the browser.
 
-const EBAY_APP_ID = process.env.EBAY_APP_ID;
-const EBAY_SECRET = process.env.EBAY_SECRET;
-const CAMPAIGN_ID = process.env.EBAY_CAMPAIGN_ID || "";
-const CATEGORY_ID = "259104"; // eBay: Comics > Single Issues
+const EBAY_APP_ID  = process.env.EBAY_APP_ID;
+const EBAY_SECRET  = process.env.EBAY_SECRET;
+const CAMPAIGN_ID  = process.env.EBAY_CAMPAIGN_ID || "";
+const CATEGORY_ID  = "259104"; // eBay: Comics > Single Issues
 const MAX_RESULTS  = 200;
-const PAUSE_MS     = 100;
+const CONCURRENCY  = 8;
+
+let cachedToken    = null;
+let tokenExpiresAt = 0;
 
 // ─── eBay auth ────────────────────────────────────────────────────────────────
 
 async function getEbayToken() {
+  if (cachedToken && Date.now() < tokenExpiresAt) return cachedToken;
   const credentials = Buffer.from(`${EBAY_APP_ID}:${EBAY_SECRET}`).toString("base64");
   const res = await fetch("https://api.ebay.com/identity/v1/oauth2/token", {
     method: "POST",
@@ -22,7 +26,9 @@ async function getEbayToken() {
   });
   const data = await res.json();
   if (!data.access_token) throw new Error("Failed to get eBay token.");
-  return data.access_token;
+  cachedToken = data.access_token;
+  tokenExpiresAt = Date.now() + (data.expires_in - 60) * 1000; // 60s early expiry buffer
+  return cachedToken;
 }
 
 // ─── Matching helpers ─────────────────────────────────────────────────────────
@@ -174,14 +180,18 @@ export default async function handler(req, res) {
 
   const sellerIssues = {};
 
-  for (const issue of issues) {
-    const results = await searchEbay(token, issue, maxPrice);
-    for (const listing of results) {
-      if (!sellerIssues[listing.seller]) sellerIssues[listing.seller] = {};
-      if (!sellerIssues[listing.seller][issue]) sellerIssues[listing.seller][issue] = [];
-      sellerIssues[listing.seller][issue].push(listing);
+  // Run searches in parallel, CONCURRENCY at a time
+  for (let i = 0; i < issues.length; i += CONCURRENCY) {
+    const batch = issues.slice(i, i + CONCURRENCY);
+    const batchResults = await Promise.all(batch.map(issue => searchEbay(token, issue, maxPrice)));
+    for (let j = 0; j < batch.length; j++) {
+      const issue = batch[j];
+      for (const listing of batchResults[j]) {
+        if (!sellerIssues[listing.seller]) sellerIssues[listing.seller] = {};
+        if (!sellerIssues[listing.seller][issue]) sellerIssues[listing.seller][issue] = [];
+        sellerIssues[listing.seller][issue].push(listing);
+      }
     }
-    await new Promise((r) => setTimeout(r, PAUSE_MS));
   }
 
   const rows = [];
