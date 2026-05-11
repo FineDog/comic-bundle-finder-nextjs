@@ -53,9 +53,11 @@ function monthYearFromDateString(s) {
   return isNaN(d) ? null : { year: d.getFullYear(), month: d.getMonth() + 1 };
 }
 
-// Add `offset` months to a {year, month} date and return the resulting year as a string
+// Add `offset` months to a {year, month} date and return the resulting year as a string.
+// If month is unknown (plain text import), fall back to year only — no date math possible.
 function yearAfterMonths(date, offset) {
   if (!date) return "";
+  if (!date.month) return String(date.year);
   return String(Math.floor((date.year * 12 + date.month - 1 + offset) / 12));
 }
 
@@ -137,7 +139,14 @@ async function parseComicGeeksForGaps(file) {
   const ab = await file.arrayBuffer();
   const wb = XLSX.read(ab, { type: "array" });
   const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval: "" });
-  if (!rows.length || !("Full Title" in rows[0])) return { items: [], format: "unknown", count: 0 };
+  if (!rows.length) return { items: [], format: "unknown", count: 0 };
+  // Not a Comic Geeks export — treat each row's first cell as a plain issue line
+  if (!("Full Title" in rows[0])) {
+    const items = rows
+      .map(r => plainLineToItem(String(Object.values(r)[0] || "").trim()))
+      .filter(Boolean);
+    return { items, format: "plain", count: items.length };
+  }
   const items = [];
   for (const r of rows) {
     const series = String(r["Series"] || "").trim();
@@ -157,13 +166,58 @@ async function parseComicGeeksForGaps(file) {
   return { items, format: "comicgeeks", count: items.length };
 }
 
+// Parses a single plain-text issue line into { seriesRaw, issueNum, year } or null.
+// Handles: "Series #N", "Series #N (YYYY)", "Series N", "Series N (YYYY)"
+function parsePlainIssueLine(line) {
+  const yearMatch = line.match(/\((\d{4})\)/);
+  const year = yearMatch ? parseInt(yearMatch[1], 10) : null;
+  const withoutYear = line.replace(/\s*\(\d{4}\)\s*/, " ").trim();
+
+  // Prefer explicit # notation
+  const hashMatch = withoutYear.match(/#(\d+)/);
+  if (hashMatch) {
+    const seriesRaw = withoutYear.replace(/\s*#\d+.*$/, "").trim();
+    if (!seriesRaw) return null;
+    return { seriesRaw, issueNum: parseInt(hashMatch[1], 10), year };
+  }
+
+  // Fall back: last token is the issue number, everything before it is the series
+  const spaceMatch = withoutYear.match(/^(.+?)\s+(\d+)\s*$/);
+  if (spaceMatch) {
+    const seriesRaw = spaceMatch[1].trim();
+    const issueNum = parseInt(spaceMatch[2], 10);
+    if (!seriesRaw || issueNum < 1) return null;
+    return { seriesRaw, issueNum, year };
+  }
+
+  return null;
+}
+
+// Convert a parsed plain line into a structured item for gap analysis
+function plainLineToItem(line) {
+  const parsed = parsePlainIssueLine(line);
+  if (!parsed) return null;
+  return {
+    seriesKey: parsed.seriesRaw,
+    seriesClean: parsed.seriesRaw,
+    issueNum: parsed.issueNum,
+    issueDate: parsed.year ? { year: parsed.year, month: null } : null,
+  };
+}
+
 async function parseCLZForGaps(file) {
   const text = await file.text();
   const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-  if (lines.length < 2) return { items: [], format: "unknown", count: 0 };
+  if (!lines.length) return { items: [], format: "unknown", count: 0 };
   const headers = parseCSVLine(lines[0]).map(h => h.toLowerCase());
   const si = headers.indexOf("series"), ii = headers.indexOf("issue"), di = headers.indexOf("release date");
-  if (si === -1 || ii === -1) return { items: [], format: "unknown", count: 0 };
+
+  // No CLZ headers — treat every line as a plain issue string
+  if (si === -1 || ii === -1) {
+    const items = lines.map(plainLineToItem).filter(Boolean);
+    return { items, format: "plain", count: items.length };
+  }
+
   const items = [];
   for (let i = 1; i < lines.length; i++) {
     const c = parseCSVLine(lines[i]);
@@ -182,16 +236,25 @@ async function parseCLZForGaps(file) {
   return { items, format: "clz", count: items.length };
 }
 
+async function parsePlainForGaps(file) {
+  const text = await file.text();
+  const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+  const items = lines.map(plainLineToItem).filter(Boolean);
+  return { items, format: "plain", count: items.length };
+}
+
 async function parseFileForGaps(file) {
   const n = file.name.toLowerCase();
   if (n.endsWith(".xlsx") || n.endsWith(".xls")) return parseComicGeeksForGaps(file);
   if (n.endsWith(".csv")) return parseCLZForGaps(file);
+  if (n.endsWith(".txt")) return parsePlainForGaps(file);
   return { items: [], format: "unsupported", count: 0 };
 }
 
 function formatCollectionLabel(r) {
   if (r.format === "comicgeeks") return `Loaded ${r.count} issue${r.count===1?"":"s"} from League of Comic Geeks collection.`;
   if (r.format === "clz") return `Loaded ${r.count} issue${r.count===1?"":"s"} from CLZ collection.`;
+  if (r.format === "plain") return `Loaded ${r.count} issue${r.count===1?"":"s"} from plain text collection.`;
   return null;
 }
 
@@ -259,7 +322,6 @@ export default function Preview() {
   const [maxPrice, setMaxPrice] = useState("10");
   const [status, setStatus] = useState({ msg: "", type: "" });
   const [progress, setProgress] = useState({ visible: false, pct: 0, msg: "" });
-  const [dym, setDym] = useState(null);
   const [results, setResults] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
   const [uploadMsg, setUploadMsg] = useState("");
@@ -303,24 +365,18 @@ export default function Preview() {
     if (success) { setProgress({ visible: true, pct: 100, msg: "Done!" }); setTimeout(() => setProgress(p => ({ ...p, visible: false })), 800); }
     else setProgress(p => ({ ...p, visible: false }));
   }
-  async function handleSearch() {
+  function handleSearch() {
     const issues = issueInput.split("\n").map(l => l.trim()).filter(Boolean);
     if (!issues.length) { setStatus({ msg: "Please enter at least one issue.", type: "error" }); return; }
     pendingMaxPrice.current = parseFloat(maxPrice) || 10;
-    setStatus({ msg: "", type: "" }); setResults(null); setDym(null); setUploadMsg("");
+    setStatus({ msg: "", type: "" }); setResults(null); setUploadMsg("");
     const source = searchSource.current || "manual";
     track("search_started", { source, issue_count: issues.length });
-    if (searchSource.current) { searchSource.current = null; executeSearch(issues); return; }
-    setStatus({ msg: "Checking for typos…", type: "loading" });
-    try {
-      const vRes = await fetch("/api/validate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ issues }) });
-      const vData = await vRes.json(); setStatus({ msg: "", type: "" });
-      if (vData.any_changed) { track("validation_shown"); setDym({ corrections: vData.corrections, edits: vData.corrections.map(c => c.suggested) }); }
-      else executeSearch(issues);
-    } catch { setStatus({ msg: "", type: "" }); executeSearch(issues); }
+    searchSource.current = null;
+    executeSearch(issues);
   }
   async function executeSearch(issues) {
-    setDym(null); setResults(null); startProgress();
+    setResults(null); startProgress();
     try {
       const res = await fetch("/api/search", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ issues, max_price: pendingMaxPrice.current }) });
       const data = await res.json(); if (!res.ok) throw new Error(data.error || "Server error");
@@ -329,9 +385,6 @@ export default function Preview() {
       finishProgress(true); setResults({ rows: data.results, issueCount: issues.length });
     } catch (err) { finishProgress(false); setStatus({ msg: `Error: ${err.message}. Try again in a moment.`, type: "error" }); }
   }
-  function searchWithCorrections() { track("validation_accepted"); executeSearch(dym.edits.map(e => e.trim()).filter(Boolean)); }
-  function searchWithOriginal() { track("validation_skipped"); executeSearch(issueInput.split("\n").map(l => l.trim()).filter(Boolean)); }
-
   function groupResults(rows) {
     const s = {};
     for (const r of rows) { if (!s[r.seller]) s[r.seller] = { bundle_count: r.bundle_count, listings: [] }; s[r.seller].listings.push(r); }
@@ -466,21 +519,6 @@ export default function Preview() {
       .progress-track{border:2px solid #1a1a1a;background:#f0e6c4;height:24px;position:relative;overflow:hidden}
       .progress-fill{height:100%;background:#cc1f00;transition:width 0.7s ease}
       .progress-pct{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;font-family:'Bangers',cursive;font-size:0.85rem;letter-spacing:1px;color:#fffdf4;text-shadow:1px 1px 0 #1a1a1a}
-      .dym-panel{background:#fffdf4;border:3px solid #003399;box-shadow:6px 6px 0 #003399;padding:1.25rem 1.5rem;margin-bottom:1.75rem}
-      .dym-title{font-family:'Bangers',cursive;font-size:1.6rem;color:#003399;letter-spacing:2px;margin-bottom:0.5rem}
-      .dym-subtitle{font-size:0.8rem;font-weight:400;color:#444;margin-bottom:1rem;line-height:1.5}
-      .dym-row{display:flex;align-items:center;gap:0.6rem;margin-bottom:0.6rem;flex-wrap:wrap}
-      .dym-original{font-size:0.85rem;color:#888;text-decoration:line-through;min-width:180px;font-weight:400}
-      .dym-arrow{font-size:0.85rem;color:#003399;font-weight:600}
-      .dym-edit{border:2px solid #003399;background:#fffdf4;font-family:'Oswald',sans-serif;font-size:0.85rem;font-weight:600;padding:0.2rem 0.5rem;color:#1a1a1a;flex:1;min-width:160px}
-      .dym-edit:focus{outline:none;box-shadow:2px 2px 0 #003399}
-      .dym-unchanged{font-size:0.85rem;color:#666;font-weight:400;font-style:italic}
-      .dym-buttons{display:flex;gap:0.75rem;margin-top:1.1rem;flex-wrap:wrap}
-      .btn-accept{background:#003399;color:#fffdf4;border:3px solid #1a1a1a;box-shadow:4px 4px 0 #1a1a1a;font-family:'Bangers',cursive;font-size:1.3rem;letter-spacing:2px;padding:0.2rem 1.5rem 0.3rem;cursor:pointer;transition:transform 0.08s,box-shadow 0.08s}
-      .btn-accept:hover{background:#0044cc}
-      .btn-accept:active{transform:translate(3px,3px);box-shadow:1px 1px 0 #1a1a1a}
-      .btn-skip{background:#fffdf4;color:#1a1a1a;border:2px solid #1a1a1a;box-shadow:3px 3px 0 #1a1a1a;font-family:'Oswald',sans-serif;font-size:0.82rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:0.35rem 1rem;cursor:pointer}
-      .btn-skip:hover{background:#f0e6c4}
       .stats-row{display:flex;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap}
       .stat-box{flex:1;min-width:110px;background:#ffe066;border:2px solid #1a1a1a;padding:0.6rem 1rem;text-align:center}
       .stat-number{font-family:'Bangers',cursive;font-size:2.2rem;color:#cc1f00;line-height:1}
@@ -575,25 +613,6 @@ export default function Preview() {
             </div>
           )}
         </div>
-        {dym && (
-          <div className="dym-panel">
-            <div className="dym-title">Did You Mean...?</div>
-            <div className="dym-subtitle">We found some possible typos in your list. Review the suggestions below — edit any you disagree with — then click &ldquo;Search with corrections&rdquo; to proceed.</div>
-            {dym.corrections.map((c, i) => (
-              <div className="dym-row" key={i}>
-                {c.changed ? (<>
-                  <span className="dym-original">{c.original}</span>
-                  <span className="dym-arrow">→</span>
-                  <input className="dym-edit" type="text" value={dym.edits[i]} onChange={e => { const edits = [...dym.edits]; edits[i] = e.target.value; setDym({ ...dym, edits }); }} />
-                </>) : (<span className="dym-unchanged">{c.original} — looks good</span>)}
-              </div>
-            ))}
-            <div className="dym-buttons">
-              <button className="btn-accept" onClick={searchWithCorrections}>Search with corrections</button>
-              <button className="btn-skip" onClick={searchWithOriginal}>Search as originally entered</button>
-            </div>
-          </div>
-        )}
         {results && (
           <div className="panel">
             <div className="results-title">{Object.keys(sellers).length === 0 ? "No Bundle Opportunities Found" : "Results — Sellers Ranked by Bundle Count"}</div>
@@ -666,9 +685,9 @@ export default function Preview() {
               <button className="btn-upload" style={{ fontSize: "0.88rem", padding: "0.4rem 1.25rem" }} onClick={() => collectionFileInputRef.current?.click()}>
                 Upload Collection File
               </button>
-              <p>League of Comic Geeks (.xlsx) or CLZ (.csv) — or drag and drop here</p>
+              <p>League of Comic Geeks (.xlsx), CLZ (.csv), or plain text (.txt) — or drag and drop here</p>
             </div>
-            <input ref={collectionFileInputRef} type="file" accept=".xlsx,.xls,.csv" style={{ display: "none" }} onChange={onCollectionFileSelected} />
+            <input ref={collectionFileInputRef} type="file" accept=".xlsx,.xls,.csv,.txt" style={{ display: "none" }} onChange={onCollectionFileSelected} />
             <div className="gap-drag-overlay">Drop file here</div>
           </div>
 
@@ -714,6 +733,23 @@ export default function Preview() {
       )}
       <div className="panel" style={{ textAlign: "center", fontSize: "0.8rem", fontWeight: 400, color: "#666", padding: "0.85rem 1.75rem" }}>
         Bugs? Feature requests? Email us at <a href="mailto:hello@comicbundlefinder.com" style={{ color: "#003399", fontWeight: 600 }}>hello@comicbundlefinder.com</a>
+        <div style={{ marginTop: "0.75rem" }}>
+          <a
+            href="https://ko-fi.com/O4O31ZDFTF"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: "inline-flex", alignItems: "center", gap: "0.5rem",
+              background: "#003399", color: "#fffdf4",
+              border: "2px solid #1a1a1a", boxShadow: "3px 3px 0 #1a1a1a",
+              fontFamily: "'Oswald', sans-serif", fontWeight: 600,
+              fontSize: "0.82rem", letterSpacing: "1px", textTransform: "uppercase",
+              padding: "0.35rem 1rem", textDecoration: "none",
+            }}
+          >
+            ☕ Support me on Ko-fi
+          </a>
+        </div>
       </div>
     </div>
   </>);
