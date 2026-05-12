@@ -79,7 +79,7 @@ export default function ResultsPage({ data }) {
 
       <div className="saved-banner">
         <div>
-          <div className="saved-label">📎 Saved Results</div>
+          <div className="saved-label">Saved Results</div>
           <div className="saved-date">Saved on {savedDate}</div>
         </div>
         <a href="/" className="search-again">← New Search</a>
