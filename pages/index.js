@@ -330,6 +330,15 @@ export default function Preview() {
   const fileInputRef = useRef(null);
   const searchSource = useRef(null); // "manual"|"comicgeeks"|"clz"|"txt"|"gap_analyzer"
 
+  // Save / email state
+  const [savedId, setSavedId] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [shareMsg, setShareMsg] = useState("");
+  const [showEmailForm, setShowEmailForm] = useState(false);
+  const [emailInput, setEmailInput] = useState("");
+  const [emailMsg, setEmailMsg] = useState("");
+  const [emailing, setEmailing] = useState(false);
+
   // Gap analyzer tab state
   const [collectionMsg, setCollectionMsg] = useState("");
   const [collectionItems, setCollectionItems] = useState(null);
@@ -370,6 +379,7 @@ export default function Preview() {
     if (!issues.length) { setStatus({ msg: "Please enter at least one issue.", type: "error" }); return; }
     pendingMaxPrice.current = parseFloat(maxPrice) || 10;
     setStatus({ msg: "", type: "" }); setResults(null); setUploadMsg("");
+    setSavedId(null); setShareMsg(""); setShowEmailForm(false); setEmailMsg("");
     const source = searchSource.current || "manual";
     track("search_started", { source, issue_count: issues.length });
     searchSource.current = null;
@@ -385,14 +395,69 @@ export default function Preview() {
       finishProgress(true); setResults({ rows: data.results, issueCount: issues.length });
     } catch (err) { finishProgress(false); setStatus({ msg: `Error: ${err.message}. Try again in a moment.`, type: "error" }); }
   }
-  function groupResults(rows) {
+  function copyText(text) {
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(text).catch(() => copyTextFallback(text));
+    } else {
+      copyTextFallback(text);
+    }
+  }
+  function copyTextFallback(text) {
+    const ta = document.createElement("textarea");
+    ta.value = text; ta.style.cssText = "position:fixed;opacity:0;top:0;left:0";
+    document.body.appendChild(ta); ta.focus(); ta.select();
+    document.execCommand("copy");
+    document.body.removeChild(ta);
+  }
+  async function handleSaveResults() {
+    setSaving(true); setShareMsg("");
+    try {
+      const res = await fetch("/api/save-results", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ rows: results.rows, issueCount: results.issueCount }) });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setSavedId(data.id);
+      const url = `https://comicbundlefinder.com/results/${data.id}`;
+      copyText(url);
+      setShareMsg("Link copied to clipboard!");
+      setTimeout(() => setShareMsg(""), 3000);
+    } catch (e) { setShareMsg(`Error: ${e.message}`); }
+    setSaving(false);
+  }
+  function handleCopyLink() {
+    copyText(`https://comicbundlefinder.com/results/${savedId}`);
+    setShareMsg("Copied!"); setTimeout(() => setShareMsg(""), 2000);
+  }
+  async function handleEmailResults(e) {
+    e.preventDefault();
+    if (!emailInput.trim()) return;
+    setEmailing(true); setEmailMsg("");
+    try {
+      const res = await fetch("/api/email-results", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: emailInput, rows: results.rows, issueCount: results.issueCount, savedId }) });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      if (data.id && !savedId) setSavedId(data.id);
+      setEmailMsg("Sent! Check your inbox.");
+      setShowEmailForm(false);
+    } catch (e) { setEmailMsg(`Error: ${e.message}`); }
+    setEmailing(false);
+  }
+  function groupResults(rows, issueCount) {
     const s = {};
     for (const r of rows) { if (!s[r.seller]) s[r.seller] = { bundle_count: r.bundle_count, listings: [] }; s[r.seller].listings.push(r); }
-    for (const n of Object.keys(s)) { if (s[n].bundle_count < 2) delete s[n]; }
+    if (issueCount === 1) {
+      // Single-issue mode: seller qualifies if they have 2+ separate listings
+      for (const n of Object.keys(s)) {
+        if (s[n].listings.length < 2) delete s[n];
+        else s[n].bundle_count = s[n].listings.length;
+      }
+    } else {
+      for (const n of Object.keys(s)) { if (s[n].bundle_count < 2) delete s[n]; }
+    }
     return s;
   }
-  const sellers = results ? groupResults(results.rows) : {};
-  const sellerCount = results ? Object.keys(groupResults(results.rows)).length : 0;
+  const singleIssueMode = results?.issueCount === 1;
+  const sellers = results ? groupResults(results.rows, results.issueCount) : {};
+  const sellerCount = results ? Object.keys(sellers).length : 0;
   const totalSellers = results ? new Set(results.rows.map(r => r.seller)).size : 0;
 
   // ── Gap analyzer handlers ────────────────────────────────────────────
@@ -540,6 +605,27 @@ export default function Preview() {
       .promo-pill{display:inline-block;background:#cc1f00;color:#fffdf4;font-size:0.65rem;font-weight:600;padding:1px 5px;letter-spacing:0.5px;text-transform:uppercase;line-height:1.6}
       .no-results{text-align:center;padding:2rem;color:#666;font-size:0.95rem;font-weight:400}
       .disclosure{font-size:0.72rem;color:#888;text-align:center;font-weight:400;margin-top:1.25rem;line-height:1.5;border-top:1px solid #d4c9a8;padding-top:0.75rem}
+      .share-panel{border-bottom:2px solid #d4c9a8;margin-bottom:1.5rem;padding-bottom:1.25rem}
+      .share-title{font-family:'Bangers',cursive;font-size:1.4rem;letter-spacing:2px;color:#1a1a1a;margin-bottom:0.75rem}
+      .share-buttons{display:flex;gap:0.75rem;flex-wrap:wrap;margin-bottom:0.75rem}
+      .btn-share{background:#003399;color:#fffdf4;border:3px solid #1a1a1a;box-shadow:4px 4px 0 #1a1a1a;font-family:'Bangers',cursive;font-size:1.25rem;letter-spacing:2px;padding:0.2rem 1.25rem 0.3rem;cursor:pointer;transition:transform 0.08s,box-shadow 0.08s;white-space:nowrap}
+      .btn-share:hover{background:#0044cc}
+      .btn-share:active{transform:translate(3px,3px);box-shadow:1px 1px 0 #1a1a1a}
+      .btn-share:disabled{opacity:0.6;cursor:default;transform:none;box-shadow:4px 4px 0 #1a1a1a}
+      .btn-share-email{background:#fffdf4;color:#1a1a1a;border:3px solid #1a1a1a;box-shadow:4px 4px 0 #1a1a1a;font-family:'Bangers',cursive;font-size:1.25rem;letter-spacing:2px;padding:0.2rem 1.25rem 0.3rem;cursor:pointer;transition:transform 0.08s,box-shadow 0.08s;white-space:nowrap}
+      .btn-share-email:hover{background:#ffe066}
+      .btn-share-email:active{transform:translate(3px,3px);box-shadow:1px 1px 0 #1a1a1a}
+      .share-url-row{display:flex;gap:0.5rem;align-items:center;margin-bottom:0.5rem;flex-wrap:wrap}
+      .share-url-input{flex:1;min-width:220px;border:2px solid #003399;background:#f0f4ff;font-family:'Oswald',sans-serif;font-size:0.82rem;padding:0.3rem 0.6rem;color:#003399;font-weight:600;cursor:text}
+      .btn-copy{background:#ffe066;color:#1a1a1a;border:2px solid #1a1a1a;box-shadow:3px 3px 0 #1a1a1a;font-family:'Oswald',sans-serif;font-size:0.78rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:0.3rem 0.9rem;cursor:pointer;white-space:nowrap}
+      .btn-copy:hover{background:#ffd700}
+      .share-feedback{font-size:0.8rem;font-weight:600;color:#003399;letter-spacing:0.5px;display:block;margin-bottom:0.5rem}
+      .email-form{display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;margin-top:0.5rem}
+      .email-input{flex:1;min-width:200px;border:2px solid #1a1a1a;background:#fffdf4;font-family:'Oswald',sans-serif;font-size:0.88rem;padding:0.35rem 0.6rem;color:#1a1a1a}
+      .email-input:focus{outline:none;border-color:#003399;box-shadow:2px 2px 0 #003399}
+      .btn-email-send{background:#cc1f00;color:#fffdf4;border:3px solid #1a1a1a;box-shadow:3px 3px 0 #1a1a1a;font-family:'Bangers',cursive;font-size:1.2rem;letter-spacing:2px;padding:0.2rem 1.1rem 0.3rem;cursor:pointer;white-space:nowrap}
+      .btn-email-send:hover{background:#a81900}
+      .btn-email-send:disabled{opacity:0.6;cursor:default}
       .gap-upload-area{border:3px dashed #1a1a1a;background:#fffdf4;padding:2rem;text-align:center;margin-bottom:1.25rem;position:relative;transition:border-color 0.1s,background 0.1s}
       .gap-upload-area.dragging{border-color:#003399;background:#f0f4ff}
       .gap-upload-area p{font-size:0.88rem;font-weight:400;color:#555;margin-top:0.5rem}
@@ -615,14 +701,40 @@ export default function Preview() {
         </div>
         {results && (
           <div className="panel">
-            <div className="results-title">{Object.keys(sellers).length === 0 ? "No Bundle Opportunities Found" : "Results — Sellers Ranked by Bundle Count"}</div>
-            {Object.keys(sellers).length === 0 ? (
-              <div className="no-results">No single seller carries more than one of your issues. You may need to buy these separately, or try broadening your search.</div>
+            <div className="results-title">{sellerCount === 0 ? "No Bundle Opportunities Found" : "Results — Sellers Ranked by Bundle Count"}</div>
+            {sellerCount === 0 ? (
+              <div className="no-results">{singleIssueMode ? "No seller has more than one listing for this issue. Try raising your max price, or check back later." : "No single seller carries more than one of your issues. You may need to buy these separately, or try broadening your search."}</div>
             ) : (<>
               <div className="stats-row">
-                <div className="stat-box"><div className="stat-number">{results.issueCount}</div><div className="stat-label">Issues Searched</div></div>
+                <div className="stat-box"><div className="stat-number">{results.issueCount}</div><div className="stat-label">{singleIssueMode ? "Issue Searched" : "Issues Searched"}</div></div>
                 <div className="stat-box"><div className="stat-number">{totalSellers}</div><div className="stat-label">Total Sellers Found</div></div>
-                <div className="stat-box"><div className="stat-number">{sellerCount}</div><div className="stat-label">Bundle Opportunities</div></div>
+                <div className="stat-box"><div className="stat-number">{sellerCount}</div><div className="stat-label">{singleIssueMode ? "Multi-Copy Sellers" : "Bundle Opportunities"}</div></div>
+              </div>
+              <div className="share-panel">
+                <div className="share-title">Save or Share These Results</div>
+                <div className="share-buttons">
+                  <button className="btn-share" onClick={handleSaveResults} disabled={saving || !!savedId}>
+                    {saving ? "Saving…" : savedId ? "✓ Saved" : "💾 Save Results"}
+                  </button>
+                  <button className="btn-share-email" onClick={() => { setShowEmailForm(f => !f); setEmailMsg(""); }}>
+                    ✉ Email Results
+                  </button>
+                </div>
+                {savedId && (
+                  <div className="share-url-row">
+                    <input className="share-url-input" readOnly value={`https://comicbundlefinder.com/results/${savedId}`} onClick={e => e.target.select()} />
+                    <button className="btn-copy" onClick={handleCopyLink}>{shareMsg === "Copied!" ? "✓ Copied" : "Copy Link"}</button>
+                  </div>
+                )}
+                {shareMsg && shareMsg !== "Copied!" && <span className="share-feedback">{shareMsg}</span>}
+                {showEmailForm && (
+                  <form className="email-form" onSubmit={handleEmailResults}>
+                    <input className="email-input" type="email" value={emailInput} onChange={e => setEmailInput(e.target.value)} placeholder="your@email.com" required autoFocus />
+                    <button className="btn-email-send" type="submit" disabled={emailing}>{emailing ? "Sending…" : "Send"}</button>
+                    <span style={{ width: "100%", fontSize: "0.72rem", color: "#888", fontWeight: 400, marginTop: "0.25rem" }}>Your email is used only to send your results and is not stored or used for marketing.</span>
+                  </form>
+                )}
+                {emailMsg && <span className="share-feedback" style={{ color: emailMsg.startsWith("Error") ? "#cc1f00" : "#003399" }}>{emailMsg}</span>}
               </div>
               {Object.entries(sellers).map(([name, data]) => {
                 const cpi = {};
@@ -632,7 +744,7 @@ export default function Preview() {
                   <div className="seller-group" key={name}>
                     <div className="seller-header">
                       <span className="seller-name">{esc(name)}</span>
-                      <span className="bundle-badge">{data.bundle_count} issues — bundle shipping!</span>
+                      <span className="bundle-badge">{singleIssueMode ? `${data.bundle_count} listings` : `${data.bundle_count} issues`} — bundle shipping!</span>
                       <span className="subtotal-badge">from ${subtotal.toFixed(2)} in items</span>
                     </div>
                     <table className="listings-table">
