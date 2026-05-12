@@ -605,7 +605,7 @@ export default function Preview() {
       .promo-pill{display:inline-block;background:#cc1f00;color:#fffdf4;font-size:0.65rem;font-weight:600;padding:1px 5px;letter-spacing:0.5px;text-transform:uppercase;line-height:1.6}
       .no-results{text-align:center;padding:2rem;color:#666;font-size:0.95rem;font-weight:400}
       .disclosure{font-size:0.72rem;color:#888;text-align:center;font-weight:400;margin-top:1.25rem;line-height:1.5;border-top:1px solid #d4c9a8;padding-top:0.75rem}
-      .share-panel{border-top:2px solid #d4c9a8;margin-top:1.5rem;padding-top:1.25rem}
+      .share-panel{border-bottom:2px solid #d4c9a8;margin-bottom:1.5rem;padding-bottom:1.25rem}
       .share-title{font-family:'Bangers',cursive;font-size:1.4rem;letter-spacing:2px;color:#1a1a1a;margin-bottom:0.75rem}
       .share-buttons{display:flex;gap:0.75rem;flex-wrap:wrap;margin-bottom:0.75rem}
       .btn-share{background:#003399;color:#fffdf4;border:3px solid #1a1a1a;box-shadow:4px 4px 0 #1a1a1a;font-family:'Bangers',cursive;font-size:1.25rem;letter-spacing:2px;padding:0.2rem 1.25rem 0.3rem;cursor:pointer;transition:transform 0.08s,box-shadow 0.08s;white-space:nowrap}
@@ -710,6 +710,32 @@ export default function Preview() {
                 <div className="stat-box"><div className="stat-number">{totalSellers}</div><div className="stat-label">Total Sellers Found</div></div>
                 <div className="stat-box"><div className="stat-number">{sellerCount}</div><div className="stat-label">{singleIssueMode ? "Multi-Copy Sellers" : "Bundle Opportunities"}</div></div>
               </div>
+              <div className="share-panel">
+                <div className="share-title">Save or Share These Results</div>
+                <div className="share-buttons">
+                  <button className="btn-share" onClick={handleSaveResults} disabled={saving || !!savedId}>
+                    {saving ? "Saving…" : savedId ? "✓ Saved" : "💾 Save Results"}
+                  </button>
+                  <button className="btn-share-email" onClick={() => { setShowEmailForm(f => !f); setEmailMsg(""); }}>
+                    ✉ Email Results
+                  </button>
+                </div>
+                {savedId && (
+                  <div className="share-url-row">
+                    <input className="share-url-input" readOnly value={`https://comicbundlefinder.com/results/${savedId}`} onClick={e => e.target.select()} />
+                    <button className="btn-copy" onClick={handleCopyLink}>{shareMsg === "Copied!" ? "✓ Copied" : "Copy Link"}</button>
+                  </div>
+                )}
+                {shareMsg && shareMsg !== "Copied!" && <span className="share-feedback">{shareMsg}</span>}
+                {showEmailForm && (
+                  <form className="email-form" onSubmit={handleEmailResults}>
+                    <input className="email-input" type="email" value={emailInput} onChange={e => setEmailInput(e.target.value)} placeholder="your@email.com" required autoFocus />
+                    <button className="btn-email-send" type="submit" disabled={emailing}>{emailing ? "Sending…" : "Send"}</button>
+                    <span style={{ width: "100%", fontSize: "0.72rem", color: "#888", fontWeight: 400, marginTop: "0.25rem" }}>Your email is used only to send your results and is not stored or used for marketing.</span>
+                  </form>
+                )}
+                {emailMsg && <span className="share-feedback" style={{ color: emailMsg.startsWith("Error") ? "#cc1f00" : "#003399" }}>{emailMsg}</span>}
+              </div>
               {Object.entries(sellers).map(([name, data]) => {
                 const cpi = {};
                 for (const l of data.listings) { const p = parseFloat(l.price) || 0; if (!(l.issue in cpi) || p < cpi[l.issue]) cpi[l.issue] = p; }
@@ -747,32 +773,6 @@ export default function Preview() {
                   </div>
                 );
               })}
-              <div className="share-panel">
-                <div className="share-title">Save or Share These Results</div>
-                <div className="share-buttons">
-                  <button className="btn-share" onClick={handleSaveResults} disabled={saving || !!savedId}>
-                    {saving ? "Saving…" : savedId ? "✓ Saved" : "💾 Save Results"}
-                  </button>
-                  <button className="btn-share-email" onClick={() => { setShowEmailForm(f => !f); setEmailMsg(""); }}>
-                    ✉ Email Results
-                  </button>
-                </div>
-                {savedId && (
-                  <div className="share-url-row">
-                    <input className="share-url-input" readOnly value={`https://comicbundlefinder.com/results/${savedId}`} onClick={e => e.target.select()} />
-                    <button className="btn-copy" onClick={handleCopyLink}>{shareMsg === "Copied!" ? "✓ Copied" : "Copy Link"}</button>
-                  </div>
-                )}
-                {shareMsg && shareMsg !== "Copied!" && <span className="share-feedback">{shareMsg}</span>}
-                {showEmailForm && (
-                  <form className="email-form" onSubmit={handleEmailResults}>
-                    <input className="email-input" type="email" value={emailInput} onChange={e => setEmailInput(e.target.value)} placeholder="your@email.com" required autoFocus />
-                    <button className="btn-email-send" type="submit" disabled={emailing}>{emailing ? "Sending…" : "Send"}</button>
-                    <span style={{ width: "100%", fontSize: "0.72rem", color: "#888", fontWeight: 400, marginTop: "0.25rem" }}>Your email is used only to send your results and is not stored or used for marketing.</span>
-                  </form>
-                )}
-                {emailMsg && <span className="share-feedback" style={{ color: emailMsg.startsWith("Error") ? "#cc1f00" : "#003399" }}>{emailMsg}</span>}
-              </div>
               <div className="disclosure">Some links on this page may be affiliate links. A small commission may be earned if you purchase through these links, at no extra cost to you.</div>
             </>)}
           </div>
