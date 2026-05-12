@@ -117,7 +117,7 @@ async function searchEbay(token, issueName, maxPrice) {
     .replace(/%5D/g, "]").replace(/%2C/g, ",")
     .replace(/%3A/g, ":");
 
-  const url = `https://api.ebay.com/buy/browse/v1/item_summary/search?${params}&filter=${encodedFilter}`;
+  const url = `https://api.ebay.com/buy/browse/v1/item_summary/search?${params}&filter=${encodedFilter}&fieldgroups=EXTENDED`;
   const res = await fetch(url, {
     headers: {
       Authorization: `Bearer ${token}`,
@@ -155,6 +155,7 @@ async function searchEbay(token, issueName, maxPrice) {
       .join(" | ");
 
     const quantity = item.estimatedAvailabilities?.[0]?.estimatedAvailableQuantity ?? 1;
+    if (item.itemId === "v1|366397093177|0") console.log("[DEBUG] estimatedAvailabilities:", JSON.stringify(item.estimatedAvailabilities));
 
     results.push({ seller, price: priceStr, title, url: itemUrl, shipping, promotions, quantity });
   }
