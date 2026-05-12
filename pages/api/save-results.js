@@ -2,8 +2,9 @@
 import { put } from "@vercel/blob";
 
 function generateId() {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
-  return Array.from({ length: 8 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+  return Array.from({ length: 8 }, () =>
+    "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789"[Math.floor(Math.random() * 54)]
+  ).join("");
 }
 
 export const config = { api: { bodyParser: { sizeLimit: "4mb" } } };

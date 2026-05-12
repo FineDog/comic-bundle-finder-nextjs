@@ -5,8 +5,9 @@ import { put } from "@vercel/blob";
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 function generateId() {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
-  return Array.from({ length: 8 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+  return Array.from({ length: 8 }, () =>
+    "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789"[Math.floor(Math.random() * 54)]
+  ).join("");
 }
 
 function buildEmailHtml(rows, issueCount, resultsUrl) {
