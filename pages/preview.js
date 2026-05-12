@@ -395,6 +395,20 @@ export default function Preview() {
       finishProgress(true); setResults({ rows: data.results, issueCount: issues.length });
     } catch (err) { finishProgress(false); setStatus({ msg: `Error: ${err.message}. Try again in a moment.`, type: "error" }); }
   }
+  function copyText(text) {
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(text).catch(() => copyTextFallback(text));
+    } else {
+      copyTextFallback(text);
+    }
+  }
+  function copyTextFallback(text) {
+    const ta = document.createElement("textarea");
+    ta.value = text; ta.style.cssText = "position:fixed;opacity:0;top:0;left:0";
+    document.body.appendChild(ta); ta.focus(); ta.select();
+    document.execCommand("copy");
+    document.body.removeChild(ta);
+  }
   async function handleSaveResults() {
     setSaving(true); setShareMsg("");
     try {
@@ -403,15 +417,14 @@ export default function Preview() {
       if (!res.ok) throw new Error(data.error);
       setSavedId(data.id);
       const url = `https://comicbundlefinder.com/results/${data.id}`;
-      await navigator.clipboard?.writeText(url).catch(() => {});
+      copyText(url);
       setShareMsg("Link copied to clipboard!");
       setTimeout(() => setShareMsg(""), 3000);
     } catch (e) { setShareMsg(`Error: ${e.message}`); }
     setSaving(false);
   }
-  async function handleCopyLink() {
-    const url = `https://comicbundlefinder.com/results/${savedId}`;
-    await navigator.clipboard?.writeText(url).catch(() => {});
+  function handleCopyLink() {
+    copyText(`https://comicbundlefinder.com/results/${savedId}`);
     setShareMsg("Copied!"); setTimeout(() => setShareMsg(""), 2000);
   }
   async function handleEmailResults(e) {
