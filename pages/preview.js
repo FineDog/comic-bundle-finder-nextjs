@@ -768,6 +768,7 @@ export default function Preview() {
                   <form className="email-form" onSubmit={handleEmailResults}>
                     <input className="email-input" type="email" value={emailInput} onChange={e => setEmailInput(e.target.value)} placeholder="your@email.com" required autoFocus />
                     <button className="btn-email-send" type="submit" disabled={emailing}>{emailing ? "Sending…" : "Send"}</button>
+                    <span style={{ width: "100%", fontSize: "0.72rem", color: "#888", fontWeight: 400, marginTop: "0.25rem" }}>Your email is used only to send your results and is not stored or used for marketing.</span>
                   </form>
                 )}
                 {emailMsg && <span className="share-feedback" style={{ color: emailMsg.startsWith("Error") ? "#cc1f00" : "#003399" }}>{emailMsg}</span>}
