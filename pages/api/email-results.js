@@ -46,19 +46,19 @@ function buildEmailHtml(rows, issueCount, resultsUrl) {
   <div style="max-width:600px;margin:0 auto;padding:24px 16px">
 
     <div style="background:#cc1f00;padding:14px 24px;border:3px solid #1a1a1a;box-shadow:5px 5px 0 #1a1a1a;margin-bottom:0">
-      <div style="font-family:Impact,Arial,sans-serif;font-size:1.8rem;color:#fffdf4;letter-spacing:3px;line-height:1">COMIC BUNDLE FINDER</div>
-      <div style="font-size:0.78rem;color:#ffcccc;letter-spacing:1px;text-transform:uppercase;margin-top:2px">comicbundlefinder.com</div>
+      <div style="font-family:'Arial Black',Gadget,sans-serif;font-size:1.6rem;color:#fffdf4;letter-spacing:2px;line-height:1">COMIC BUNDLE FINDER</div>
+      <a href="https://comicbundlefinder.com" style="font-size:0.78rem;color:#ffe066;letter-spacing:1px;text-transform:uppercase;margin-top:2px;text-decoration:none;display:block">comicbundlefinder.com</a>
     </div>
 
     <div style="background:#fffdf4;border:3px solid #1a1a1a;border-top:none;padding:24px;box-shadow:5px 5px 0 #1a1a1a">
-      <h2 style="margin:0 0 8px;font-family:Impact,Arial,sans-serif;font-size:1.6rem;letter-spacing:2px;color:#003399">YOUR RESULTS ARE READY</h2>
+      <h2 style="margin:0 0 8px;font-family:'Arial Black',Gadget,sans-serif;font-size:1.4rem;letter-spacing:1px;color:#003399">YOUR RESULTS ARE READY</h2>
       <p style="margin:0 0 20px;color:#444;line-height:1.6;font-size:0.95rem">
         You searched for <strong>${issueCount} issue${issueCount === 1 ? "" : "s"}</strong> and found
         <strong>${bundleSellers.length} seller${bundleSellers.length === 1 ? "" : "s"}</strong> with bundle opportunities.
       </p>
 
       ${bundleSellers.length > 0 ? `
-      <h3 style="margin:0 0 10px;font-family:Impact,Arial,sans-serif;font-size:1.1rem;letter-spacing:1px;color:#1a1a1a;text-transform:uppercase">Top Bundle Sellers</h3>
+      <h3 style="margin:0 0 10px;font-family:'Arial Black',Gadget,sans-serif;font-size:1rem;letter-spacing:1px;color:#1a1a1a;text-transform:uppercase">Top Bundle Sellers</h3>
       <table style="width:100%;border-collapse:collapse;margin-bottom:8px;font-size:0.88rem">
         <thead>
           <tr style="background:#1a1a1a">
@@ -74,15 +74,28 @@ function buildEmailHtml(rows, issueCount, resultsUrl) {
       ` : `<p style="color:#666;font-style:italic">No bundle opportunities were found for this search.</p>`}
 
       <div style="text-align:center;margin:28px 0 20px">
-        <a href="${resultsUrl}" style="display:inline-block;background:#cc1f00;color:#fffdf4;text-decoration:none;padding:12px 36px;border:3px solid #1a1a1a;box-shadow:4px 4px 0 #1a1a1a;font-family:Impact,Arial,sans-serif;font-size:1.25rem;letter-spacing:2px">
+        <a href="${resultsUrl}" style="display:inline-block;background:#cc1f00;color:#fffdf4;text-decoration:none;padding:12px 36px;border:3px solid #1a1a1a;box-shadow:4px 4px 0 #1a1a1a;font-family:'Arial Black',Gadget,sans-serif;font-size:1.1rem;letter-spacing:2px">
           VIEW FULL RESULTS &rarr;
         </a>
       </div>
 
       <p style="margin:20px 0 0;color:#999;font-size:0.72rem;text-align:center;border-top:1px solid #d4c9a8;padding-top:14px;line-height:1.5">
-        This link will always take you back to your complete results on Comic Bundle Finder.<br>
         Some links in your results may be affiliate links — a small commission may be earned at no cost to you.
       </p>
+    </div>
+
+    <div style="background:#1a1a1a;border:3px solid #1a1a1a;box-shadow:5px 5px 0 #1a1a1a;padding:16px 24px;margin-top:0;text-align:center">
+      <p style="margin:0 0 8px;color:#fffdf4;font-size:0.78rem;line-height:1.6">
+        You received this email because you clicked &ldquo;Email Results&rdquo; on
+        <a href="https://comicbundlefinder.com" style="color:#ffe066;text-decoration:none">comicbundlefinder.com</a>.
+        Your email address is not stored or used for marketing.
+      </p>
+      <p style="margin:0 0 10px;color:#aaa;font-size:0.72rem">
+        Bugs or questions? <a href="mailto:hello@comicbundlefinder.com" style="color:#ffe066;text-decoration:none">hello@comicbundlefinder.com</a>
+      </p>
+      <a href="https://ko-fi.com/O4O31ZDFTF" style="display:inline-block;background:#003399;color:#fffdf4;text-decoration:none;padding:6px 16px;border:2px solid #ffe066;font-family:'Arial Black',Gadget,sans-serif;font-size:0.75rem;letter-spacing:1px">
+        ☕ SUPPORT ON KO-FI
+      </a>
     </div>
 
   </div>
