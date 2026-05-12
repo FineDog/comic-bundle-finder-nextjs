@@ -552,7 +552,7 @@ export default function Preview() {
       .listings-table td{padding:0.45rem 0.6rem;border-bottom:1px solid #d4c9a8;vertical-align:top;font-weight:400;overflow:hidden;text-overflow:ellipsis;word-break:break-word}
       .listings-table tr:last-child td{border-bottom:none}
       .listings-table tr:nth-child(even) td{background:#f8f3e3}
-      .col-issue{width:22%}.col-title{width:38%}.col-price{width:9%;text-align:right}.col-ship{width:11%;text-align:right}.col-promo{width:11%}.col-link{width:9%;text-align:center}
+      .col-issue{width:22%}.col-title{width:38%}.col-price{width:9%;text-align:right}.col-ship{width:11%;text-align:right}.col-promo{width:11%}.col-link{width:9%;text-align:center}.col-qty{width:8%;text-align:center}
       .listing-link{color:#cc1f00;font-weight:600;text-decoration:none;white-space:nowrap;font-size:0.8rem}
       .listing-link:hover{text-decoration:underline}
       .promo-pill{display:inline-block;background:#cc1f00;color:#fffdf4;font-size:0.65rem;font-weight:600;padding:1px 5px;letter-spacing:0.5px;text-transform:uppercase;line-height:1.6}
@@ -660,6 +660,7 @@ export default function Preview() {
                         <th className="col-price">Price</th>
                         <th className="col-ship">Shipping</th>
                         <th className="col-promo">Promo</th>
+                        {singleIssueMode && <th className="col-qty"># Avail</th>}
                         <th className="col-link">Link</th>
                       </tr></thead>
                       <tbody>
@@ -671,6 +672,7 @@ export default function Preview() {
                             <td className="col-price">${parseFloat(l.price).toFixed(2)}</td>
                             <td className="col-ship">{ship}</td>
                             <td className="col-promo">{l.promotions ? <span className="promo-pill">{l.promotions.split("|")[0].trim()}</span> : ""}</td>
+                            {singleIssueMode && <td className="col-qty">{l.quantity ?? 1}</td>}
                             <td className="col-link"><a className="listing-link" href={l.url} target="_blank" rel="noopener noreferrer">View →</a></td>
                           </tr>);
                         })}
