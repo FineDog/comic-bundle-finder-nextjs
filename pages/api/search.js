@@ -154,7 +154,9 @@ async function searchEbay(token, issueName, maxPrice) {
       .filter(Boolean)
       .join(" | ");
 
-    results.push({ seller, price: priceStr, title, url: itemUrl, shipping, promotions });
+    const quantity = item.estimatedAvailabilities?.[0]?.estimatedAvailableQuantity ?? 1;
+
+    results.push({ seller, price: priceStr, title, url: itemUrl, shipping, promotions, quantity });
   }
 
   return results;

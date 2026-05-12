@@ -385,14 +385,32 @@ export default function Preview() {
       finishProgress(true); setResults({ rows: data.results, issueCount: issues.length });
     } catch (err) { finishProgress(false); setStatus({ msg: `Error: ${err.message}. Try again in a moment.`, type: "error" }); }
   }
-  function groupResults(rows) {
+  function groupResults(rows, issueCount) {
     const s = {};
     for (const r of rows) { if (!s[r.seller]) s[r.seller] = { bundle_count: r.bundle_count, listings: [] }; s[r.seller].listings.push(r); }
-    for (const n of Object.keys(s)) { if (s[n].bundle_count < 2) delete s[n]; }
+    if (issueCount === 1) {
+      // Single-issue mode: seller qualifies if they have 2+ listings OR a listing with qty >= 2
+      for (const n of Object.keys(s)) {
+        const listingCount = s[n].listings.length;
+        const qty = s[n].listings[0]?.quantity ?? 1;
+        if (listingCount >= 2) {
+          s[n].bundle_count = listingCount;
+          s[n].singleIssueType = "listings";
+        } else if (qty >= 2) {
+          s[n].bundle_count = qty;
+          s[n].singleIssueType = "copies";
+        } else {
+          delete s[n];
+        }
+      }
+    } else {
+      for (const n of Object.keys(s)) { if (s[n].bundle_count < 2) delete s[n]; }
+    }
     return s;
   }
-  const sellers = results ? groupResults(results.rows) : {};
-  const sellerCount = results ? Object.keys(groupResults(results.rows)).length : 0;
+  const singleIssueMode = results?.issueCount === 1;
+  const sellers = results ? groupResults(results.rows, results.issueCount) : {};
+  const sellerCount = results ? Object.keys(sellers).length : 0;
   const totalSellers = results ? new Set(results.rows.map(r => r.seller)).size : 0;
 
   // ── Gap analyzer handlers ────────────────────────────────────────────
@@ -615,14 +633,14 @@ export default function Preview() {
         </div>
         {results && (
           <div className="panel">
-            <div className="results-title">{Object.keys(sellers).length === 0 ? "No Bundle Opportunities Found" : "Results — Sellers Ranked by Bundle Count"}</div>
-            {Object.keys(sellers).length === 0 ? (
-              <div className="no-results">No single seller carries more than one of your issues. You may need to buy these separately, or try broadening your search.</div>
+            <div className="results-title">{sellerCount === 0 ? "No Bundle Opportunities Found" : "Results — Sellers Ranked by Bundle Count"}</div>
+            {sellerCount === 0 ? (
+              <div className="no-results">{singleIssueMode ? "No seller has more than one listing for this issue. Try raising your max price, or check back later." : "No single seller carries more than one of your issues. You may need to buy these separately, or try broadening your search."}</div>
             ) : (<>
               <div className="stats-row">
-                <div className="stat-box"><div className="stat-number">{results.issueCount}</div><div className="stat-label">Issues Searched</div></div>
+                <div className="stat-box"><div className="stat-number">{results.issueCount}</div><div className="stat-label">{singleIssueMode ? "Issue Searched" : "Issues Searched"}</div></div>
                 <div className="stat-box"><div className="stat-number">{totalSellers}</div><div className="stat-label">Total Sellers Found</div></div>
-                <div className="stat-box"><div className="stat-number">{sellerCount}</div><div className="stat-label">Bundle Opportunities</div></div>
+                <div className="stat-box"><div className="stat-number">{sellerCount}</div><div className="stat-label">{singleIssueMode ? "Multi-Copy Sellers" : "Bundle Opportunities"}</div></div>
               </div>
               {Object.entries(sellers).map(([name, data]) => {
                 const cpi = {};
@@ -632,7 +650,7 @@ export default function Preview() {
                   <div className="seller-group" key={name}>
                     <div className="seller-header">
                       <span className="seller-name">{esc(name)}</span>
-                      <span className="bundle-badge">{data.bundle_count} issues — bundle shipping!</span>
+                      <span className="bundle-badge">{singleIssueMode ? `${data.bundle_count} ${data.singleIssueType === "copies" ? "copies available" : "listings"}` : `${data.bundle_count} issues`} — bundle shipping!</span>
                       <span className="subtotal-badge">from ${subtotal.toFixed(2)} in items</span>
                     </div>
                     <table className="listings-table">
