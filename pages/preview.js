@@ -330,6 +330,15 @@ export default function Preview() {
   const fileInputRef = useRef(null);
   const searchSource = useRef(null); // "manual"|"comicgeeks"|"clz"|"txt"|"gap_analyzer"
 
+  // Save / email state
+  const [savedId, setSavedId] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [shareMsg, setShareMsg] = useState("");
+  const [showEmailForm, setShowEmailForm] = useState(false);
+  const [emailInput, setEmailInput] = useState("");
+  const [emailMsg, setEmailMsg] = useState("");
+  const [emailing, setEmailing] = useState(false);
+
   // Gap analyzer tab state
   const [collectionMsg, setCollectionMsg] = useState("");
   const [collectionItems, setCollectionItems] = useState(null);
@@ -370,6 +379,7 @@ export default function Preview() {
     if (!issues.length) { setStatus({ msg: "Please enter at least one issue.", type: "error" }); return; }
     pendingMaxPrice.current = parseFloat(maxPrice) || 10;
     setStatus({ msg: "", type: "" }); setResults(null); setUploadMsg("");
+    setSavedId(null); setShareMsg(""); setShowEmailForm(false); setEmailMsg("");
     const source = searchSource.current || "manual";
     track("search_started", { source, issue_count: issues.length });
     searchSource.current = null;
@@ -384,6 +394,39 @@ export default function Preview() {
       track("search_completed", { issue_count: issues.length, bundle_count: bundleCount });
       finishProgress(true); setResults({ rows: data.results, issueCount: issues.length });
     } catch (err) { finishProgress(false); setStatus({ msg: `Error: ${err.message}. Try again in a moment.`, type: "error" }); }
+  }
+  async function handleSaveResults() {
+    setSaving(true); setShareMsg("");
+    try {
+      const res = await fetch("/api/save-results", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ rows: results.rows, issueCount: results.issueCount }) });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setSavedId(data.id);
+      const url = `https://comicbundlefinder.com/results/${data.id}`;
+      await navigator.clipboard?.writeText(url).catch(() => {});
+      setShareMsg("Link copied to clipboard!");
+      setTimeout(() => setShareMsg(""), 3000);
+    } catch (e) { setShareMsg(`Error: ${e.message}`); }
+    setSaving(false);
+  }
+  async function handleCopyLink() {
+    const url = `https://comicbundlefinder.com/results/${savedId}`;
+    await navigator.clipboard?.writeText(url).catch(() => {});
+    setShareMsg("Copied!"); setTimeout(() => setShareMsg(""), 2000);
+  }
+  async function handleEmailResults(e) {
+    e.preventDefault();
+    if (!emailInput.trim()) return;
+    setEmailing(true); setEmailMsg("");
+    try {
+      const res = await fetch("/api/email-results", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: emailInput, rows: results.rows, issueCount: results.issueCount, savedId }) });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      if (data.id && !savedId) setSavedId(data.id);
+      setEmailMsg("Sent! Check your inbox.");
+      setShowEmailForm(false);
+    } catch (e) { setEmailMsg(`Error: ${e.message}`); }
+    setEmailing(false);
   }
   function groupResults(rows, issueCount) {
     const s = {};
@@ -549,6 +592,27 @@ export default function Preview() {
       .promo-pill{display:inline-block;background:#cc1f00;color:#fffdf4;font-size:0.65rem;font-weight:600;padding:1px 5px;letter-spacing:0.5px;text-transform:uppercase;line-height:1.6}
       .no-results{text-align:center;padding:2rem;color:#666;font-size:0.95rem;font-weight:400}
       .disclosure{font-size:0.72rem;color:#888;text-align:center;font-weight:400;margin-top:1.25rem;line-height:1.5;border-top:1px solid #d4c9a8;padding-top:0.75rem}
+      .share-panel{border-top:2px solid #d4c9a8;margin-top:1.5rem;padding-top:1.25rem}
+      .share-title{font-family:'Bangers',cursive;font-size:1.4rem;letter-spacing:2px;color:#1a1a1a;margin-bottom:0.75rem}
+      .share-buttons{display:flex;gap:0.75rem;flex-wrap:wrap;margin-bottom:0.75rem}
+      .btn-share{background:#003399;color:#fffdf4;border:3px solid #1a1a1a;box-shadow:4px 4px 0 #1a1a1a;font-family:'Bangers',cursive;font-size:1.25rem;letter-spacing:2px;padding:0.2rem 1.25rem 0.3rem;cursor:pointer;transition:transform 0.08s,box-shadow 0.08s;white-space:nowrap}
+      .btn-share:hover{background:#0044cc}
+      .btn-share:active{transform:translate(3px,3px);box-shadow:1px 1px 0 #1a1a1a}
+      .btn-share:disabled{opacity:0.6;cursor:default;transform:none;box-shadow:4px 4px 0 #1a1a1a}
+      .btn-share-email{background:#fffdf4;color:#1a1a1a;border:3px solid #1a1a1a;box-shadow:4px 4px 0 #1a1a1a;font-family:'Bangers',cursive;font-size:1.25rem;letter-spacing:2px;padding:0.2rem 1.25rem 0.3rem;cursor:pointer;transition:transform 0.08s,box-shadow 0.08s;white-space:nowrap}
+      .btn-share-email:hover{background:#ffe066}
+      .btn-share-email:active{transform:translate(3px,3px);box-shadow:1px 1px 0 #1a1a1a}
+      .share-url-row{display:flex;gap:0.5rem;align-items:center;margin-bottom:0.5rem;flex-wrap:wrap}
+      .share-url-input{flex:1;min-width:220px;border:2px solid #003399;background:#f0f4ff;font-family:'Oswald',sans-serif;font-size:0.82rem;padding:0.3rem 0.6rem;color:#003399;font-weight:600;cursor:text}
+      .btn-copy{background:#ffe066;color:#1a1a1a;border:2px solid #1a1a1a;box-shadow:3px 3px 0 #1a1a1a;font-family:'Oswald',sans-serif;font-size:0.78rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:0.3rem 0.9rem;cursor:pointer;white-space:nowrap}
+      .btn-copy:hover{background:#ffd700}
+      .share-feedback{font-size:0.8rem;font-weight:600;color:#003399;letter-spacing:0.5px;display:block;margin-bottom:0.5rem}
+      .email-form{display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;margin-top:0.5rem}
+      .email-input{flex:1;min-width:200px;border:2px solid #1a1a1a;background:#fffdf4;font-family:'Oswald',sans-serif;font-size:0.88rem;padding:0.35rem 0.6rem;color:#1a1a1a}
+      .email-input:focus{outline:none;border-color:#003399;box-shadow:2px 2px 0 #003399}
+      .btn-email-send{background:#cc1f00;color:#fffdf4;border:3px solid #1a1a1a;box-shadow:3px 3px 0 #1a1a1a;font-family:'Bangers',cursive;font-size:1.2rem;letter-spacing:2px;padding:0.2rem 1.1rem 0.3rem;cursor:pointer;white-space:nowrap}
+      .btn-email-send:hover{background:#a81900}
+      .btn-email-send:disabled{opacity:0.6;cursor:default}
       .gap-upload-area{border:3px dashed #1a1a1a;background:#fffdf4;padding:2rem;text-align:center;margin-bottom:1.25rem;position:relative;transition:border-color 0.1s,background 0.1s}
       .gap-upload-area.dragging{border-color:#003399;background:#f0f4ff}
       .gap-upload-area p{font-size:0.88rem;font-weight:400;color:#555;margin-top:0.5rem}
@@ -670,6 +734,31 @@ export default function Preview() {
                   </div>
                 );
               })}
+              <div className="share-panel">
+                <div className="share-title">Save or Share These Results</div>
+                <div className="share-buttons">
+                  <button className="btn-share" onClick={handleSaveResults} disabled={saving || !!savedId}>
+                    {saving ? "Saving…" : savedId ? "✓ Saved" : "💾 Save Results"}
+                  </button>
+                  <button className="btn-share-email" onClick={() => { setShowEmailForm(f => !f); setEmailMsg(""); }}>
+                    ✉ Email Results
+                  </button>
+                </div>
+                {savedId && (
+                  <div className="share-url-row">
+                    <input className="share-url-input" readOnly value={`https://comicbundlefinder.com/results/${savedId}`} onClick={e => e.target.select()} />
+                    <button className="btn-copy" onClick={handleCopyLink}>{shareMsg === "Copied!" ? "✓ Copied" : "Copy Link"}</button>
+                  </div>
+                )}
+                {shareMsg && shareMsg !== "Copied!" && <span className="share-feedback">{shareMsg}</span>}
+                {showEmailForm && (
+                  <form className="email-form" onSubmit={handleEmailResults}>
+                    <input className="email-input" type="email" value={emailInput} onChange={e => setEmailInput(e.target.value)} placeholder="your@email.com" required autoFocus />
+                    <button className="btn-email-send" type="submit" disabled={emailing}>{emailing ? "Sending…" : "Send"}</button>
+                  </form>
+                )}
+                {emailMsg && <span className="share-feedback" style={{ color: emailMsg.startsWith("Error") ? "#cc1f00" : "#003399" }}>{emailMsg}</span>}
+              </div>
               <div className="disclosure">Some links on this page may be affiliate links. A small commission may be earned if you purchase through these links, at no extra cost to you.</div>
             </>)}
           </div>
