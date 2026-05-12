@@ -89,30 +89,37 @@ function buildEmailHtml(rows, issueCount, resultsUrl) {
 </html>`;
 }
 
+export const config = { api: { bodyParser: { sizeLimit: "4mb" } } };
+
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed." });
   const { email, rows, issueCount, savedId } = req.body;
   if (!email || !rows?.length) return res.status(400).json({ error: "Missing required fields." });
 
-  // Reuse existing saved blob or create a new one
-  let id = savedId;
-  if (!id) {
-    id = generateId();
-    await put(`results/${id}.json`, JSON.stringify({ rows, issueCount, savedAt: Date.now() }), {
-      access: "public",
-      addRandomSuffix: false,
-      contentType: "application/json",
+  try {
+    // Reuse existing saved blob or create a new one
+    let id = savedId;
+    if (!id) {
+      id = generateId();
+      await put(`results/${id}.json`, JSON.stringify({ rows, issueCount, savedAt: Date.now() }), {
+        access: "public",
+        addRandomSuffix: false,
+        contentType: "application/json",
+      });
+    }
+
+    const resultsUrl = `https://comicbundlefinder.com/results/${id}`;
+
+    await resend.emails.send({
+      from: "results@results.comicbundlefinder.com",
+      to: email,
+      subject: `Your Comic Bundle Finder Results — ${issueCount} issue${issueCount === 1 ? "" : "s"} searched`,
+      html: buildEmailHtml(rows, issueCount, resultsUrl),
     });
+
+    return res.status(200).json({ id });
+  } catch (e) {
+    console.error("[email-results]", e);
+    return res.status(500).json({ error: e.message || "Failed to send email." });
   }
-
-  const resultsUrl = `https://comicbundlefinder.com/results/${id}`;
-
-  await resend.emails.send({
-    from: "results@results.comicbundlefinder.com",
-    to: email,
-    subject: `Your Comic Bundle Finder Results — ${issueCount} issue${issueCount === 1 ? "" : "s"} searched`,
-    html: buildEmailHtml(rows, issueCount, resultsUrl),
-  });
-
-  return res.status(200).json({ id });
 }
