@@ -416,6 +416,7 @@ export default function Preview() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       setSavedId(data.id);
+      track("results_saved", { issue_count: results.issueCount });
       const url = `https://comicbundlefinder.com/results/${data.id}`;
       copyText(url);
       setShareMsg("Link copied to clipboard!");
@@ -436,6 +437,7 @@ export default function Preview() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       if (data.id && !savedId) setSavedId(data.id);
+      track("results_emailed", { issue_count: results.issueCount });
       setEmailMsg("Sent! Check your inbox.");
       setShowEmailForm(false);
     } catch (e) { setEmailMsg(`Error: ${e.message}`); }
