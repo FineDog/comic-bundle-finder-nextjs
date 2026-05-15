@@ -5,6 +5,7 @@ import Link from "next/link";
 const TOTAL_ISSUES = 442;
 const SERIES_TITLE = "The Amazing Spider-Man";
 const SERIES_SLUG = "amazing-spider-man-vol-1";
+const MAX_AUTO_SKIP = 30; // stop auto-advancing after 300 issues with no results
 
 function esc(s) { return String(s || ""); }
 
@@ -41,7 +42,9 @@ export default function AmazingSpiderManVol1() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [jumpInput, setJumpInput] = useState("");
+  const [scanning, setScanning] = useState(false);
   const abortRef = useRef(null);
+  const autoSkipCount = useRef(0);
 
   useEffect(() => {
     if (abortRef.current) abortRef.current.abort();
@@ -64,39 +67,63 @@ export default function AmazingSpiderManVol1() {
         if (err.name === "AbortError") return;
         setError(err.message);
         setLoading(false);
+        setScanning(false);
       });
 
     return () => controller.abort();
   }, [startIdx, batchSize]);
 
+  // Auto-advance past empty ranges when navigating forward.
   const maxPriceNum = parseFloat(maxPrice) || 10;
   const sellers = data ? groupResults(data.results, maxPriceNum) : {};
   const sellerCount = Object.keys(sellers).length;
-  const totalSellers = data ? new Set(data.results.map((r) => r.seller)).size : 0;
+  const hasNext = startIdx + batchSize < TOTAL_ISSUES;
 
-  // The issue range currently displayed (1-indexed for humans).
+  useEffect(() => {
+    if (loading || !data) return;
+    if (sellerCount > 0 || !hasNext) {
+      autoSkipCount.current = 0;
+      setScanning(false);
+      return;
+    }
+    if (autoSkipCount.current >= MAX_AUTO_SKIP) {
+      setScanning(false);
+      return;
+    }
+    autoSkipCount.current += 1;
+    setScanning(true);
+    setStartIdx((prev) => prev + batchSize);
+  }, [loading, data]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const totalSellers = data ? new Set(data.results.map((r) => r.seller)).size : 0;
   const displayStart = startIdx + 1;
   const displayEnd = data ? startIdx + data.issueCount : startIdx + batchSize;
+  const hasPrev = startIdx > 0;
+
+  // Sort sellers by bundle_count descending so the price filter can't reorder them.
+  const sortedSellers = Object.entries(sellers).sort(
+    (a, b) => b[1].bundle_count - a[1].bundle_count || a[0].localeCompare(b[0])
+  );
 
   function goNext() {
+    autoSkipCount.current = 0;
     const next = startIdx + batchSize;
     if (next < TOTAL_ISSUES) setStartIdx(next);
   }
   function goPrev() {
+    autoSkipCount.current = 0;
+    setScanning(false);
     setStartIdx(Math.max(0, startIdx - batchSize));
   }
   function handleJump(e) {
     e.preventDefault();
     const num = parseInt(jumpInput, 10);
     if (isNaN(num) || num < 1) return;
-    // Find the index of the closest issue with that number.
-    const idx = Math.max(0, Math.min(num - 1, TOTAL_ISSUES - 1));
-    setStartIdx(idx);
+    autoSkipCount.current = 0;
+    setScanning(false);
+    setStartIdx(Math.max(0, Math.min(num - 1, TOTAL_ISSUES - 1)));
     setJumpInput("");
   }
-
-  const hasPrev = startIdx > 0;
-  const hasNext = startIdx + batchSize < TOTAL_ISSUES;
 
   const pageTitle = `Amazing Spider-Man Vol. 1 — eBay Bundle Deals | Comic Bundle Finder`;
   const metaDescription = `Find the best eBay bundle deals for The Amazing Spider-Man Vol. 1 (1963–1998). Browse all 442 issues and find sellers carrying multiple issues you need — save big on combined shipping. Results updated daily.`;
@@ -121,10 +148,11 @@ export default function AmazingSpiderManVol1() {
         body{background-color:#f0e6c4;background-image:radial-gradient(circle,#c8b98a 1px,transparent 1px);background-size:10px 10px;font-family:'Oswald',sans-serif;color:#1a1a1a;min-height:100vh;padding:2rem 1rem 4rem}
         .container{max-width:960px;margin:0 auto}
         .panel{background:#fffdf4;border:3px solid #1a1a1a;box-shadow:6px 6px 0 #1a1a1a;padding:1.5rem 1.75rem;margin-bottom:1.75rem}
+        .panel-nav{background:#fffdf4;border:3px solid #1a1a1a;box-shadow:4px 4px 0 #1a1a1a;padding:0.6rem 1.25rem;margin-bottom:1.75rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem}
         .title-panel{background:#cc1f00;text-align:center;padding:1.25rem 1.75rem 1rem}
         .title-panel h1{font-family:'Bangers',cursive;font-size:clamp(2rem,7vw,4rem);color:#fffdf4;letter-spacing:4px;text-shadow:4px 4px 0 #1a1a1a;line-height:1}
         .series-sub{color:#ffe066;font-size:0.85rem;letter-spacing:2px;text-transform:uppercase;margin-top:0.4rem;font-weight:400}
-        .back-link{display:inline-block;font-size:0.78rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#003399;text-decoration:none;margin-bottom:1.25rem}
+        .back-link{font-size:0.78rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#003399;text-decoration:none}
         .back-link:hover{text-decoration:underline}
         .caption{display:inline-block;background:#ffe066;border:2px solid #1a1a1a;padding:0.3rem 0.7rem;font-size:0.8rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:1rem}
         .updated-badge{display:inline-block;background:#003399;color:#fffdf4;border:2px solid #1a1a1a;padding:0.25rem 0.7rem;font-size:0.72rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-left:0.75rem;vertical-align:middle}
@@ -152,6 +180,7 @@ export default function AmazingSpiderManVol1() {
         .price-input:focus{outline:none;border-color:#003399;box-shadow:2px 2px 0 #003399}
         .hint{font-size:0.78rem;color:#666;font-weight:400}
         .loading-state{text-align:center;padding:3rem 1rem;color:#003399;font-family:'Bangers',cursive;font-size:1.8rem;letter-spacing:3px}
+        .loading-sub{font-family:'Oswald',sans-serif;font-size:0.82rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#666;margin-top:0.75rem}
         .loading-dots::after{content:'…';animation:dots 1.2s steps(3,end) infinite}
         @keyframes dots{0%,100%{content:'.'}33%{content:'..'}66%{content:'...'}}
         .error-state{text-align:center;padding:2rem;color:#cc1f00;font-weight:600}
@@ -182,15 +211,15 @@ export default function AmazingSpiderManVol1() {
       `}</style>
 
       <div className="container">
-        {/* Header */}
         <div className="panel title-panel">
           <h1>{SERIES_TITLE}</h1>
           <div className="series-sub">Vol. 1 &middot; 1963–1998 &middot; 442 issues &middot; eBay Bundle Deals</div>
         </div>
 
-        <Link href="/" className="back-link">← Back to Comic Bundle Finder</Link>
+        <div className="panel-nav">
+          <Link href="/" className="back-link">← Back to Comic Bundle Finder</Link>
+        </div>
 
-        {/* SEO / intro blurb */}
         <div className="panel">
           <p className="seo-blurb">
             Find the best eBay bundle deals for <strong>The Amazing Spider-Man Vol. 1</strong> —
@@ -200,7 +229,6 @@ export default function AmazingSpiderManVol1() {
           </p>
         </div>
 
-        {/* Controls */}
         <div className="panel">
           <div className="controls-row">
             <div className="range-label">
@@ -259,24 +287,28 @@ export default function AmazingSpiderManVol1() {
           </div>
         </div>
 
-        {/* Results */}
         <div className="panel">
-          {loading && (
+          {(loading || scanning) && (
             <div className="loading-state">
-              <span className="loading-dots">Searching eBay</span>
+              <div><span className="loading-dots">Searching eBay</span></div>
+              {scanning && (
+                <div className="loading-sub">
+                  No bundles in issues {displayStart}–{displayEnd} — scanning ahead…
+                </div>
+              )}
             </div>
           )}
 
-          {!loading && error && (
+          {!loading && !scanning && error && (
             <div className="error-state">Error: {error}. Try refreshing the page.</div>
           )}
 
-          {!loading && !error && data && (
+          {!loading && !scanning && !error && data && (
             <>
               <div className="results-title">
                 {sellerCount === 0
                   ? "No Bundle Opportunities Found"
-                  : `Bundle Deals — Sellers Ranked by Issues Carried`}
+                  : "Bundle Deals — Sellers Ranked by Issues Carried"}
               </div>
 
               {sellerCount === 0 ? (
@@ -301,7 +333,7 @@ export default function AmazingSpiderManVol1() {
                     </div>
                   </div>
 
-                  {Object.entries(sellers).map(([name, sellerData]) => {
+                  {sortedSellers.map(([name, sellerData]) => {
                     const cpi = {};
                     for (const l of sellerData.listings) {
                       const p = parseFloat(l.price) || 0;
@@ -374,8 +406,7 @@ export default function AmazingSpiderManVol1() {
           )}
         </div>
 
-        {/* Bottom navigation */}
-        {!loading && data && (
+        {!loading && !scanning && data && (
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "1.75rem" }}>
             <button className="btn-nav" onClick={goPrev} disabled={!hasPrev}>← Prev</button>
             <span style={{ fontFamily: "'Bangers', cursive", fontSize: "1.2rem", letterSpacing: "1px", alignSelf: "center" }}>
@@ -385,12 +416,28 @@ export default function AmazingSpiderManVol1() {
           </div>
         )}
 
-        {/* Footer */}
         <div className="panel" style={{ textAlign: "center", fontSize: "0.8rem", fontWeight: 400, color: "#666", padding: "0.85rem 1.75rem" }}>
           Bugs? Feature requests? Email us at{" "}
           <a href="mailto:hello@comicbundlefinder.com" style={{ color: "#003399", fontWeight: 600 }}>
             hello@comicbundlefinder.com
           </a>
+          <div style={{ marginTop: "0.75rem" }}>
+            <a
+              href="https://ko-fi.com/O4O31ZDFTF"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: "inline-flex", alignItems: "center", gap: "0.5rem",
+                background: "#003399", color: "#fffdf4",
+                border: "2px solid #1a1a1a", boxShadow: "3px 3px 0 #1a1a1a",
+                fontFamily: "'Oswald', sans-serif", fontWeight: 600,
+                fontSize: "0.82rem", letterSpacing: "1px", textTransform: "uppercase",
+                padding: "0.35rem 1rem", textDecoration: "none",
+              }}
+            >
+              ☕ Support me on Ko-fi
+            </a>
+          </div>
         </div>
       </div>
     </>
