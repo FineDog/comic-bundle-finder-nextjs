@@ -1,0 +1,43 @@
+# Refreshes the per-issue eBay cache for all series pages nightly.
+# Calls the refresh API in 6 paginated batches (80 issues each) so each
+# individual request stays well within Vercel's 60-second function timeout.
+#
+# Required GitHub secrets:
+#   REFRESH_SECRET  — matches the REFRESH_SECRET env var set in Vercel
+#   SITE_URL        — e.g. https://www.comicbundlefinder.com (no trailing slash)
+
+name: Refresh Series Cache
+
+on:
+  schedule:
+    - cron: "0 6 * * *"   # 6:00 AM UTC daily (2 AM Eastern)
+  workflow_dispatch:        # allow manual trigger from GitHub UI
+
+jobs:
+  refresh-asm-vol1:
+    runs-on: ubuntu-latest
+    name: Amazing Spider-Man Vol. 1
+    steps:
+      - name: Issues 1–80
+        run: |
+          curl -sf "${{ secrets.SITE_URL }}/api/series/asm-vol1/refresh?start=0&count=80&secret=${{ secrets.REFRESH_SECRET }}"
+
+      - name: Issues 81–160
+        run: |
+          curl -sf "${{ secrets.SITE_URL }}/api/series/asm-vol1/refresh?start=80&count=80&secret=${{ secrets.REFRESH_SECRET }}"
+
+      - name: Issues 161–240
+        run: |
+          curl -sf "${{ secrets.SITE_URL }}/api/series/asm-vol1/refresh?start=160&count=80&secret=${{ secrets.REFRESH_SECRET }}"
+
+      - name: Issues 241–320
+        run: |
+          curl -sf "${{ secrets.SITE_URL }}/api/series/asm-vol1/refresh?start=240&count=80&secret=${{ secrets.REFRESH_SECRET }}"
+
+      - name: Issues 321–400
+        run: |
+          curl -sf "${{ secrets.SITE_URL }}/api/series/asm-vol1/refresh?start=320&count=80&secret=${{ secrets.REFRESH_SECRET }}"
+
+      - name: Issues 401–442
+        run: |
+          curl -sf "${{ secrets.SITE_URL }}/api/series/asm-vol1/refresh?start=400&count=80&secret=${{ secrets.REFRESH_SECRET }}"
