@@ -161,6 +161,7 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
         <meta property="og:description" content={metaDescription} />
         <meta property="og:type" content="website" />
         <meta property="og:url" content={`https://www.comicbundlefinder.com/series/${slug}`} />
+        <meta property="og:image" content="https://www.comicbundlefinder.com/preview.png" />
         <meta name="robots" content="index, follow" />
         <link rel="canonical" href={`https://www.comicbundlefinder.com/series/${slug}`} />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
