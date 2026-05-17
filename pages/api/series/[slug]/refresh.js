@@ -1,13 +1,14 @@
-// GET /api/series/asm-vol1/refresh?start=0&count=80&secret=REFRESH_SECRET
+// GET /api/series/[slug]/refresh?start=0&count=80&secret=REFRESH_SECRET
 //
-// Refreshes Vercel Blob cache for a slice of ASM Vol. 1 issues by fetching
+// Refreshes Vercel Blob cache for a slice of any registered series by fetching
 // fresh eBay results. Called nightly by GitHub Actions in paginated batches.
 
+import fs from "fs";
+import path from "path";
 import { put } from "@vercel/blob";
 import { getEbayToken, searchEbay } from "../../../../lib/ebay";
-import allIssues from "../../../../data/asm-vol1-issues.json";
+import { getSeriesConfig } from "../../../../lib/series-config";
 
-const BLOB_PREFIX = "series/asm-vol1/issue-";
 const CACHE_MAX_PRICE = 30;
 const CONCURRENCY = 8;
 
@@ -16,10 +17,18 @@ export const config = { maxDuration: 60 };
 export default async function handler(req, res) {
   if (req.method !== "GET") return res.status(405).json({ error: "Method not allowed." });
 
+  const { slug } = req.query;
+  const seriesConfig = getSeriesConfig(slug);
+  if (!seriesConfig) return res.status(404).json({ error: `Series "${slug}" not found.` });
+
   const secret = process.env.REFRESH_SECRET;
   if (secret && req.query.secret !== secret) {
     return res.status(401).json({ error: "Unauthorized." });
   }
+
+  const allIssues = JSON.parse(
+    fs.readFileSync(path.join(process.cwd(), "data", seriesConfig.dataFile), "utf-8")
+  );
 
   const startIdx = Math.max(0, parseInt(req.query.start || "0", 10));
   const count = Math.min(100, Math.max(1, parseInt(req.query.count || "80", 10)));
@@ -50,7 +59,7 @@ export default async function handler(req, res) {
     await Promise.all(
       batch.map((issue, j) =>
         put(
-          `${BLOB_PREFIX}${issue.number}.json`,
+          `${seriesConfig.blobPrefix}${issue.number}.json`,
           JSON.stringify({ issueName: issue.issueName, listings: listings[j] }),
           { access: "public", addRandomSuffix: false, contentType: "application/json" }
         ).then(() => { refreshed++; }).catch((e) => {

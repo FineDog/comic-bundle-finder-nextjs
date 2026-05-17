@@ -1,0 +1,2288 @@
+[
+  {
+    "number": "-1",
+    "issueName": "Daredevil #-1 (1997)",
+    "coverDate": "1997-07-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/26/dd-v1--1.jpg"
+  },
+  {
+    "number": "1",
+    "issueName": "Daredevil #1 (1964)",
+    "coverDate": "1964-04-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/24/dd-v1-1.jpg"
+  },
+  {
+    "number": "2",
+    "issueName": "Daredevil #2 (1964)",
+    "coverDate": "1964-06-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/24/dd-v1-2.jpg"
+  },
+  {
+    "number": "3",
+    "issueName": "Daredevil #3 (1964)",
+    "coverDate": "1964-08-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/24/dd-v1-3.jpg"
+  },
+  {
+    "number": "4",
+    "issueName": "Daredevil #4 (1964)",
+    "coverDate": "1964-10-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/24/dd-v1-4.jpg"
+  },
+  {
+    "number": "5",
+    "issueName": "Daredevil #5 (1964)",
+    "coverDate": "1964-12-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/24/dd-v1-5.jpg"
+  },
+  {
+    "number": "6",
+    "issueName": "Daredevil #6 (1965)",
+    "coverDate": "1965-02-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/24/dd-v1-6.jpg"
+  },
+  {
+    "number": "7",
+    "issueName": "Daredevil #7 (1965)",
+    "coverDate": "1965-04-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/24/dd-v1-7.jpg"
+  },
+  {
+    "number": "8",
+    "issueName": "Daredevil #8 (1965)",
+    "coverDate": "1965-06-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/24/dd-v1-8.jpg"
+  },
+  {
+    "number": "9",
+    "issueName": "Daredevil #9 (1965)",
+    "coverDate": "1965-08-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/24/dd-v1-9.jpg"
+  },
+  {
+    "number": "10",
+    "issueName": "Daredevil #10 (1965)",
+    "coverDate": "1965-10-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/24/dd-v1-10.jpg"
+  },
+  {
+    "number": "11",
+    "issueName": "Daredevil #11 (1965)",
+    "coverDate": "1965-12-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/24/dd-v1-11.jpg"
+  },
+  {
+    "number": "12",
+    "issueName": "Daredevil #12 (1966)",
+    "coverDate": "1966-01-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/24/dd-v1-12.jpg"
+  },
+  {
+    "number": "13",
+    "issueName": "Daredevil #13 (1966)",
+    "coverDate": "1966-02-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/24/dd-v1-13.jpg"
+  },
+  {
+    "number": "14",
+    "issueName": "Daredevil #14 (1966)",
+    "coverDate": "1966-03-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/24/dd-v1-14.jpg"
+  },
+  {
+    "number": "15",
+    "issueName": "Daredevil #15 (1966)",
+    "coverDate": "1966-04-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/24/dd-v1-15.jpg"
+  },
+  {
+    "number": "16",
+    "issueName": "Daredevil #16 (1966)",
+    "coverDate": "1966-05-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/24/dd-v1-16.jpg"
+  },
+  {
+    "number": "17",
+    "issueName": "Daredevil #17 (1966)",
+    "coverDate": "1966-06-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/24/dd-v1-17.jpg"
+  },
+  {
+    "number": "18",
+    "issueName": "Daredevil #18 (1966)",
+    "coverDate": "1966-07-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/24/dd-v1-18.jpg"
+  },
+  {
+    "number": "19",
+    "issueName": "Daredevil #19 (1966)",
+    "coverDate": "1966-08-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/24/dd-v1-19.jpg"
+  },
+  {
+    "number": "20",
+    "issueName": "Daredevil #20 (1966)",
+    "coverDate": "1966-09-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/24/dd-v1-20.jpg"
+  },
+  {
+    "number": "21",
+    "issueName": "Daredevil #21 (1966)",
+    "coverDate": "1966-10-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/24/dd-v1-21.jpg"
+  },
+  {
+    "number": "22",
+    "issueName": "Daredevil #22 (1966)",
+    "coverDate": "1966-11-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/24/dd-v1-22.jpg"
+  },
+  {
+    "number": "23",
+    "issueName": "Daredevil #23 (1966)",
+    "coverDate": "1966-12-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/24/dd-v1-23.jpg"
+  },
+  {
+    "number": "24",
+    "issueName": "Daredevil #24 (1967)",
+    "coverDate": "1967-01-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/24/dd-v1-24.jpg"
+  },
+  {
+    "number": "25",
+    "issueName": "Daredevil #25 (1967)",
+    "coverDate": "1967-02-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/24/dd-v1-25.jpg"
+  },
+  {
+    "number": "26",
+    "issueName": "Daredevil #26 (1967)",
+    "coverDate": "1967-03-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/24/dd-v1-26.jpg"
+  },
+  {
+    "number": "27",
+    "issueName": "Daredevil #27 (1967)",
+    "coverDate": "1967-04-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/24/dd-v1-27.jpg"
+  },
+  {
+    "number": "28",
+    "issueName": "Daredevil #28 (1967)",
+    "coverDate": "1967-05-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/24/dd-v1-28.jpg"
+  },
+  {
+    "number": "29",
+    "issueName": "Daredevil #29 (1967)",
+    "coverDate": "1967-06-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/24/dd-v1-29.jpg"
+  },
+  {
+    "number": "30",
+    "issueName": "Daredevil #30 (1967)",
+    "coverDate": "1967-07-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/24/dd-v1-30.jpg"
+  },
+  {
+    "number": "31",
+    "issueName": "Daredevil #31 (1967)",
+    "coverDate": "1967-08-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/24/dd-v1-31.jpg"
+  },
+  {
+    "number": "32",
+    "issueName": "Daredevil #32 (1967)",
+    "coverDate": "1967-09-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/24/dd-v1-32.jpg"
+  },
+  {
+    "number": "33",
+    "issueName": "Daredevil #33 (1967)",
+    "coverDate": "1967-10-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/24/dd-v1-33.jpg"
+  },
+  {
+    "number": "34",
+    "issueName": "Daredevil #34 (1967)",
+    "coverDate": "1967-11-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/24/dd-v1-34.jpg"
+  },
+  {
+    "number": "35",
+    "issueName": "Daredevil #35 (1967)",
+    "coverDate": "1967-12-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/24/dd-v1-35.jpg"
+  },
+  {
+    "number": "36",
+    "issueName": "Daredevil #36 (1968)",
+    "coverDate": "1968-01-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/24/dd-v1-36.jpg"
+  },
+  {
+    "number": "37",
+    "issueName": "Daredevil #37 (1968)",
+    "coverDate": "1968-02-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/24/dd-v1-37.jpg"
+  },
+  {
+    "number": "38",
+    "issueName": "Daredevil #38 (1968)",
+    "coverDate": "1968-03-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/24/dd-v1-38.jpg"
+  },
+  {
+    "number": "39",
+    "issueName": "Daredevil #39 (1968)",
+    "coverDate": "1968-04-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/24/dd-v1-39.jpg"
+  },
+  {
+    "number": "40",
+    "issueName": "Daredevil #40 (1968)",
+    "coverDate": "1968-05-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/24/dd-v1-40.jpg"
+  },
+  {
+    "number": "41",
+    "issueName": "Daredevil #41 (1968)",
+    "coverDate": "1968-06-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/24/dd-v1-41.jpg"
+  },
+  {
+    "number": "42",
+    "issueName": "Daredevil #42 (1968)",
+    "coverDate": "1968-07-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/24/dd-v1-42.jpg"
+  },
+  {
+    "number": "43",
+    "issueName": "Daredevil #43 (1968)",
+    "coverDate": "1968-08-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/24/dd-v1-43.jpg"
+  },
+  {
+    "number": "44",
+    "issueName": "Daredevil #44 (1968)",
+    "coverDate": "1968-09-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/24/dd-v1-44.jpg"
+  },
+  {
+    "number": "45",
+    "issueName": "Daredevil #45 (1968)",
+    "coverDate": "1968-10-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/24/dd-v1-45.jpg"
+  },
+  {
+    "number": "46",
+    "issueName": "Daredevil #46 (1968)",
+    "coverDate": "1968-11-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/24/dd-v1-46.jpg"
+  },
+  {
+    "number": "47",
+    "issueName": "Daredevil #47 (1968)",
+    "coverDate": "1968-12-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/24/dd-v1-47.jpg"
+  },
+  {
+    "number": "48",
+    "issueName": "Daredevil #48 (1969)",
+    "coverDate": "1969-01-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/24/dd-v1-48.jpg"
+  },
+  {
+    "number": "49",
+    "issueName": "Daredevil #49 (1969)",
+    "coverDate": "1969-02-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/24/dd-v1-49.jpg"
+  },
+  {
+    "number": "50",
+    "issueName": "Daredevil #50 (1969)",
+    "coverDate": "1969-03-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/24/dd-v1-50.jpg"
+  },
+  {
+    "number": "51",
+    "issueName": "Daredevil #51 (1969)",
+    "coverDate": "1969-04-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/24/dd-v1-51.jpg"
+  },
+  {
+    "number": "52",
+    "issueName": "Daredevil #52 (1969)",
+    "coverDate": "1969-05-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/24/dd-v1-52.jpg"
+  },
+  {
+    "number": "53",
+    "issueName": "Daredevil #53 (1969)",
+    "coverDate": "1969-06-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/25/dd-v1-53.jpg"
+  },
+  {
+    "number": "54",
+    "issueName": "Daredevil #54 (1969)",
+    "coverDate": "1969-07-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/25/dd-v1-54.jpg"
+  },
+  {
+    "number": "55",
+    "issueName": "Daredevil #55 (1969)",
+    "coverDate": "1969-08-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/25/dd-v1-55.jpg"
+  },
+  {
+    "number": "56",
+    "issueName": "Daredevil #56 (1969)",
+    "coverDate": "1969-09-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/25/dd-v1-56.jpg"
+  },
+  {
+    "number": "57",
+    "issueName": "Daredevil #57 (1969)",
+    "coverDate": "1969-10-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/25/dd-v1-57.jpg"
+  },
+  {
+    "number": "58",
+    "issueName": "Daredevil #58 (1969)",
+    "coverDate": "1969-11-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/25/dd-v1-58.jpg"
+  },
+  {
+    "number": "59",
+    "issueName": "Daredevil #59 (1969)",
+    "coverDate": "1969-12-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/25/dd-v1-59.jpg"
+  },
+  {
+    "number": "60",
+    "issueName": "Daredevil #60 (1970)",
+    "coverDate": "1970-01-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/25/dd-v1-60.jpg"
+  },
+  {
+    "number": "61",
+    "issueName": "Daredevil #61 (1970)",
+    "coverDate": "1970-02-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/25/dd-v1-61.jpg"
+  },
+  {
+    "number": "62",
+    "issueName": "Daredevil #62 (1970)",
+    "coverDate": "1970-03-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/25/dd-v1-62.jpg"
+  },
+  {
+    "number": "63",
+    "issueName": "Daredevil #63 (1970)",
+    "coverDate": "1970-04-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/25/dd-v1-63.jpg"
+  },
+  {
+    "number": "64",
+    "issueName": "Daredevil #64 (1970)",
+    "coverDate": "1970-05-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/25/dd-v1-64.jpg"
+  },
+  {
+    "number": "65",
+    "issueName": "Daredevil #65 (1970)",
+    "coverDate": "1970-06-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/25/dd-v1-65.jpg"
+  },
+  {
+    "number": "66",
+    "issueName": "Daredevil #66 (1970)",
+    "coverDate": "1970-07-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/25/dd-v1-66.jpg"
+  },
+  {
+    "number": "67",
+    "issueName": "Daredevil #67 (1970)",
+    "coverDate": "1970-08-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/25/dd-v1-67.jpg"
+  },
+  {
+    "number": "68",
+    "issueName": "Daredevil #68 (1970)",
+    "coverDate": "1970-09-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/25/dd-v1-68.jpg"
+  },
+  {
+    "number": "69",
+    "issueName": "Daredevil #69 (1970)",
+    "coverDate": "1970-10-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/25/dd-v1-69.jpg"
+  },
+  {
+    "number": "70",
+    "issueName": "Daredevil #70 (1970)",
+    "coverDate": "1970-11-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/25/dd-v1-70.jpg"
+  },
+  {
+    "number": "71",
+    "issueName": "Daredevil #71 (1970)",
+    "coverDate": "1970-12-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/25/dd-v1-71.jpg"
+  },
+  {
+    "number": "72",
+    "issueName": "Daredevil #72 (1971)",
+    "coverDate": "1971-01-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/25/dd-v1-72.jpg"
+  },
+  {
+    "number": "73",
+    "issueName": "Daredevil #73 (1971)",
+    "coverDate": "1971-02-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/25/dd-v1-73.jpg"
+  },
+  {
+    "number": "74",
+    "issueName": "Daredevil #74 (1971)",
+    "coverDate": "1971-03-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/25/dd-v1-74.jpg"
+  },
+  {
+    "number": "75",
+    "issueName": "Daredevil #75 (1971)",
+    "coverDate": "1971-04-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/25/dd-v1-75.jpg"
+  },
+  {
+    "number": "76",
+    "issueName": "Daredevil #76 (1971)",
+    "coverDate": "1971-05-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/25/dd-v1-76.jpg"
+  },
+  {
+    "number": "77",
+    "issueName": "Daredevil #77 (1971)",
+    "coverDate": "1971-06-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/25/dd-v1-77.jpg"
+  },
+  {
+    "number": "78",
+    "issueName": "Daredevil #78 (1971)",
+    "coverDate": "1971-07-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/25/dd-v1-78.jpg"
+  },
+  {
+    "number": "79",
+    "issueName": "Daredevil #79 (1971)",
+    "coverDate": "1971-08-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/25/dd-v1-79.jpg"
+  },
+  {
+    "number": "80",
+    "issueName": "Daredevil #80 (1971)",
+    "coverDate": "1971-09-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/25/dd-v1-80.jpg"
+  },
+  {
+    "number": "81",
+    "issueName": "Daredevil #81 (1971)",
+    "coverDate": "1971-11-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/25/dd-v1-81.jpg"
+  },
+  {
+    "number": "82",
+    "issueName": "Daredevil #82 (1971)",
+    "coverDate": "1971-12-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/25/dd-v1-82.jpg"
+  },
+  {
+    "number": "83",
+    "issueName": "Daredevil #83 (1972)",
+    "coverDate": "1972-01-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/25/dd-v1-83.jpg"
+  },
+  {
+    "number": "84",
+    "issueName": "Daredevil #84 (1972)",
+    "coverDate": "1972-02-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/25/dd-v1-84.jpg"
+  },
+  {
+    "number": "85",
+    "issueName": "Daredevil #85 (1972)",
+    "coverDate": "1972-03-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/25/dd-v1-85.jpg"
+  },
+  {
+    "number": "86",
+    "issueName": "Daredevil #86 (1972)",
+    "coverDate": "1972-04-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/25/dd-v1-86.jpg"
+  },
+  {
+    "number": "87",
+    "issueName": "Daredevil #87 (1972)",
+    "coverDate": "1972-05-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/25/dd-v1-87.jpg"
+  },
+  {
+    "number": "88",
+    "issueName": "Daredevil #88 (1972)",
+    "coverDate": "1972-06-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/25/dd-v1-88.jpg"
+  },
+  {
+    "number": "89",
+    "issueName": "Daredevil #89 (1972)",
+    "coverDate": "1972-07-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/26/dd-v1-89.jpg"
+  },
+  {
+    "number": "90",
+    "issueName": "Daredevil #90 (1972)",
+    "coverDate": "1972-08-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/26/dd-v1-90.jpg"
+  },
+  {
+    "number": "91",
+    "issueName": "Daredevil #91 (1972)",
+    "coverDate": "1972-09-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/26/dd-v1-91.jpg"
+  },
+  {
+    "number": "92",
+    "issueName": "Daredevil #92 (1972)",
+    "coverDate": "1972-10-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/26/dd-v1-92.jpg"
+  },
+  {
+    "number": "93",
+    "issueName": "Daredevil #93 (1972)",
+    "coverDate": "1972-11-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/26/dd-v1-93.jpg"
+  },
+  {
+    "number": "94",
+    "issueName": "Daredevil #94 (1972)",
+    "coverDate": "1972-12-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/26/dd-v1-94.jpg"
+  },
+  {
+    "number": "95",
+    "issueName": "Daredevil #95 (1973)",
+    "coverDate": "1973-01-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/26/dd-v1-95.jpg"
+  },
+  {
+    "number": "96",
+    "issueName": "Daredevil #96 (1973)",
+    "coverDate": "1973-02-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/26/dd-v1-96.jpg"
+  },
+  {
+    "number": "97",
+    "issueName": "Daredevil #97 (1973)",
+    "coverDate": "1973-03-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/26/dd-v1-97.jpg"
+  },
+  {
+    "number": "98",
+    "issueName": "Daredevil #98 (1973)",
+    "coverDate": "1973-04-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/26/dd-v1-98.jpg"
+  },
+  {
+    "number": "99",
+    "issueName": "Daredevil #99 (1973)",
+    "coverDate": "1973-05-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/26/dd-v1-99.jpg"
+  },
+  {
+    "number": "100",
+    "issueName": "Daredevil #100 (1973)",
+    "coverDate": "1973-06-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/26/dd-v1-100.jpg"
+  },
+  {
+    "number": "101",
+    "issueName": "Daredevil #101 (1973)",
+    "coverDate": "1973-07-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/26/dd-v1-101.jpg"
+  },
+  {
+    "number": "102",
+    "issueName": "Daredevil #102 (1973)",
+    "coverDate": "1973-08-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/26/dd-v1-102.jpg"
+  },
+  {
+    "number": "103",
+    "issueName": "Daredevil #103 (1973)",
+    "coverDate": "1973-09-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/26/dd-v1-103.jpg"
+  },
+  {
+    "number": "104",
+    "issueName": "Daredevil #104 (1973)",
+    "coverDate": "1973-10-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/26/dd-v1-104.jpg"
+  },
+  {
+    "number": "105",
+    "issueName": "Daredevil #105 (1973)",
+    "coverDate": "1973-11-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/26/dd-v1-105.jpg"
+  },
+  {
+    "number": "106",
+    "issueName": "Daredevil #106 (1973)",
+    "coverDate": "1973-12-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/26/dd-v1-106.jpg"
+  },
+  {
+    "number": "107",
+    "issueName": "Daredevil #107 (1974)",
+    "coverDate": "1974-01-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/26/dd-v1-107.jpg"
+  },
+  {
+    "number": "108",
+    "issueName": "Daredevil #108 (1974)",
+    "coverDate": "1974-03-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/26/dd-v1-108.jpg"
+  },
+  {
+    "number": "109",
+    "issueName": "Daredevil #109 (1974)",
+    "coverDate": "1974-05-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/26/dd-v1-109.jpg"
+  },
+  {
+    "number": "110",
+    "issueName": "Daredevil #110 (1974)",
+    "coverDate": "1974-06-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/26/dd-v1-110.jpg"
+  },
+  {
+    "number": "111",
+    "issueName": "Daredevil #111 (1974)",
+    "coverDate": "1974-07-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/26/dd-v1-111.jpg"
+  },
+  {
+    "number": "112",
+    "issueName": "Daredevil #112 (1974)",
+    "coverDate": "1974-08-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/26/dd-v1-112.jpg"
+  },
+  {
+    "number": "113",
+    "issueName": "Daredevil #113 (1974)",
+    "coverDate": "1974-09-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/26/dd-v1-113.jpg"
+  },
+  {
+    "number": "114",
+    "issueName": "Daredevil #114 (1974)",
+    "coverDate": "1974-10-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/26/dd-v1-114.jpg"
+  },
+  {
+    "number": "115",
+    "issueName": "Daredevil #115 (1974)",
+    "coverDate": "1974-11-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/26/dd-v1-115.jpg"
+  },
+  {
+    "number": "116",
+    "issueName": "Daredevil #116 (1974)",
+    "coverDate": "1974-12-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/26/dd-v1-116.jpg"
+  },
+  {
+    "number": "117",
+    "issueName": "Daredevil #117 (1975)",
+    "coverDate": "1975-01-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/26/dd-v1-117.jpg"
+  },
+  {
+    "number": "118",
+    "issueName": "Daredevil #118 (1975)",
+    "coverDate": "1975-02-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/26/dd-v1-118.jpg"
+  },
+  {
+    "number": "119",
+    "issueName": "Daredevil #119 (1975)",
+    "coverDate": "1975-03-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/26/dd-v1-119.jpg"
+  },
+  {
+    "number": "120",
+    "issueName": "Daredevil #120 (1975)",
+    "coverDate": "1975-04-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/26/dd-v1-120.jpg"
+  },
+  {
+    "number": "121",
+    "issueName": "Daredevil #121 (1975)",
+    "coverDate": "1975-05-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/26/dd-v1-121.jpg"
+  },
+  {
+    "number": "122",
+    "issueName": "Daredevil #122 (1975)",
+    "coverDate": "1975-06-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/26/dd-v1-122.jpg"
+  },
+  {
+    "number": "123",
+    "issueName": "Daredevil #123 (1975)",
+    "coverDate": "1975-07-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/26/dd-v1-123.jpg"
+  },
+  {
+    "number": "124",
+    "issueName": "Daredevil #124 (1975)",
+    "coverDate": "1975-08-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/26/dd-v1-124.jpg"
+  },
+  {
+    "number": "125",
+    "issueName": "Daredevil #125 (1975)",
+    "coverDate": "1975-09-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/27/dd-v1-125.jpg"
+  },
+  {
+    "number": "126",
+    "issueName": "Daredevil #126 (1975)",
+    "coverDate": "1975-10-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/27/dd-v1-126.jpg"
+  },
+  {
+    "number": "127",
+    "issueName": "Daredevil #127 (1975)",
+    "coverDate": "1975-11-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/27/dd-v1-127.jpg"
+  },
+  {
+    "number": "128",
+    "issueName": "Daredevil #128 (1975)",
+    "coverDate": "1975-12-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/27/dd-v1-128.jpg"
+  },
+  {
+    "number": "129",
+    "issueName": "Daredevil #129 (1976)",
+    "coverDate": "1976-01-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/27/dd-v1-129.jpg"
+  },
+  {
+    "number": "130",
+    "issueName": "Daredevil #130 (1976)",
+    "coverDate": "1976-02-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/27/dd-v1-130.jpg"
+  },
+  {
+    "number": "131",
+    "issueName": "Daredevil #131 (1976)",
+    "coverDate": "1976-03-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/27/dd-v1-131.jpg"
+  },
+  {
+    "number": "132",
+    "issueName": "Daredevil #132 (1976)",
+    "coverDate": "1976-04-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/27/dd-v1-132.jpg"
+  },
+  {
+    "number": "133",
+    "issueName": "Daredevil #133 (1976)",
+    "coverDate": "1976-05-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/27/dd-v1-133.jpg"
+  },
+  {
+    "number": "134",
+    "issueName": "Daredevil #134 (1976)",
+    "coverDate": "1976-06-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/27/dd-v1-134.jpg"
+  },
+  {
+    "number": "135",
+    "issueName": "Daredevil #135 (1976)",
+    "coverDate": "1976-07-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/27/dd-v1-135.jpg"
+  },
+  {
+    "number": "136",
+    "issueName": "Daredevil #136 (1976)",
+    "coverDate": "1976-08-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/27/dd-v1-136.jpg"
+  },
+  {
+    "number": "137",
+    "issueName": "Daredevil #137 (1976)",
+    "coverDate": "1976-09-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/27/dd-v1-137.jpg"
+  },
+  {
+    "number": "138",
+    "issueName": "Daredevil #138 (1976)",
+    "coverDate": "1976-10-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/27/dd-v1-138.jpg"
+  },
+  {
+    "number": "139",
+    "issueName": "Daredevil #139 (1976)",
+    "coverDate": "1976-11-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/27/dd-v1-139.jpg"
+  },
+  {
+    "number": "140",
+    "issueName": "Daredevil #140 (1976)",
+    "coverDate": "1976-12-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/27/dd-v1-140.jpg"
+  },
+  {
+    "number": "141",
+    "issueName": "Daredevil #141 (1977)",
+    "coverDate": "1977-01-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/27/dd-v1-141.jpg"
+  },
+  {
+    "number": "142",
+    "issueName": "Daredevil #142 (1977)",
+    "coverDate": "1977-02-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/27/dd-v1-142.jpg"
+  },
+  {
+    "number": "143",
+    "issueName": "Daredevil #143 (1977)",
+    "coverDate": "1977-03-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/27/dd-v1-143.jpg"
+  },
+  {
+    "number": "144",
+    "issueName": "Daredevil #144 (1977)",
+    "coverDate": "1977-04-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/27/dd-v1-144.jpg"
+  },
+  {
+    "number": "145",
+    "issueName": "Daredevil #145 (1977)",
+    "coverDate": "1977-05-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/27/dd-v1-145.jpg"
+  },
+  {
+    "number": "146",
+    "issueName": "Daredevil #146 (1977)",
+    "coverDate": "1977-06-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/27/dd-v1-146.jpg"
+  },
+  {
+    "number": "147",
+    "issueName": "Daredevil #147 (1977)",
+    "coverDate": "1977-07-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/27/dd-v1-147.jpg"
+  },
+  {
+    "number": "148",
+    "issueName": "Daredevil #148 (1977)",
+    "coverDate": "1977-09-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/27/dd-v1-148.jpg"
+  },
+  {
+    "number": "149",
+    "issueName": "Daredevil #149 (1977)",
+    "coverDate": "1977-11-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/27/dd-v1-149.jpg"
+  },
+  {
+    "number": "150",
+    "issueName": "Daredevil #150 (1978)",
+    "coverDate": "1978-01-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/27/dd-v1-150.jpg"
+  },
+  {
+    "number": "151",
+    "issueName": "Daredevil #151 (1978)",
+    "coverDate": "1978-03-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/27/dd-v1-151.jpg"
+  },
+  {
+    "number": "152",
+    "issueName": "Daredevil #152 (1978)",
+    "coverDate": "1978-05-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/27/dd-v1-152.jpg"
+  },
+  {
+    "number": "153",
+    "issueName": "Daredevil #153 (1978)",
+    "coverDate": "1978-07-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/27/dd-v1-153.jpg"
+  },
+  {
+    "number": "154",
+    "issueName": "Daredevil #154 (1978)",
+    "coverDate": "1978-09-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/27/dd-v1-154.jpg"
+  },
+  {
+    "number": "155",
+    "issueName": "Daredevil #155 (1978)",
+    "coverDate": "1978-11-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/27/dd-v1-155.jpg"
+  },
+  {
+    "number": "156",
+    "issueName": "Daredevil #156 (1979)",
+    "coverDate": "1979-01-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/27/dd-v1-156.jpg"
+  },
+  {
+    "number": "157",
+    "issueName": "Daredevil #157 (1979)",
+    "coverDate": "1979-03-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/27/dd-v1-157.jpg"
+  },
+  {
+    "number": "158",
+    "issueName": "Daredevil #158 (1979)",
+    "coverDate": "1979-05-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/27/dd-v1-158.jpg"
+  },
+  {
+    "number": "159",
+    "issueName": "Daredevil #159 (1979)",
+    "coverDate": "1979-07-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/27/dd-v1-159.jpg"
+  },
+  {
+    "number": "160",
+    "issueName": "Daredevil #160 (1979)",
+    "coverDate": "1979-09-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/28/dd-v1-160.jpg"
+  },
+  {
+    "number": "161",
+    "issueName": "Daredevil #161 (1979)",
+    "coverDate": "1979-11-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/28/dd-v1-161.jpg"
+  },
+  {
+    "number": "162",
+    "issueName": "Daredevil #162 (1980)",
+    "coverDate": "1980-01-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/28/dd-v1-162.jpg"
+  },
+  {
+    "number": "163",
+    "issueName": "Daredevil #163 (1980)",
+    "coverDate": "1980-03-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/28/dd-v1-163.jpg"
+  },
+  {
+    "number": "164",
+    "issueName": "Daredevil #164 (1980)",
+    "coverDate": "1980-05-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/28/dd-v1-164.jpg"
+  },
+  {
+    "number": "165",
+    "issueName": "Daredevil #165 (1980)",
+    "coverDate": "1980-07-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/28/dd-v1-165.jpg"
+  },
+  {
+    "number": "166",
+    "issueName": "Daredevil #166 (1980)",
+    "coverDate": "1980-09-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/28/dd-v1-166.jpg"
+  },
+  {
+    "number": "167",
+    "issueName": "Daredevil #167 (1980)",
+    "coverDate": "1980-11-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/28/dd-v1-167.jpg"
+  },
+  {
+    "number": "168",
+    "issueName": "Daredevil #168 (1981)",
+    "coverDate": "1981-01-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/28/dd-v1-168.jpg"
+  },
+  {
+    "number": "169",
+    "issueName": "Daredevil #169 (1981)",
+    "coverDate": "1981-03-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/28/dd-v1-169.jpg"
+  },
+  {
+    "number": "170",
+    "issueName": "Daredevil #170 (1981)",
+    "coverDate": "1981-05-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/28/dd-v1-170.jpg"
+  },
+  {
+    "number": "171",
+    "issueName": "Daredevil #171 (1981)",
+    "coverDate": "1981-06-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/28/dd-v1-171.jpg"
+  },
+  {
+    "number": "172",
+    "issueName": "Daredevil #172 (1981)",
+    "coverDate": "1981-07-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/28/dd-v1-172.jpg"
+  },
+  {
+    "number": "173",
+    "issueName": "Daredevil #173 (1981)",
+    "coverDate": "1981-08-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/28/dd-v1-173.jpg"
+  },
+  {
+    "number": "174",
+    "issueName": "Daredevil #174 (1981)",
+    "coverDate": "1981-09-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/28/dd-v1-174.jpg"
+  },
+  {
+    "number": "175",
+    "issueName": "Daredevil #175 (1981)",
+    "coverDate": "1981-10-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/28/dd-v1-175.jpg"
+  },
+  {
+    "number": "176",
+    "issueName": "Daredevil #176 (1981)",
+    "coverDate": "1981-11-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/28/dd-v1-176.jpg"
+  },
+  {
+    "number": "177",
+    "issueName": "Daredevil #177 (1981)",
+    "coverDate": "1981-12-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/28/dd-v1-177.jpg"
+  },
+  {
+    "number": "178",
+    "issueName": "Daredevil #178 (1982)",
+    "coverDate": "1982-01-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/28/dd-v1-178.jpg"
+  },
+  {
+    "number": "179",
+    "issueName": "Daredevil #179 (1982)",
+    "coverDate": "1982-02-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/28/dd-v1-179.jpg"
+  },
+  {
+    "number": "180",
+    "issueName": "Daredevil #180 (1982)",
+    "coverDate": "1982-03-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/28/dd-v1-180.jpg"
+  },
+  {
+    "number": "181",
+    "issueName": "Daredevil #181 (1982)",
+    "coverDate": "1982-04-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/28/dd-v1-181.jpg"
+  },
+  {
+    "number": "182",
+    "issueName": "Daredevil #182 (1982)",
+    "coverDate": "1982-05-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/28/dd-v1-182.jpg"
+  },
+  {
+    "number": "183",
+    "issueName": "Daredevil #183 (1982)",
+    "coverDate": "1982-06-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/28/dd-v1-183.jpg"
+  },
+  {
+    "number": "184",
+    "issueName": "Daredevil #184 (1982)",
+    "coverDate": "1982-07-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/28/dd-v1-184.jpg"
+  },
+  {
+    "number": "185",
+    "issueName": "Daredevil #185 (1982)",
+    "coverDate": "1982-08-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/28/dd-v1-185.jpg"
+  },
+  {
+    "number": "186",
+    "issueName": "Daredevil #186 (1982)",
+    "coverDate": "1982-09-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/28/dd-v1-186.jpg"
+  },
+  {
+    "number": "187",
+    "issueName": "Daredevil #187 (1982)",
+    "coverDate": "1982-10-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/28/dd-v1-187.jpg"
+  },
+  {
+    "number": "188",
+    "issueName": "Daredevil #188 (1982)",
+    "coverDate": "1982-11-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/28/dd-v1-188.jpg"
+  },
+  {
+    "number": "189",
+    "issueName": "Daredevil #189 (1982)",
+    "coverDate": "1982-12-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/28/dd-v1-189.jpg"
+  },
+  {
+    "number": "190",
+    "issueName": "Daredevil #190 (1983)",
+    "coverDate": "1983-01-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/28/dd-v1-190.jpg"
+  },
+  {
+    "number": "191",
+    "issueName": "Daredevil #191 (1983)",
+    "coverDate": "1983-02-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/28/dd-v1-191.jpg"
+  },
+  {
+    "number": "192",
+    "issueName": "Daredevil #192 (1983)",
+    "coverDate": "1983-03-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/29/dd-v1-192.jpg"
+  },
+  {
+    "number": "193",
+    "issueName": "Daredevil #193 (1983)",
+    "coverDate": "1983-04-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/29/dd-v1-193.jpg"
+  },
+  {
+    "number": "194",
+    "issueName": "Daredevil #194 (1983)",
+    "coverDate": "1983-05-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/29/dd-v1-194.jpg"
+  },
+  {
+    "number": "195",
+    "issueName": "Daredevil #195 (1983)",
+    "coverDate": "1983-06-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/29/dd-v1-195.jpg"
+  },
+  {
+    "number": "196",
+    "issueName": "Daredevil #196 (1983)",
+    "coverDate": "1983-07-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/29/dd-v1-196.jpg"
+  },
+  {
+    "number": "197",
+    "issueName": "Daredevil #197 (1983)",
+    "coverDate": "1983-08-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/29/dd-v1-197.jpg"
+  },
+  {
+    "number": "198",
+    "issueName": "Daredevil #198 (1983)",
+    "coverDate": "1983-09-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/29/dd-v1-198.jpg"
+  },
+  {
+    "number": "199",
+    "issueName": "Daredevil #199 (1983)",
+    "coverDate": "1983-10-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/29/dd-v1-199.jpg"
+  },
+  {
+    "number": "200",
+    "issueName": "Daredevil #200 (1983)",
+    "coverDate": "1983-11-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/29/dd-v1-200.jpg"
+  },
+  {
+    "number": "201",
+    "issueName": "Daredevil #201 (1983)",
+    "coverDate": "1983-12-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/29/dd-v1-201.jpg"
+  },
+  {
+    "number": "202",
+    "issueName": "Daredevil #202 (1984)",
+    "coverDate": "1984-01-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/29/dd-v1-202.jpg"
+  },
+  {
+    "number": "203",
+    "issueName": "Daredevil #203 (1984)",
+    "coverDate": "1984-02-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/29/dd-v1-203.jpg"
+  },
+  {
+    "number": "204",
+    "issueName": "Daredevil #204 (1984)",
+    "coverDate": "1984-03-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/30/dd-v1-204.jpg"
+  },
+  {
+    "number": "205",
+    "issueName": "Daredevil #205 (1984)",
+    "coverDate": "1984-04-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/30/dd-v1-205.jpg"
+  },
+  {
+    "number": "206",
+    "issueName": "Daredevil #206 (1984)",
+    "coverDate": "1984-05-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/30/dd-v1-206.jpg"
+  },
+  {
+    "number": "207",
+    "issueName": "Daredevil #207 (1984)",
+    "coverDate": "1984-06-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/30/dd-v1-207.jpg"
+  },
+  {
+    "number": "208",
+    "issueName": "Daredevil #208 (1984)",
+    "coverDate": "1984-07-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/30/dd-v1-208.jpg"
+  },
+  {
+    "number": "209",
+    "issueName": "Daredevil #209 (1984)",
+    "coverDate": "1984-08-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/30/dd-v1-209.jpg"
+  },
+  {
+    "number": "210",
+    "issueName": "Daredevil #210 (1984)",
+    "coverDate": "1984-09-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/30/dd-v1-210.jpg"
+  },
+  {
+    "number": "211",
+    "issueName": "Daredevil #211 (1984)",
+    "coverDate": "1984-10-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/30/dd-v1-211.jpg"
+  },
+  {
+    "number": "212",
+    "issueName": "Daredevil #212 (1984)",
+    "coverDate": "1984-11-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/30/dd-v1-212.jpg"
+  },
+  {
+    "number": "213",
+    "issueName": "Daredevil #213 (1984)",
+    "coverDate": "1984-12-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/30/dd-v1-213.jpg"
+  },
+  {
+    "number": "214",
+    "issueName": "Daredevil #214 (1985)",
+    "coverDate": "1985-01-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/30/dd-v1-214.jpg"
+  },
+  {
+    "number": "215",
+    "issueName": "Daredevil #215 (1985)",
+    "coverDate": "1985-02-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/30/dd-v1-215.jpg"
+  },
+  {
+    "number": "216",
+    "issueName": "Daredevil #216 (1985)",
+    "coverDate": "1985-03-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/31/dd-v1-216.jpg"
+  },
+  {
+    "number": "217",
+    "issueName": "Daredevil #217 (1985)",
+    "coverDate": "1985-04-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/31/dd-v1-217.jpg"
+  },
+  {
+    "number": "218",
+    "issueName": "Daredevil #218 (1985)",
+    "coverDate": "1985-05-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/31/dd-v1-218.jpg"
+  },
+  {
+    "number": "219",
+    "issueName": "Daredevil #219 (1985)",
+    "coverDate": "1985-06-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/31/dd-v1-219.jpg"
+  },
+  {
+    "number": "220",
+    "issueName": "Daredevil #220 (1985)",
+    "coverDate": "1985-07-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/31/dd-v1-220.jpg"
+  },
+  {
+    "number": "221",
+    "issueName": "Daredevil #221 (1985)",
+    "coverDate": "1985-08-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/31/dd-v1-221.jpg"
+  },
+  {
+    "number": "222",
+    "issueName": "Daredevil #222 (1985)",
+    "coverDate": "1985-09-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/31/dd-v1-222.jpg"
+  },
+  {
+    "number": "223",
+    "issueName": "Daredevil #223 (1985)",
+    "coverDate": "1985-10-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/31/dd-v1-223.jpg"
+  },
+  {
+    "number": "224",
+    "issueName": "Daredevil #224 (1985)",
+    "coverDate": "1985-11-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/31/dd-v1-224.jpg"
+  },
+  {
+    "number": "225",
+    "issueName": "Daredevil #225 (1985)",
+    "coverDate": "1985-12-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/31/dd-v1-225.jpg"
+  },
+  {
+    "number": "226",
+    "issueName": "Daredevil #226 (1986)",
+    "coverDate": "1986-01-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/31/dd-v1-226.jpg"
+  },
+  {
+    "number": "227",
+    "issueName": "Daredevil #227 (1986)",
+    "coverDate": "1986-02-01",
+    "image": "https://static.metron.cloud/media/issue/2020/11/01/dd-v1-227.jpg"
+  },
+  {
+    "number": "228",
+    "issueName": "Daredevil #228 (1986)",
+    "coverDate": "1986-03-01",
+    "image": "https://static.metron.cloud/media/issue/2020/11/01/dd-v1-228.jpg"
+  },
+  {
+    "number": "229",
+    "issueName": "Daredevil #229 (1986)",
+    "coverDate": "1986-04-01",
+    "image": "https://static.metron.cloud/media/issue/2020/11/01/dd-v1-229.jpg"
+  },
+  {
+    "number": "230",
+    "issueName": "Daredevil #230 (1986)",
+    "coverDate": "1986-05-01",
+    "image": "https://static.metron.cloud/media/issue/2020/11/01/dd-v1-230.jpg"
+  },
+  {
+    "number": "231",
+    "issueName": "Daredevil #231 (1986)",
+    "coverDate": "1986-06-01",
+    "image": "https://static.metron.cloud/media/issue/2020/11/01/dd-v1-231.jpg"
+  },
+  {
+    "number": "232",
+    "issueName": "Daredevil #232 (1986)",
+    "coverDate": "1986-07-01",
+    "image": "https://static.metron.cloud/media/issue/2020/11/01/dd-v1-232.jpg"
+  },
+  {
+    "number": "233",
+    "issueName": "Daredevil #233 (1986)",
+    "coverDate": "1986-08-01",
+    "image": "https://static.metron.cloud/media/issue/2020/11/01/dd-v1-233.jpg"
+  },
+  {
+    "number": "234",
+    "issueName": "Daredevil #234 (1986)",
+    "coverDate": "1986-09-01",
+    "image": "https://static.metron.cloud/media/issue/2020/11/01/dd-v1-234.jpg"
+  },
+  {
+    "number": "235",
+    "issueName": "Daredevil #235 (1986)",
+    "coverDate": "1986-10-01",
+    "image": "https://static.metron.cloud/media/issue/2020/11/01/dd-v1-235.jpg"
+  },
+  {
+    "number": "236",
+    "issueName": "Daredevil #236 (1986)",
+    "coverDate": "1986-11-01",
+    "image": "https://static.metron.cloud/media/issue/2020/11/01/dd-v1-236.jpg"
+  },
+  {
+    "number": "237",
+    "issueName": "Daredevil #237 (1986)",
+    "coverDate": "1986-12-01",
+    "image": "https://static.metron.cloud/media/issue/2020/11/01/dd-v1-237.jpg"
+  },
+  {
+    "number": "238",
+    "issueName": "Daredevil #238 (1987)",
+    "coverDate": "1987-01-01",
+    "image": "https://static.metron.cloud/media/issue/2020/11/01/dd-v1-238.jpg"
+  },
+  {
+    "number": "239",
+    "issueName": "Daredevil #239 (1987)",
+    "coverDate": "1987-02-01",
+    "image": "https://static.metron.cloud/media/issue/2020/11/01/dd-v1-239.jpg"
+  },
+  {
+    "number": "240",
+    "issueName": "Daredevil #240 (1987)",
+    "coverDate": "1987-03-01",
+    "image": "https://static.metron.cloud/media/issue/2020/11/01/dd-v1-240.jpg"
+  },
+  {
+    "number": "241",
+    "issueName": "Daredevil #241 (1987)",
+    "coverDate": "1987-04-01",
+    "image": "https://static.metron.cloud/media/issue/2020/11/01/dd-v1-241.jpg"
+  },
+  {
+    "number": "242",
+    "issueName": "Daredevil #242 (1987)",
+    "coverDate": "1987-05-01",
+    "image": "https://static.metron.cloud/media/issue/2020/11/01/dd-v1-242.jpg"
+  },
+  {
+    "number": "243",
+    "issueName": "Daredevil #243 (1987)",
+    "coverDate": "1987-06-01",
+    "image": "https://static.metron.cloud/media/issue/2020/11/02/dd-v1-243.jpg"
+  },
+  {
+    "number": "244",
+    "issueName": "Daredevil #244 (1987)",
+    "coverDate": "1987-07-01",
+    "image": "https://static.metron.cloud/media/issue/2020/11/02/dd-v1-244.jpg"
+  },
+  {
+    "number": "245",
+    "issueName": "Daredevil #245 (1987)",
+    "coverDate": "1987-08-01",
+    "image": "https://static.metron.cloud/media/issue/2020/11/02/dd-v1-245.jpg"
+  },
+  {
+    "number": "246",
+    "issueName": "Daredevil #246 (1987)",
+    "coverDate": "1987-09-01",
+    "image": "https://static.metron.cloud/media/issue/2020/11/02/dd-v1-246.jpg"
+  },
+  {
+    "number": "247",
+    "issueName": "Daredevil #247 (1987)",
+    "coverDate": "1987-10-01",
+    "image": "https://static.metron.cloud/media/issue/2020/11/02/dd-v1-247.jpg"
+  },
+  {
+    "number": "248",
+    "issueName": "Daredevil #248 (1987)",
+    "coverDate": "1987-11-01",
+    "image": "https://static.metron.cloud/media/issue/2020/11/02/dd-v1-248.jpg"
+  },
+  {
+    "number": "249",
+    "issueName": "Daredevil #249 (1987)",
+    "coverDate": "1987-12-01",
+    "image": "https://static.metron.cloud/media/issue/2020/11/02/dd-v1-249.jpg"
+  },
+  {
+    "number": "250",
+    "issueName": "Daredevil #250 (1988)",
+    "coverDate": "1988-01-01",
+    "image": "https://static.metron.cloud/media/issue/2020/11/02/dd-v1-250.jpg"
+  },
+  {
+    "number": "251",
+    "issueName": "Daredevil #251 (1988)",
+    "coverDate": "1988-02-01",
+    "image": "https://static.metron.cloud/media/issue/2020/11/02/dd-v1-251.jpg"
+  },
+  {
+    "number": "252",
+    "issueName": "Daredevil #252 (1988)",
+    "coverDate": "1988-03-01",
+    "image": "https://static.metron.cloud/media/issue/2020/11/02/dd-v1-252.jpg"
+  },
+  {
+    "number": "253",
+    "issueName": "Daredevil #253 (1988)",
+    "coverDate": "1988-04-01",
+    "image": "https://static.metron.cloud/media/issue/2020/11/02/dd-v1-253.jpg"
+  },
+  {
+    "number": "254",
+    "issueName": "Daredevil #254 (1988)",
+    "coverDate": "1988-05-01",
+    "image": "https://static.metron.cloud/media/issue/2020/11/02/dd-v1-254.jpg"
+  },
+  {
+    "number": "255",
+    "issueName": "Daredevil #255 (1988)",
+    "coverDate": "1988-06-01",
+    "image": "https://static.metron.cloud/media/issue/2020/11/02/dd-v1-255.jpg"
+  },
+  {
+    "number": "256",
+    "issueName": "Daredevil #256 (1988)",
+    "coverDate": "1988-07-01",
+    "image": "https://static.metron.cloud/media/issue/2020/11/02/dd-v1-256.jpg"
+  },
+  {
+    "number": "257",
+    "issueName": "Daredevil #257 (1988)",
+    "coverDate": "1988-08-01",
+    "image": "https://static.metron.cloud/media/issue/2020/11/02/dd-v1-257.jpg"
+  },
+  {
+    "number": "258",
+    "issueName": "Daredevil #258 (1988)",
+    "coverDate": "1988-09-01",
+    "image": "https://static.metron.cloud/media/issue/2020/11/02/dd-v1-258.jpg"
+  },
+  {
+    "number": "259",
+    "issueName": "Daredevil #259 (1988)",
+    "coverDate": "1988-10-01",
+    "image": "https://static.metron.cloud/media/issue/2020/11/02/dd-v1-259.jpg"
+  },
+  {
+    "number": "260",
+    "issueName": "Daredevil #260 (1988)",
+    "coverDate": "1988-11-01",
+    "image": "https://static.metron.cloud/media/issue/2020/11/02/dd-v1-260.jpg"
+  },
+  {
+    "number": "261",
+    "issueName": "Daredevil #261 (1988)",
+    "coverDate": "1988-12-01",
+    "image": "https://static.metron.cloud/media/issue/2020/11/04/dd-v1-261.jpg"
+  },
+  {
+    "number": "262",
+    "issueName": "Daredevil #262 (1989)",
+    "coverDate": "1989-01-01",
+    "image": "https://static.metron.cloud/media/issue/2020/11/04/dd-v1-262.jpg"
+  },
+  {
+    "number": "263",
+    "issueName": "Daredevil #263 (1989)",
+    "coverDate": "1989-02-01",
+    "image": "https://static.metron.cloud/media/issue/2020/11/04/dd-v1-263.jpg"
+  },
+  {
+    "number": "264",
+    "issueName": "Daredevil #264 (1989)",
+    "coverDate": "1989-03-01",
+    "image": "https://static.metron.cloud/media/issue/2020/11/04/dd-v1-264.jpg"
+  },
+  {
+    "number": "265",
+    "issueName": "Daredevil #265 (1989)",
+    "coverDate": "1989-04-01",
+    "image": "https://static.metron.cloud/media/issue/2020/11/04/dd-v1-265.jpg"
+  },
+  {
+    "number": "266",
+    "issueName": "Daredevil #266 (1989)",
+    "coverDate": "1989-05-01",
+    "image": "https://static.metron.cloud/media/issue/2020/11/04/dd-v1-266.jpg"
+  },
+  {
+    "number": "267",
+    "issueName": "Daredevil #267 (1989)",
+    "coverDate": "1989-06-01",
+    "image": "https://static.metron.cloud/media/issue/2020/11/04/dd-v1-267.jpg"
+  },
+  {
+    "number": "268",
+    "issueName": "Daredevil #268 (1989)",
+    "coverDate": "1989-07-01",
+    "image": "https://static.metron.cloud/media/issue/2020/11/04/dd-v1-268.jpg"
+  },
+  {
+    "number": "269",
+    "issueName": "Daredevil #269 (1989)",
+    "coverDate": "1989-08-01",
+    "image": "https://static.metron.cloud/media/issue/2020/11/04/dd-v1-269.jpg"
+  },
+  {
+    "number": "270",
+    "issueName": "Daredevil #270 (1989)",
+    "coverDate": "1989-09-01",
+    "image": "https://static.metron.cloud/media/issue/2020/11/04/dd-v1-270.jpg"
+  },
+  {
+    "number": "271",
+    "issueName": "Daredevil #271 (1989)",
+    "coverDate": "1989-10-01",
+    "image": "https://static.metron.cloud/media/issue/2020/11/04/dd-v1-271.jpg"
+  },
+  {
+    "number": "272",
+    "issueName": "Daredevil #272 (1989)",
+    "coverDate": "1989-11-01",
+    "image": "https://static.metron.cloud/media/issue/2020/11/04/dd-v1-272.jpg"
+  },
+  {
+    "number": "273",
+    "issueName": "Daredevil #273 (1989)",
+    "coverDate": "1989-11-01",
+    "image": "https://static.metron.cloud/media/issue/2020/11/04/dd-v1-273.jpg"
+  },
+  {
+    "number": "274",
+    "issueName": "Daredevil #274 (1989)",
+    "coverDate": "1989-12-01",
+    "image": "https://static.metron.cloud/media/issue/2020/11/04/dd-v1-274.jpg"
+  },
+  {
+    "number": "275",
+    "issueName": "Daredevil #275 (1989)",
+    "coverDate": "1989-12-01",
+    "image": "https://static.metron.cloud/media/issue/2020/11/04/dd-v1-275.jpg"
+  },
+  {
+    "number": "276",
+    "issueName": "Daredevil #276 (1990)",
+    "coverDate": "1990-01-01",
+    "image": "https://static.metron.cloud/media/issue/2020/11/04/dd-v1-276.jpg"
+  },
+  {
+    "number": "277",
+    "issueName": "Daredevil #277 (1990)",
+    "coverDate": "1990-02-01",
+    "image": "https://static.metron.cloud/media/issue/2020/11/04/dd-v1-277.jpg"
+  },
+  {
+    "number": "278",
+    "issueName": "Daredevil #278 (1990)",
+    "coverDate": "1990-03-01",
+    "image": "https://static.metron.cloud/media/issue/2020/11/04/dd-v1-278.jpg"
+  },
+  {
+    "number": "279",
+    "issueName": "Daredevil #279 (1990)",
+    "coverDate": "1990-04-01",
+    "image": "https://static.metron.cloud/media/issue/2020/11/04/dd-v1-279.jpg"
+  },
+  {
+    "number": "280",
+    "issueName": "Daredevil #280 (1990)",
+    "coverDate": "1990-05-01",
+    "image": "https://static.metron.cloud/media/issue/2020/11/04/dd-v1-280.jpg"
+  },
+  {
+    "number": "281",
+    "issueName": "Daredevil #281 (1990)",
+    "coverDate": "1990-06-01",
+    "image": "https://static.metron.cloud/media/issue/2020/11/04/dd-v1-281.jpg"
+  },
+  {
+    "number": "282",
+    "issueName": "Daredevil #282 (1990)",
+    "coverDate": "1990-07-01",
+    "image": "https://static.metron.cloud/media/issue/2020/11/04/dd-v1-282.jpg"
+  },
+  {
+    "number": "283",
+    "issueName": "Daredevil #283 (1990)",
+    "coverDate": "1990-08-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/25/dd-v1-283.jpg"
+  },
+  {
+    "number": "284",
+    "issueName": "Daredevil #284 (1990)",
+    "coverDate": "1990-09-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/25/dd-v1-284.jpg"
+  },
+  {
+    "number": "285",
+    "issueName": "Daredevil #285 (1990)",
+    "coverDate": "1990-10-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/25/dd-v1-285.jpg"
+  },
+  {
+    "number": "286",
+    "issueName": "Daredevil #286 (1990)",
+    "coverDate": "1990-11-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/25/dd-v1-286.jpg"
+  },
+  {
+    "number": "287",
+    "issueName": "Daredevil #287 (1990)",
+    "coverDate": "1990-12-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/25/dd-v1-287.jpg"
+  },
+  {
+    "number": "288",
+    "issueName": "Daredevil #288 (1991)",
+    "coverDate": "1991-01-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/25/dd-v1-288.jpg"
+  },
+  {
+    "number": "289",
+    "issueName": "Daredevil #289 (1991)",
+    "coverDate": "1991-02-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/25/dd-v1-289.jpg"
+  },
+  {
+    "number": "290",
+    "issueName": "Daredevil #290 (1991)",
+    "coverDate": "1991-03-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/25/dd-v1-290.jpg"
+  },
+  {
+    "number": "291",
+    "issueName": "Daredevil #291 (1991)",
+    "coverDate": "1991-04-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/25/dd-v1-291.jpg"
+  },
+  {
+    "number": "292",
+    "issueName": "Daredevil #292 (1991)",
+    "coverDate": "1991-05-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/25/dd-v1-292.jpg"
+  },
+  {
+    "number": "293",
+    "issueName": "Daredevil #293 (1991)",
+    "coverDate": "1991-06-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/25/dd-v1-293.jpg"
+  },
+  {
+    "number": "294",
+    "issueName": "Daredevil #294 (1991)",
+    "coverDate": "1991-07-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/25/dd-v1-294.jpg"
+  },
+  {
+    "number": "295",
+    "issueName": "Daredevil #295 (1991)",
+    "coverDate": "1991-08-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/25/dd-v1-295.jpg"
+  },
+  {
+    "number": "296",
+    "issueName": "Daredevil #296 (1991)",
+    "coverDate": "1991-09-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/25/dd-v1-296.jpg"
+  },
+  {
+    "number": "297",
+    "issueName": "Daredevil #297 (1991)",
+    "coverDate": "1991-10-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/25/dd-v1-297.jpg"
+  },
+  {
+    "number": "298",
+    "issueName": "Daredevil #298 (1991)",
+    "coverDate": "1991-11-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/25/dd-v1-298.jpg"
+  },
+  {
+    "number": "299",
+    "issueName": "Daredevil #299 (1991)",
+    "coverDate": "1991-12-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/25/dd-v1-299.jpg"
+  },
+  {
+    "number": "300",
+    "issueName": "Daredevil #300 (1992)",
+    "coverDate": "1992-01-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/25/dd-v1-300.jpg"
+  },
+  {
+    "number": "301",
+    "issueName": "Daredevil #301 (1992)",
+    "coverDate": "1992-02-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/25/dd-v1-301.jpg"
+  },
+  {
+    "number": "302",
+    "issueName": "Daredevil #302 (1992)",
+    "coverDate": "1992-03-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/25/dd-v1-302.jpg"
+  },
+  {
+    "number": "303",
+    "issueName": "Daredevil #303 (1992)",
+    "coverDate": "1992-04-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/25/dd-v1-303.jpg"
+  },
+  {
+    "number": "304",
+    "issueName": "Daredevil #304 (1992)",
+    "coverDate": "1992-05-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/25/dd-v1-304.jpg"
+  },
+  {
+    "number": "305",
+    "issueName": "Daredevil #305 (1992)",
+    "coverDate": "1992-06-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/25/dd-v1-305.jpg"
+  },
+  {
+    "number": "306",
+    "issueName": "Daredevil #306 (1992)",
+    "coverDate": "1992-07-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/25/dd-v1-306.jpg"
+  },
+  {
+    "number": "307",
+    "issueName": "Daredevil #307 (1992)",
+    "coverDate": "1992-08-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/25/dd-v1-307.jpg"
+  },
+  {
+    "number": "308",
+    "issueName": "Daredevil #308 (1992)",
+    "coverDate": "1992-09-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/25/dd-v1-308.jpg"
+  },
+  {
+    "number": "309",
+    "issueName": "Daredevil #309 (1992)",
+    "coverDate": "1992-10-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/25/dd-v1-309.jpg"
+  },
+  {
+    "number": "310",
+    "issueName": "Daredevil #310 (1992)",
+    "coverDate": "1992-11-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/25/dd-v1-310.jpg"
+  },
+  {
+    "number": "311",
+    "issueName": "Daredevil #311 (1992)",
+    "coverDate": "1992-12-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/25/dd-v1-311.jpg"
+  },
+  {
+    "number": "312",
+    "issueName": "Daredevil #312 (1993)",
+    "coverDate": "1993-01-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/25/dd-v1-312.jpg"
+  },
+  {
+    "number": "313",
+    "issueName": "Daredevil #313 (1993)",
+    "coverDate": "1993-02-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/25/dd-v1-313.jpg"
+  },
+  {
+    "number": "314",
+    "issueName": "Daredevil #314 (1993)",
+    "coverDate": "1993-03-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/25/dd-v1-314.jpg"
+  },
+  {
+    "number": "315",
+    "issueName": "Daredevil #315 (1993)",
+    "coverDate": "1993-04-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/25/dd-v1-315.jpg"
+  },
+  {
+    "number": "316",
+    "issueName": "Daredevil #316 (1993)",
+    "coverDate": "1993-05-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/25/dd-v1-316.jpg"
+  },
+  {
+    "number": "317",
+    "issueName": "Daredevil #317 (1993)",
+    "coverDate": "1993-06-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/25/dd-v1-317.jpg"
+  },
+  {
+    "number": "318",
+    "issueName": "Daredevil #318 (1993)",
+    "coverDate": "1993-07-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/25/dd-v1-318.jpg"
+  },
+  {
+    "number": "319",
+    "issueName": "Daredevil #319 (1993)",
+    "coverDate": "1993-08-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/25/dd-v1-319.jpg"
+  },
+  {
+    "number": "320",
+    "issueName": "Daredevil #320 (1993)",
+    "coverDate": "1993-09-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/25/dd-v1-320.jpg"
+  },
+  {
+    "number": "321",
+    "issueName": "Daredevil #321 (1993)",
+    "coverDate": "1993-10-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/25/dd-v1-321.jpg"
+  },
+  {
+    "number": "322",
+    "issueName": "Daredevil #322 (1993)",
+    "coverDate": "1993-11-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/25/dd-v1-322.jpg"
+  },
+  {
+    "number": "323",
+    "issueName": "Daredevil #323 (1993)",
+    "coverDate": "1993-12-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/25/dd-v1-323.jpg"
+  },
+  {
+    "number": "324",
+    "issueName": "Daredevil #324 (1994)",
+    "coverDate": "1994-01-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/25/dd-v1-324.jpg"
+  },
+  {
+    "number": "325",
+    "issueName": "Daredevil #325 (1994)",
+    "coverDate": "1994-02-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/25/dd-v1-325.jpg"
+  },
+  {
+    "number": "326",
+    "issueName": "Daredevil #326 (1994)",
+    "coverDate": "1994-03-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/25/dd-v1-326.jpg"
+  },
+  {
+    "number": "327",
+    "issueName": "Daredevil #327 (1994)",
+    "coverDate": "1994-04-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/25/dd-v1-327.jpg"
+  },
+  {
+    "number": "328",
+    "issueName": "Daredevil #328 (1994)",
+    "coverDate": "1994-05-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/25/dd-v1-328.jpg"
+  },
+  {
+    "number": "329",
+    "issueName": "Daredevil #329 (1994)",
+    "coverDate": "1994-06-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/25/dd-v1-329.jpg"
+  },
+  {
+    "number": "330",
+    "issueName": "Daredevil #330 (1994)",
+    "coverDate": "1994-07-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/25/dd-v1-330.jpg"
+  },
+  {
+    "number": "331",
+    "issueName": "Daredevil #331 (1994)",
+    "coverDate": "1994-08-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/25/dd-v1-331.jpg"
+  },
+  {
+    "number": "332",
+    "issueName": "Daredevil #332 (1994)",
+    "coverDate": "1994-09-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/25/dd-v1-332.jpg"
+  },
+  {
+    "number": "333",
+    "issueName": "Daredevil #333 (1994)",
+    "coverDate": "1994-10-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/25/dd-v1-333.jpg"
+  },
+  {
+    "number": "334",
+    "issueName": "Daredevil #334 (1994)",
+    "coverDate": "1994-11-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/25/dd-v1-334.jpg"
+  },
+  {
+    "number": "335",
+    "issueName": "Daredevil #335 (1994)",
+    "coverDate": "1994-12-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/25/dd-v1-335.jpg"
+  },
+  {
+    "number": "336",
+    "issueName": "Daredevil #336 (1995)",
+    "coverDate": "1995-01-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/25/dd-v1-336.jpg"
+  },
+  {
+    "number": "337",
+    "issueName": "Daredevil #337 (1995)",
+    "coverDate": "1995-02-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/25/dd-v1-337.jpg"
+  },
+  {
+    "number": "338",
+    "issueName": "Daredevil #338 (1995)",
+    "coverDate": "1995-03-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/25/dd-v1-338.jpg"
+  },
+  {
+    "number": "339",
+    "issueName": "Daredevil #339 (1995)",
+    "coverDate": "1995-04-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/25/dd-v1-339.jpg"
+  },
+  {
+    "number": "340",
+    "issueName": "Daredevil #340 (1995)",
+    "coverDate": "1995-05-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/25/dd-v1-340.jpg"
+  },
+  {
+    "number": "341",
+    "issueName": "Daredevil #341 (1995)",
+    "coverDate": "1995-06-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/26/dd-v1-341.jpg"
+  },
+  {
+    "number": "342",
+    "issueName": "Daredevil #342 (1995)",
+    "coverDate": "1995-07-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/26/dd-v1-342.jpg"
+  },
+  {
+    "number": "343",
+    "issueName": "Daredevil #343 (1995)",
+    "coverDate": "1995-08-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/26/dd-v1-343.jpg"
+  },
+  {
+    "number": "344",
+    "issueName": "Daredevil #344 (1995)",
+    "coverDate": "1995-09-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/26/dd-v1-344.jpg"
+  },
+  {
+    "number": "345",
+    "issueName": "Daredevil #345 (1995)",
+    "coverDate": "1995-10-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/26/dd-v1-345.jpg"
+  },
+  {
+    "number": "346",
+    "issueName": "Daredevil #346 (1995)",
+    "coverDate": "1995-11-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/26/dd-v1-346.jpg"
+  },
+  {
+    "number": "347",
+    "issueName": "Daredevil #347 (1995)",
+    "coverDate": "1995-12-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/26/dd-v1-347.jpg"
+  },
+  {
+    "number": "348",
+    "issueName": "Daredevil #348 (1995)",
+    "coverDate": "1995-12-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/26/dd-v1-348.jpg"
+  },
+  {
+    "number": "349",
+    "issueName": "Daredevil #349 (1996)",
+    "coverDate": "1996-02-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/26/dd-v1-349.jpg"
+  },
+  {
+    "number": "350",
+    "issueName": "Daredevil #350 (1996)",
+    "coverDate": "1996-03-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/26/dd-v1-350.jpg"
+  },
+  {
+    "number": "351",
+    "issueName": "Daredevil #351 (1996)",
+    "coverDate": "1996-04-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/26/dd-v1-351.jpg"
+  },
+  {
+    "number": "352",
+    "issueName": "Daredevil #352 (1996)",
+    "coverDate": "1996-05-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/26/dd-v1-352.jpg"
+  },
+  {
+    "number": "353",
+    "issueName": "Daredevil #353 (1996)",
+    "coverDate": "1996-06-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/26/dd-v1-353.jpg"
+  },
+  {
+    "number": "354",
+    "issueName": "Daredevil #354 (1996)",
+    "coverDate": "1996-07-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/26/dd-v1-354.jpg"
+  },
+  {
+    "number": "355",
+    "issueName": "Daredevil #355 (1996)",
+    "coverDate": "1996-08-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/26/dd-v1-355.jpg"
+  },
+  {
+    "number": "356",
+    "issueName": "Daredevil #356 (1996)",
+    "coverDate": "1996-09-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/26/dd-v1-356.jpg"
+  },
+  {
+    "number": "357",
+    "issueName": "Daredevil #357 (1996)",
+    "coverDate": "1996-10-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/26/dd-v1-357.jpg"
+  },
+  {
+    "number": "358",
+    "issueName": "Daredevil #358 (1996)",
+    "coverDate": "1996-11-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/26/dd-v1-358.jpg"
+  },
+  {
+    "number": "359",
+    "issueName": "Daredevil #359 (1996)",
+    "coverDate": "1996-12-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/26/dd-v1-359.jpg"
+  },
+  {
+    "number": "360",
+    "issueName": "Daredevil #360 (1997)",
+    "coverDate": "1997-01-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/26/dd-v1-360.jpg"
+  },
+  {
+    "number": "361",
+    "issueName": "Daredevil #361 (1997)",
+    "coverDate": "1997-02-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/26/dd-v1-361.jpg"
+  },
+  {
+    "number": "362",
+    "issueName": "Daredevil #362 (1997)",
+    "coverDate": "1997-03-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/26/dd-v1-362.jpg"
+  },
+  {
+    "number": "363",
+    "issueName": "Daredevil #363 (1997)",
+    "coverDate": "1997-04-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/26/dd-v1-363.jpg"
+  },
+  {
+    "number": "364",
+    "issueName": "Daredevil #364 (1997)",
+    "coverDate": "1997-05-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/26/dd-v1-364.jpg"
+  },
+  {
+    "number": "365",
+    "issueName": "Daredevil #365 (1997)",
+    "coverDate": "1997-06-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/26/dd-v1-365.jpg"
+  },
+  {
+    "number": "366",
+    "issueName": "Daredevil #366 (1997)",
+    "coverDate": "1997-08-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/26/dd-v1-366.jpg"
+  },
+  {
+    "number": "367",
+    "issueName": "Daredevil #367 (1997)",
+    "coverDate": "1997-09-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/26/dd-v1-367.jpg"
+  },
+  {
+    "number": "368",
+    "issueName": "Daredevil #368 (1997)",
+    "coverDate": "1997-10-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/26/dd-v1-368.jpg"
+  },
+  {
+    "number": "369",
+    "issueName": "Daredevil #369 (1997)",
+    "coverDate": "1997-11-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/26/dd-v1-369.jpg"
+  },
+  {
+    "number": "370",
+    "issueName": "Daredevil #370 (1997)",
+    "coverDate": "1997-12-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/26/dd-v1-370.jpg"
+  },
+  {
+    "number": "371",
+    "issueName": "Daredevil #371 (1998)",
+    "coverDate": "1998-01-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/26/dd-v1-371.jpg"
+  },
+  {
+    "number": "372",
+    "issueName": "Daredevil #372 (1998)",
+    "coverDate": "1998-02-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/26/dd-v1-372.jpg"
+  },
+  {
+    "number": "373",
+    "issueName": "Daredevil #373 (1998)",
+    "coverDate": "1998-03-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/26/dd-v1-373.jpg"
+  },
+  {
+    "number": "374",
+    "issueName": "Daredevil #374 (1998)",
+    "coverDate": "1998-04-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/26/dd-v1-374.jpg"
+  },
+  {
+    "number": "375",
+    "issueName": "Daredevil #375 (1998)",
+    "coverDate": "1998-05-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/26/dd-v1-375.jpg"
+  },
+  {
+    "number": "376",
+    "issueName": "Daredevil #376 (1998)",
+    "coverDate": "1998-06-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/26/dd-v1-376.jpg"
+  },
+  {
+    "number": "377",
+    "issueName": "Daredevil #377 (1998)",
+    "coverDate": "1998-07-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/26/dd-v1-377.jpg"
+  },
+  {
+    "number": "378",
+    "issueName": "Daredevil #378 (1998)",
+    "coverDate": "1998-08-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/26/dd-v1-378.jpg"
+  },
+  {
+    "number": "379",
+    "issueName": "Daredevil #379 (1998)",
+    "coverDate": "1998-09-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/26/dd-v1-379.jpg"
+  },
+  {
+    "number": "380",
+    "issueName": "Daredevil #380 (1998)",
+    "coverDate": "1998-10-01",
+    "image": "https://static.metron.cloud/media/issue/2021/01/26/dd-v1-380.jpg"
+  }
+]

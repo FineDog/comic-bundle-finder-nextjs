@@ -1,20 +1,29 @@
-// GET /api/series/asm-vol1/results?start=0&count=10
+// GET /api/series/[slug]/results?start=0&count=10
 //
-// Returns eBay bundle results for a slice of Amazing Spider-Man Vol. 1.
+// Returns eBay bundle results for a slice of any registered series.
 // Per-issue results are cached in Vercel Blob for 24 hours. Stale or
 // missing issues are fetched live from eBay and stored before responding.
 
+import fs from "fs";
+import path from "path";
 import { list, put } from "@vercel/blob";
 import { getEbayToken, searchEbay, aggregateRows } from "../../../../lib/ebay";
-import allIssues from "../../../../data/asm-vol1-issues.json";
+import { getSeriesConfig } from "../../../../lib/series-config";
 
-const BLOB_PREFIX = "series/asm-vol1/issue-";
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 const CACHE_MAX_PRICE = 30; // generous cap; UI applies its own price filter
 const CONCURRENCY = 8;
 
 export default async function handler(req, res) {
   if (req.method !== "GET") return res.status(405).json({ error: "Method not allowed." });
+
+  const { slug } = req.query;
+  const config = getSeriesConfig(slug);
+  if (!config) return res.status(404).json({ error: `Series "${slug}" not found.` });
+
+  const allIssues = JSON.parse(
+    fs.readFileSync(path.join(process.cwd(), "data", config.dataFile), "utf-8")
+  );
 
   const startIdx = Math.max(0, parseInt(req.query.start || "0", 10));
   const count = Math.min(20, Math.max(1, parseInt(req.query.count || "10", 10)));
@@ -23,7 +32,7 @@ export default async function handler(req, res) {
   if (!batchIssues.length) return res.status(400).json({ error: "No issues in that range." });
 
   // One list() call fetches metadata for all cached blobs in this series.
-  const { blobs } = await list({ prefix: BLOB_PREFIX });
+  const { blobs } = await list({ prefix: config.blobPrefix });
   const blobMap = {};
   for (const blob of blobs) {
     const num = blob.pathname.match(/issue-(.+)\.json$/)?.[1];
@@ -78,7 +87,7 @@ export default async function handler(req, res) {
         ebayResults.push({ issue, listings, cachedAt: now });
         // Store in Blob for future requests (fire-and-forget).
         put(
-          `${BLOB_PREFIX}${issue.number}.json`,
+          `${config.blobPrefix}${issue.number}.json`,
           JSON.stringify({ issueName: issue.issueName, listings }),
           { access: "public", addRandomSuffix: false, contentType: "application/json" }
         ).catch(() => {});

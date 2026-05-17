@@ -1,11 +1,11 @@
+import fs from "fs";
+import path from "path";
 import { useState, useEffect, useRef } from "react";
 import Head from "next/head";
 import Link from "next/link";
+import { SERIES, getSeriesConfig } from "../../lib/series-config";
 
-const TOTAL_ISSUES = 442;
-const SERIES_TITLE = "The Amazing Spider-Man";
-const SERIES_SLUG = "amazing-spider-man-vol-1";
-const MAX_AUTO_SKIP = 30; // stop auto-advancing after 300 issues with no results
+const MAX_AUTO_SKIP = 30; // stop auto-advancing after this many consecutive empty batches
 
 function esc(s) { return String(s || ""); }
 
@@ -33,7 +33,7 @@ function groupResults(rows, maxPrice) {
   return s;
 }
 
-export default function AmazingSpiderManVol1() {
+export default function SeriesPage({ slug, displayName, subtitle, totalIssues, seoBlurb, seoTitle }) {
   const [startIdx, setStartIdx] = useState(0);
   const [batchSize, setBatchSize] = useState(10);
   const [maxPrice, setMaxPrice] = useState("10");
@@ -54,7 +54,7 @@ export default function AmazingSpiderManVol1() {
     setLoading(true);
     setError(null);
 
-    fetch(`/api/series/asm-vol1/results?start=${startIdx}&count=${batchSize}`, {
+    fetch(`/api/series/${slug}/results?start=${startIdx}&count=${batchSize}`, {
       signal: controller.signal,
     })
       .then((r) => r.json())
@@ -71,13 +71,13 @@ export default function AmazingSpiderManVol1() {
       });
 
     return () => controller.abort();
-  }, [startIdx, batchSize]);
+  }, [startIdx, batchSize, slug]);
 
   // Auto-advance past empty ranges when navigating forward.
   const maxPriceNum = parseFloat(maxPrice) || 10;
   const sellers = data ? groupResults(data.results, maxPriceNum) : {};
   const sellerCount = Object.keys(sellers).length;
-  const hasNext = startIdx + batchSize < TOTAL_ISSUES;
+  const hasNext = startIdx + batchSize < totalIssues;
 
   useEffect(() => {
     if (loading || !data) return;
@@ -108,7 +108,7 @@ export default function AmazingSpiderManVol1() {
   function goNext() {
     autoSkipCount.current = 0;
     const next = startIdx + batchSize;
-    if (next < TOTAL_ISSUES) setStartIdx(next);
+    if (next < totalIssues) setStartIdx(next);
   }
   function goPrev() {
     autoSkipCount.current = 0;
@@ -121,24 +121,23 @@ export default function AmazingSpiderManVol1() {
     if (isNaN(num) || num < 1) return;
     autoSkipCount.current = 0;
     setScanning(false);
-    setStartIdx(Math.max(0, Math.min(num - 1, TOTAL_ISSUES - 1)));
+    setStartIdx(Math.max(0, Math.min(num - 1, totalIssues - 1)));
     setJumpInput("");
   }
 
-  const pageTitle = `Amazing Spider-Man Vol. 1 — eBay Bundle Deals | Comic Bundle Finder`;
-  const metaDescription = `Find the best eBay bundle deals for The Amazing Spider-Man Vol. 1 (1963–1998). Browse all 442 issues and find sellers carrying multiple issues you need — save big on combined shipping. Results updated daily.`;
+  const metaDescription = `Find the best eBay bundle deals for ${displayName} (${subtitle}). Browse all ${totalIssues} issues and find sellers carrying multiple issues you need — save big on combined shipping. Results updated daily.`;
 
   return (
     <>
       <Head>
-        <title>{pageTitle}</title>
+        <title>{seoTitle}</title>
         <meta name="description" content={metaDescription} />
-        <meta property="og:title" content="Amazing Spider-Man Vol. 1 — eBay Bundle Deals" />
+        <meta property="og:title" content={seoTitle} />
         <meta property="og:description" content={metaDescription} />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content={`https://www.comicbundlefinder.com/series/${SERIES_SLUG}`} />
+        <meta property="og:url" content={`https://www.comicbundlefinder.com/series/${slug}`} />
         <meta name="robots" content="index, follow" />
-        <link rel="canonical" href={`https://www.comicbundlefinder.com/series/${SERIES_SLUG}`} />
+        <link rel="canonical" href={`https://www.comicbundlefinder.com/series/${slug}`} />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Oswald:wght@400;600&display=swap" rel="stylesheet" />
@@ -212,8 +211,8 @@ export default function AmazingSpiderManVol1() {
 
       <div className="container">
         <div className="panel title-panel">
-          <h1>{SERIES_TITLE}</h1>
-          <div className="series-sub">Vol. 1 &middot; 1963–1998 &middot; 442 issues &middot; eBay Bundle Deals</div>
+          <h1>{displayName}</h1>
+          <div className="series-sub">{subtitle} &middot; {totalIssues} issues &middot; eBay Bundle Deals</div>
         </div>
 
         <div className="panel-nav">
@@ -222,9 +221,8 @@ export default function AmazingSpiderManVol1() {
 
         <div className="panel">
           <p className="seo-blurb">
-            Find the best eBay bundle deals for <strong>The Amazing Spider-Man Vol. 1</strong> —
-            the classic run from Stan Lee, Steve Ditko, and John Romita Sr. spanning 442 issues from
-            1963 to 1998. This page finds sellers who carry multiple issues you need so you can save
+            Find the best eBay bundle deals for <strong>{displayName} ({subtitle})</strong> —{" "}
+            {seoBlurb} This page finds sellers who carry multiple issues you need so you can save
             on combined shipping instead of paying separately for every book. Results are updated daily.
           </p>
         </div>
@@ -234,7 +232,7 @@ export default function AmazingSpiderManVol1() {
             <div className="range-label">
               {loading
                 ? "Loading…"
-                : `Issues ${displayStart}–${displayEnd} of ${TOTAL_ISSUES}`}
+                : `Issues ${displayStart}–${displayEnd} of ${totalIssues}`}
               {data?.cachedAt && !loading && (
                 <span className="updated-badge">Updated {formatAge(Date.now() - data.cachedAt)}</span>
               )}
@@ -249,10 +247,10 @@ export default function AmazingSpiderManVol1() {
                 className="jump-input"
                 type="number"
                 min="1"
-                max={TOTAL_ISSUES}
+                max={totalIssues}
                 value={jumpInput}
                 onChange={(e) => setJumpInput(e.target.value)}
-                placeholder="e.g. 300"
+                placeholder="e.g. 50"
               />
               <button className="btn-jump" type="submit">Go</button>
             </form>
@@ -410,7 +408,7 @@ export default function AmazingSpiderManVol1() {
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "1.75rem" }}>
             <button className="btn-nav" onClick={goPrev} disabled={!hasPrev}>← Prev</button>
             <span style={{ fontFamily: "'Bangers', cursive", fontSize: "1.2rem", letterSpacing: "1px", alignSelf: "center" }}>
-              {displayStart}–{displayEnd} / {TOTAL_ISSUES}
+              {displayStart}–{displayEnd} / {totalIssues}
             </span>
             <button className="btn-nav" onClick={goNext} disabled={!hasNext}>Next →</button>
           </div>
@@ -442,4 +440,32 @@ export default function AmazingSpiderManVol1() {
       </div>
     </>
   );
+}
+
+export async function getStaticPaths() {
+  return {
+    paths: Object.keys(SERIES).map((slug) => ({ params: { slug } })),
+    fallback: false,
+  };
+}
+
+export async function getStaticProps({ params }) {
+  const { slug } = params;
+  const config = getSeriesConfig(slug);
+  if (!config) return { notFound: true };
+
+  const allIssues = JSON.parse(
+    fs.readFileSync(path.join(process.cwd(), "data", config.dataFile), "utf-8")
+  );
+
+  return {
+    props: {
+      slug,
+      displayName: config.displayName,
+      subtitle: config.subtitle,
+      totalIssues: allIssues.length,
+      seoBlurb: config.seoBlurb,
+      seoTitle: config.seoTitle,
+    },
+  };
 }
