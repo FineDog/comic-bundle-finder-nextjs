@@ -19,13 +19,14 @@ export default function CollectionGuides() {
         body{background-color:#f0e6c4;background-image:radial-gradient(circle,#c8b98a 1px,transparent 1px);background-size:10px 10px;font-family:'Oswald',sans-serif;color:#1a1a1a;min-height:100vh;padding:2rem 1rem 4rem}
         .container{max-width:960px;margin:0 auto}
         .panel{background:#fffdf4;border:3px solid #1a1a1a;box-shadow:6px 6px 0 #1a1a1a;padding:1.5rem 1.75rem;margin-bottom:1.75rem}
+        .panel-nav{background:#fffdf4;border:3px solid #1a1a1a;box-shadow:4px 4px 0 #1a1a1a;padding:0.6rem 1.25rem;margin-bottom:1.75rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem}
         .title-panel{background:#cc1f00;text-align:center;padding:1.25rem 1.75rem 1rem}
         .title-panel h1{font-family:'Bangers',cursive;font-size:clamp(2.5rem,8vw,5rem);color:#fffdf4;letter-spacing:4px;text-shadow:4px 4px 0 #1a1a1a;line-height:1}
         .tagline{color:#ffe066;font-size:0.85rem;letter-spacing:2px;text-transform:uppercase;margin-top:0.4rem;font-weight:400}
-        .back-link{display:inline-block;font-size:0.82rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#003399;text-decoration:none;margin-bottom:1.75rem;border-bottom:2px solid #003399;padding-bottom:1px}
-        .back-link:hover{color:#cc1f00;border-color:#cc1f00}
+        .back-link{font-size:0.78rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#003399;text-decoration:none}
+        .back-link:hover{text-decoration:underline}
         .intro{font-size:0.88rem;font-weight:400;line-height:1.8;color:#333}
-        .series-list{display:flex;flex-direction:column;gap:1.25rem}
+        .series-list{display:flex;flex-direction:column;gap:1.25rem;margin-bottom:1.75rem}
         .series-card{border:3px solid #1a1a1a;box-shadow:5px 5px 0 #1a1a1a;background:#fffdf4;display:flex;align-items:stretch;overflow:hidden}
         .series-card-accent{width:8px;flex-shrink:0;background:#cc1f00}
         .series-card-body{flex:1;padding:1.25rem 1.5rem;display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap}
@@ -45,7 +46,9 @@ export default function CollectionGuides() {
           <div className="tagline">Browse classic runs &mdash; find eBay bundle deals issue by issue</div>
         </div>
 
-        <Link href="/" className="back-link">← Back to Comic Bundle Finder</Link>
+        <div className="panel-nav">
+          <Link href="/" className="back-link">← Back to Comic Bundle Finder</Link>
+        </div>
 
         <div className="panel">
           <div className="caption">What are Collection Guides?</div>
@@ -70,6 +73,30 @@ export default function CollectionGuides() {
               </div>
             </div>
           ))}
+        </div>
+
+        <div className="panel" style={{ textAlign: "center", fontSize: "0.8rem", fontWeight: 400, color: "#666", padding: "0.85rem 1.75rem" }}>
+          Bugs? Feature requests? Email us at{" "}
+          <a href="mailto:hello@comicbundlefinder.com" style={{ color: "#003399", fontWeight: 600 }}>
+            hello@comicbundlefinder.com
+          </a>
+          <div style={{ marginTop: "0.75rem" }}>
+            <a
+              href="https://ko-fi.com/O4O31ZDFTF"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: "inline-flex", alignItems: "center", gap: "0.5rem",
+                background: "#003399", color: "#fffdf4",
+                border: "2px solid #1a1a1a", boxShadow: "3px 3px 0 #1a1a1a",
+                fontFamily: "'Oswald', sans-serif", fontWeight: 600,
+                fontSize: "0.82rem", letterSpacing: "1px", textTransform: "uppercase",
+                padding: "0.35rem 1rem", textDecoration: "none",
+              }}
+            >
+              ☕ Support me on Ko-fi
+            </a>
+          </div>
         </div>
       </div>
     </>
