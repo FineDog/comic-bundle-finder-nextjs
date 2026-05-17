@@ -46,6 +46,7 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
   const [wrapMsg, setWrapMsg] = useState(null);
   const abortRef = useRef(null);
   const autoSkipCount = useRef(0);
+  const didWrapRef = useRef(false);
 
   useEffect(() => {
     if (abortRef.current) abortRef.current.abort();
@@ -84,6 +85,12 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
     if (loading || !data) return;
     if (sellerCount > 0) {
       autoSkipCount.current = 0;
+      didWrapRef.current = false;
+      setScanning(false);
+      return;
+    }
+    if (didWrapRef.current) {
+      didWrapRef.current = false;
       setScanning(false);
       return;
     }
@@ -93,6 +100,7 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
       setScanning(false);
       if (wasScanning) {
         setWrapMsg(`No bundles found at $${maxPriceNum.toFixed(2)} through the full series — try raising your max price.`);
+        didWrapRef.current = true;
         setStartIdx(0);
       }
       return;
@@ -118,12 +126,14 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
 
   function goNext() {
     autoSkipCount.current = 0;
+    didWrapRef.current = false;
     setWrapMsg(null);
     const next = startIdx + batchSize;
     if (next < totalIssues) setStartIdx(next);
   }
   function goPrev() {
     autoSkipCount.current = 0;
+    didWrapRef.current = false;
     setScanning(false);
     setWrapMsg(null);
     setStartIdx(Math.max(0, startIdx - batchSize));
@@ -133,6 +143,7 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
     const num = parseInt(jumpInput, 10);
     if (isNaN(num) || num < 1) return;
     autoSkipCount.current = 0;
+    didWrapRef.current = false;
     setScanning(false);
     setWrapMsg(null);
     setStartIdx(Math.max(0, Math.min(num - 1, totalIssues - 1)));
