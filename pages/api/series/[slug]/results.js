@@ -11,7 +11,6 @@ import { getEbayToken, searchEbay, aggregateRows } from "../../../../lib/ebay";
 import { getSeriesConfig } from "../../../../lib/series-config";
 
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
-const CACHE_MAX_PRICE = 30; // generous cap; UI applies its own price filter
 const CONCURRENCY = 8;
 
 export default async function handler(req, res) {
@@ -79,7 +78,7 @@ export default async function handler(req, res) {
     for (let i = 0; i < staleAll.length; i += CONCURRENCY) {
       const batch = staleAll.slice(i, i + CONCURRENCY);
       const batchListings = await Promise.all(
-        batch.map((issue) => searchEbay(token, issue.issueName, CACHE_MAX_PRICE))
+        batch.map((issue) => searchEbay(token, issue.issueName))
       );
       for (let j = 0; j < batch.length; j++) {
         const issue = batch[j];

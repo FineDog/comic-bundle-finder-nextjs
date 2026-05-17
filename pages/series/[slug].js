@@ -281,7 +281,7 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
               onChange={(e) => setMaxPrice(e.target.value)}
               min="0.01" max="30" step="0.50"
             />
-            <span className="hint">(filters displayed results; cached up to $30)</span>
+            <span className="hint">(filters displayed results; all prices cached)</span>
           </div>
         </div>
 

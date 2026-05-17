@@ -9,7 +9,6 @@ import { put } from "@vercel/blob";
 import { getEbayToken, searchEbay } from "../../../../lib/ebay";
 import { getSeriesConfig } from "../../../../lib/series-config";
 
-const CACHE_MAX_PRICE = 30;
 const CONCURRENCY = 8;
 
 export const config = { maxDuration: 60 };
@@ -50,7 +49,7 @@ export default async function handler(req, res) {
     const batch = batchIssues.slice(i, i + CONCURRENCY);
     const listings = await Promise.all(
       batch.map((issue) =>
-        searchEbay(token, issue.issueName, CACHE_MAX_PRICE).catch((e) => {
+        searchEbay(token, issue.issueName).catch((e) => {
           errors.push(`${issue.issueName}: ${e.message}`);
           return [];
         })
