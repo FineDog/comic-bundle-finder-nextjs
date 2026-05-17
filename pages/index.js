@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback } from "react";
 import Head from "next/head";
+import Link from "next/link";
 import * as XLSX from "xlsx";
 
 const STAGES = [
@@ -645,6 +646,11 @@ export default function Preview() {
       .btn-gap-secondary:hover{background:#ffe066}
       .copy-msg{font-size:0.8rem;font-weight:600;color:#003399;letter-spacing:0.5px}
       .gap-empty{color:#666;font-size:0.9rem;font-weight:400;padding:1rem 0}
+      .search-action-row{display:flex;align-items:center;gap:1rem;margin-top:1.25rem;flex-wrap:wrap}
+      .or-text{font-family:'Bangers',cursive;font-size:1.1rem;letter-spacing:2px;color:#1a1a1a;white-space:nowrap}
+      .btn-guides{display:inline-block;background:#ffe066;color:#1a1a1a;border:3px solid #1a1a1a;box-shadow:4px 4px 0 #1a1a1a;font-family:'Bangers',cursive;font-size:1.35rem;letter-spacing:2px;padding:0.3rem 1.75rem 0.4rem;cursor:pointer;text-decoration:none;transition:transform 0.08s,box-shadow 0.08s,background 0.08s}
+      .btn-guides:hover{background:#ffd700}
+      .btn-guides:active{transform:translate(3px,3px);box-shadow:1px 1px 0 #1a1a1a}
       @media(max-width:600px){.col-title{display:none}.col-issue{width:40%}}
     `}</style>
     <div className="container">
@@ -687,7 +693,11 @@ export default function Preview() {
             <input className="price-input" type="number" id="max-price" value={maxPrice} onChange={e => setMaxPrice(e.target.value)} min="0.01" max="999" step="0.50" />
             <span className="hint" style={{ margin: 0 }}>(listings above this price are excluded)</span>
           </div>
-          <button className="btn-search" onClick={handleSearch} disabled={progress.visible}>Find Bundles!</button>
+          <div className="search-action-row">
+            <button className="btn-search" style={{ marginTop: 0 }} onClick={handleSearch} disabled={progress.visible}>Find Bundles!</button>
+            <span className="or-text">— or —</span>
+            <Link href="/collection-guides" className="btn-guides">Get Started with Collection Guides</Link>
+          </div>
           {status.msg && <div className={status.type === "error" ? "s-error" : "s-loading"}>{status.msg}</div>}
           {progress.visible && (
             <div className="progress-wrap">
