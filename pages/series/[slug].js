@@ -43,6 +43,7 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
   const [error, setError] = useState(null);
   const [jumpInput, setJumpInput] = useState("");
   const [scanning, setScanning] = useState(false);
+  const [wrapMsg, setWrapMsg] = useState(null);
   const abortRef = useRef(null);
   const autoSkipCount = useRef(0);
 
@@ -81,9 +82,19 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
 
   useEffect(() => {
     if (loading || !data) return;
-    if (sellerCount > 0 || !hasNext) {
+    if (sellerCount > 0) {
       autoSkipCount.current = 0;
       setScanning(false);
+      return;
+    }
+    if (!hasNext) {
+      const wasScanning = autoSkipCount.current > 0;
+      autoSkipCount.current = 0;
+      setScanning(false);
+      if (wasScanning) {
+        setWrapMsg(`No bundles found at $${maxPriceNum.toFixed(2)} through the full series — try raising your max price.`);
+        setStartIdx(0);
+      }
       return;
     }
     if (autoSkipCount.current >= MAX_AUTO_SKIP) {
@@ -107,12 +118,14 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
 
   function goNext() {
     autoSkipCount.current = 0;
+    setWrapMsg(null);
     const next = startIdx + batchSize;
     if (next < totalIssues) setStartIdx(next);
   }
   function goPrev() {
     autoSkipCount.current = 0;
     setScanning(false);
+    setWrapMsg(null);
     setStartIdx(Math.max(0, startIdx - batchSize));
   }
   function handleJump(e) {
@@ -121,6 +134,7 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
     if (isNaN(num) || num < 1) return;
     autoSkipCount.current = 0;
     setScanning(false);
+    setWrapMsg(null);
     setStartIdx(Math.max(0, Math.min(num - 1, totalIssues - 1)));
     setJumpInput("");
   }
@@ -184,6 +198,7 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
         @keyframes dots{0%,100%{content:'.'}33%{content:'..'}66%{content:'...'}}
         .error-state{text-align:center;padding:2rem;color:#cc1f00;font-weight:600}
         .no-results{text-align:center;padding:2rem;color:#666;font-size:0.95rem;font-weight:400}
+        .wrap-msg{background:#ffe066;border:2px solid #1a1a1a;padding:0.6rem 1rem;font-size:0.85rem;font-weight:600;letter-spacing:0.5px;margin-bottom:1.25rem}
         .stats-row{display:flex;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap}
         .stat-box{flex:1;min-width:110px;background:#ffe066;border:2px solid #1a1a1a;padding:0.6rem 1rem;text-align:center}
         .stat-number{font-family:'Bangers',cursive;font-size:2.2rem;color:#cc1f00;line-height:1}
@@ -278,7 +293,7 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
               type="number"
               id="max-price-series"
               value={maxPrice}
-              onChange={(e) => setMaxPrice(e.target.value)}
+              onChange={(e) => { setMaxPrice(e.target.value); setWrapMsg(null); }}
               min="0.01" max="30" step="0.50"
             />
             <span className="hint">(filters displayed results; all prices cached)</span>
@@ -303,6 +318,7 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
 
           {!loading && !scanning && !error && data && (
             <>
+              {wrapMsg && <div className="wrap-msg">↩ {wrapMsg}</div>}
               <div className="results-title">
                 {sellerCount === 0
                   ? "No Bundle Opportunities Found"
