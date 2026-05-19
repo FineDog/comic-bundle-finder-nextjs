@@ -106,8 +106,9 @@ function makeAffiliateUrl(url) {
 async function searchEbay(token, issueName, maxPrice) {
   // Append exclusion terms to filter out lot/set/bundle listings
   const EXCLUSIONS = "-lot -set -full -run -collection -bundle -wholesale";
+  const queryName = issueName.replace(/-/g, "");
   const params = new URLSearchParams({
-    q: `${issueName} ${EXCLUSIONS}`,
+    q: `${queryName} ${EXCLUSIONS}`,
     category_ids: CATEGORY_ID,
     limit: MAX_RESULTS,
   });
