@@ -101,16 +101,40 @@ function makeAffiliateUrl(url) {
   return url.includes("?") ? `${url}&${suffix}` : `${url}?${suffix}`;
 }
 
+// ─── Canonical hyphenated title list ─────────────────────────────────────────
+
+// When a user omits a hyphen (e.g. "spiderman"), the Browse API returns far
+// fewer results than "spider-man".  If a word matches a dehyphenated form
+// here we run a second query with the canonical form and merge the results.
+const HYPHENATED_WORDS = [
+  // Spider-* family
+  "spider-man", "spider-girl", "spider-gwen", "spider-woman",
+  "spider-verse", "spider-ham",
+  // X-* family
+  "x-men", "x-force", "x-factor", "x-23", "x-statix", "x-treme",
+  // Other hyphenated series
+  "she-hulk", "man-thing", "star-lord",
+];
+
+function getCanonicalQueryName(issueName) {
+  const lower = issueName.toLowerCase();
+  let result = issueName;
+  let changed = false;
+  for (const word of HYPHENATED_WORDS) {
+    const flat = word.replace(/-/g, "");
+    if (lower.includes(word)) continue;
+    if (new RegExp(`\\b${flat}\\b`, "i").test(issueName)) {
+      result = result.replace(new RegExp(`\\b${flat}\\b`, "gi"), word);
+      changed = true;
+    }
+  }
+  return changed ? result : null;
+}
+
 // ─── eBay search ──────────────────────────────────────────────────────────────
 
 async function searchEbay(token, issueName, maxPrice) {
-  // Append exclusion terms to filter out lot/set/bundle listings
   const EXCLUSIONS = "-lot -set -full -run -collection -bundle -wholesale";
-  const params = new URLSearchParams({
-    q: `${issueName} ${EXCLUSIONS}`,
-    category_ids: CATEGORY_ID,
-    limit: MAX_RESULTS,
-  });
   const filter = `price:[0..${maxPrice}],buyingOptions:{FIXED_PRICE},conditions:{NEW|USED}`;
   const encodedFilter = encodeURIComponent(filter)
     .replace(/%7B/g, "{").replace(/%7D/g, "}")
@@ -118,44 +142,55 @@ async function searchEbay(token, issueName, maxPrice) {
     .replace(/%5D/g, "]").replace(/%2C/g, ",")
     .replace(/%3A/g, ":");
 
-  const url = `https://api.ebay.com/buy/browse/v1/item_summary/search?${params}&filter=${encodedFilter}`;
-  const res = await fetch(url, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "X-EBAY-C-MARKETPLACE-ID": "EBAY_US",
-    },
-  });
+  const canonicalName = getCanonicalQueryName(issueName);
+  const queryNames = canonicalName ? [issueName, canonicalName] : [issueName];
 
-  if (!res.ok) return [];
-
-  const data = await res.json();
+  const seenUrls = new Set();
   const results = [];
 
-  for (const item of data.itemSummaries || []) {
-    const title = item.title || "";
-    const priceStr = item.price?.value || "0";
+  for (const queryName of queryNames) {
+    const params = new URLSearchParams({
+      q: `${queryName} ${EXCLUSIONS}`,
+      category_ids: CATEGORY_ID,
+      limit: MAX_RESULTS,
+    });
+    const url = `https://api.ebay.com/buy/browse/v1/item_summary/search?${params}&filter=${encodedFilter}`;
+    const res = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "X-EBAY-C-MARKETPLACE-ID": "EBAY_US",
+      },
+    });
+    if (!res.ok) continue;
 
-    if (parseFloat(priceStr) > maxPrice) continue;
-    if (!titleMatchesIssue(title, issueName)) continue;
+    const data = await res.json();
+    for (const item of data.itemSummaries || []) {
+      const rawUrl = item.itemWebUrl || "";
+      if (seenUrls.has(rawUrl)) continue;
+      seenUrls.add(rawUrl);
 
-    const seller = item.seller?.username || "unknown";
-    const itemUrl = makeAffiliateUrl(item.itemWebUrl || "");
+      const title = item.title || "";
+      const priceStr = item.price?.value || "0";
+      if (parseFloat(priceStr) > maxPrice) continue;
+      if (!titleMatchesIssue(title, issueName)) continue;
 
-    const shippingOpts = item.shippingOptions || [];
-    let shipping = "unknown";
-    if (shippingOpts.length) {
-      shipping =
-        shippingOpts[0].shippingCostType === "FREE"
-          ? "0.00"
-          : shippingOpts[0].shippingCost?.value || "unknown";
+      const seller = item.seller?.username || "unknown";
+      const itemUrl = makeAffiliateUrl(rawUrl);
+      const shippingOpts = item.shippingOptions || [];
+      let shipping = "unknown";
+      if (shippingOpts.length) {
+        shipping =
+          shippingOpts[0].shippingCostType === "FREE"
+            ? "0.00"
+            : shippingOpts[0].shippingCost?.value || "unknown";
+      }
+      const promotions = (item.promotions || [])
+        .map((p) => p.message || "")
+        .filter(Boolean)
+        .join(" | ");
+
+      results.push({ seller, price: priceStr, title, url: itemUrl, shipping, promotions });
     }
-
-    const promotions = (item.promotions || [])
-      .map((p) => p.message || "")
-      .filter(Boolean)
-      .join(" | ");
-
-    results.push({ seller, price: priceStr, title, url: itemUrl, shipping, promotions });
   }
 
   return results;
