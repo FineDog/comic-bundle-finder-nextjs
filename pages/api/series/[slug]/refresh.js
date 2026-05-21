@@ -59,7 +59,7 @@ export default async function handler(req, res) {
       batch.map((issue, j) =>
         put(
           `${seriesConfig.blobPrefix}${issue.number}.json`,
-          JSON.stringify({ issueName: issue.issueName, listings: listings[j] }),
+          JSON.stringify({ issueName: issue.issueName, listings: listings[j], cachedAt: Date.now() }),
           { access: "public", addRandomSuffix: false, contentType: "application/json" }
         ).then(() => { refreshed++; }).catch((e) => {
           errors.push(`blob write ${issue.number}: ${e.message}`);

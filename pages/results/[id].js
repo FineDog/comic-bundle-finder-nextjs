@@ -1,5 +1,5 @@
 import Head from "next/head";
-import { list } from "@vercel/blob";
+import { getBlobUrl } from "../../lib/blob-url";
 
 function esc(s) { return String(s || ""); }
 
@@ -144,9 +144,7 @@ export async function getServerSideProps({ params }) {
   // Sanitize ID — only allow alphanumeric characters
   if (!/^[A-Za-z0-9]{6,12}$/.test(id)) return { notFound: true };
   try {
-    const { blobs } = await list({ prefix: `results/${id}.json` });
-    if (!blobs.length) return { notFound: true };
-    const res = await fetch(blobs[0].url);
+    const res = await fetch(getBlobUrl(`results/${id}.json`));
     if (!res.ok) return { notFound: true };
     const data = await res.json();
     return { props: { data } };

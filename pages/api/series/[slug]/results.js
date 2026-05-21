@@ -6,9 +6,10 @@
 
 import fs from "fs";
 import path from "path";
-import { list, put } from "@vercel/blob";
+import { put } from "@vercel/blob";
 import { getEbayToken, searchEbay, aggregateRows } from "../../../../lib/ebay";
 import { getSeriesConfig } from "../../../../lib/series-config";
+import { getBlobUrl } from "../../../../lib/blob-url";
 
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 const CONCURRENCY = 8;
@@ -30,46 +31,32 @@ export default async function handler(req, res) {
 
   if (!batchIssues.length) return res.status(400).json({ error: "No issues in that range." });
 
-  // One list() call fetches metadata for all cached blobs in this series.
-  const { blobs } = await list({ prefix: config.blobPrefix });
-  const blobMap = {};
-  for (const blob of blobs) {
-    const num = blob.pathname.match(/issue-(.+)\.json$/)?.[1];
-    if (num) blobMap[num] = { url: blob.url, uploadedAt: new Date(blob.uploadedAt).getTime() };
-  }
-
+  // Fetch each issue's cached blob directly by its deterministic URL.
+  // This avoids list() (an Advanced Operation) — plain CDN fetches are free.
   const now = Date.now();
-  const freshIssues = [];
+  const freshResults = [];
   const staleIssues = [];
 
-  for (const issue of batchIssues) {
-    const entry = blobMap[issue.number];
-    if (entry && now - entry.uploadedAt < CACHE_TTL_MS) {
-      freshIssues.push({ issue, url: entry.url, cachedAt: entry.uploadedAt });
-    } else {
-      staleIssues.push(issue);
-    }
-  }
-
-  // Fetch fresh blobs in parallel.
-  const freshResults = await Promise.all(
-    freshIssues.map(async ({ issue, url, cachedAt }) => {
+  await Promise.all(
+    batchIssues.map(async (issue) => {
       try {
+        const url = getBlobUrl(`${config.blobPrefix}${issue.number}.json`);
         const r = await fetch(url);
-        if (!r.ok) return null;
+        if (!r.ok) { staleIssues.push(issue); return; }
         const data = await r.json();
-        return { issue, listings: data.listings, cachedAt };
+        const cachedAt = data.cachedAt || 0;
+        if (now - cachedAt < CACHE_TTL_MS) {
+          freshResults.push({ issue, listings: data.listings, cachedAt });
+        } else {
+          staleIssues.push(issue);
+        }
       } catch {
-        return null;
+        staleIssues.push(issue);
       }
     })
   );
 
-  // Any blobs that failed to fetch fall back to eBay.
-  const blobFailures = freshIssues
-    .filter((_, i) => freshResults[i] === null)
-    .map(({ issue }) => issue);
-  const staleAll = [...staleIssues, ...blobFailures];
+  const staleAll = staleIssues;
 
   // Fetch stale/missing issues from eBay.
   const ebayResults = [];
@@ -87,7 +74,7 @@ export default async function handler(req, res) {
         // Store in Blob for future requests (fire-and-forget).
         put(
           `${config.blobPrefix}${issue.number}.json`,
-          JSON.stringify({ issueName: issue.issueName, listings }),
+          JSON.stringify({ issueName: issue.issueName, listings, cachedAt: now }),
           { access: "public", addRandomSuffix: false, contentType: "application/json" }
         ).catch(() => {});
       }
