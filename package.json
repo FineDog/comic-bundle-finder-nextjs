@@ -2,11 +2,13 @@
   "name": "comic-bundle-finder",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "node --test lib/parse-title.test.js"
   },
   "dependencies": {
     "@vercel/analytics": "^2.0.1",
