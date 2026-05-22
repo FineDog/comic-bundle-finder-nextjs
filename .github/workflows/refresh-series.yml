@@ -1,10 +1,12 @@
-# Refreshes the per-issue eBay cache for all series pages nightly.
-# Calls the refresh API in paginated batches so each request stays within
-# Vercel's 60-second function timeout (~80 issues per batch, ~15s each).
+# Fetches fresh eBay data for all series and commits the results as static
+# JSON files (data/cache/{slug}.json). The commit triggers a Vercel redeploy
+# so the app always serves up-to-date cached data with zero Blob API calls.
 #
 # Required GitHub secrets:
-#   REFRESH_SECRET  — matches the REFRESH_SECRET env var set in Vercel
-#   SITE_URL        — e.g. https://www.comicbundlefinder.com (no trailing slash)
+#   EBAY_APP_ID   — eBay OAuth client ID
+#   EBAY_SECRET   — eBay OAuth client secret
+# Optional:
+#   EBAY_CAMPAIGN_ID — eBay Partner Network campaign ID (affiliate links)
 
 name: Refresh Series Cache
 
@@ -13,48 +15,29 @@ on:
     - cron: "0 6 * * *"   # 6:00 AM UTC daily (2 AM Eastern)
   workflow_dispatch:        # allow manual trigger from GitHub UI
 
+permissions:
+  contents: write
+
 jobs:
-
-  # Amazing Spider-Man Vol. 1 — 442 issues — 6 batches of 80
-  refresh-asm-vol1:
+  refresh:
     runs-on: ubuntu-latest
-    name: Amazing Spider-Man Vol. 1
     steps:
-      - name: Issues 1–80
-        run: curl -sf "${{ secrets.SITE_URL }}/api/series/amazing-spider-man-vol-1/refresh?start=0&count=80&secret=${{ secrets.REFRESH_SECRET }}"
-      - name: Issues 81–160
-        run: curl -sf "${{ secrets.SITE_URL }}/api/series/amazing-spider-man-vol-1/refresh?start=80&count=80&secret=${{ secrets.REFRESH_SECRET }}"
-      - name: Issues 161–240
-        run: curl -sf "${{ secrets.SITE_URL }}/api/series/amazing-spider-man-vol-1/refresh?start=160&count=80&secret=${{ secrets.REFRESH_SECRET }}"
-      - name: Issues 241–320
-        run: curl -sf "${{ secrets.SITE_URL }}/api/series/amazing-spider-man-vol-1/refresh?start=240&count=80&secret=${{ secrets.REFRESH_SECRET }}"
-      - name: Issues 321–400
-        run: curl -sf "${{ secrets.SITE_URL }}/api/series/amazing-spider-man-vol-1/refresh?start=320&count=80&secret=${{ secrets.REFRESH_SECRET }}"
-      - name: Issues 401–442
-        run: curl -sf "${{ secrets.SITE_URL }}/api/series/amazing-spider-man-vol-1/refresh?start=400&count=80&secret=${{ secrets.REFRESH_SECRET }}"
-
-  # X-Men Vol. 1 — 141 issues — 2 batches of 80
-  refresh-xmen-vol1:
-    runs-on: ubuntu-latest
-    name: X-Men Vol. 1
-    steps:
-      - name: Issues 1–80
-        run: curl -sf "${{ secrets.SITE_URL }}/api/series/x-men-vol-1/refresh?start=0&count=80&secret=${{ secrets.REFRESH_SECRET }}"
-      - name: Issues 81–141
-        run: curl -sf "${{ secrets.SITE_URL }}/api/series/x-men-vol-1/refresh?start=80&count=80&secret=${{ secrets.REFRESH_SECRET }}"
-
-  # Daredevil Vol. 1 — 381 issues — 5 batches of 80
-  refresh-daredevil-vol1:
-    runs-on: ubuntu-latest
-    name: Daredevil Vol. 1
-    steps:
-      - name: Issues 1–80
-        run: curl -sf "${{ secrets.SITE_URL }}/api/series/daredevil-vol-1/refresh?start=0&count=80&secret=${{ secrets.REFRESH_SECRET }}"
-      - name: Issues 81–160
-        run: curl -sf "${{ secrets.SITE_URL }}/api/series/daredevil-vol-1/refresh?start=80&count=80&secret=${{ secrets.REFRESH_SECRET }}"
-      - name: Issues 161–240
-        run: curl -sf "${{ secrets.SITE_URL }}/api/series/daredevil-vol-1/refresh?start=160&count=80&secret=${{ secrets.REFRESH_SECRET }}"
-      - name: Issues 241–320
-        run: curl -sf "${{ secrets.SITE_URL }}/api/series/daredevil-vol-1/refresh?start=240&count=80&secret=${{ secrets.REFRESH_SECRET }}"
-      - name: Issues 321–381
-        run: curl -sf "${{ secrets.SITE_URL }}/api/series/daredevil-vol-1/refresh?start=320&count=80&secret=${{ secrets.REFRESH_SECRET }}"
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+      - name: Install dependencies
+        run: npm ci
+      - name: Fetch eBay data and write cache files
+        env:
+          EBAY_APP_ID: ${{ secrets.EBAY_APP_ID }}
+          EBAY_SECRET: ${{ secrets.EBAY_SECRET }}
+          EBAY_CAMPAIGN_ID: ${{ secrets.EBAY_CAMPAIGN_ID }}
+        run: node scripts/refresh-cache.js
+      - name: Commit and push cache files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/cache/
+          git diff --staged --quiet || (git commit -m "chore: refresh eBay cache" && git push)
