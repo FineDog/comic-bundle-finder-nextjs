@@ -879,131 +879,145 @@ export default function Preview() {
 
         {results && (
           <div className="panel">
-            <div className="results-title">{sellerCount === 0 ? "No Bundle Opportunities Found" : "Results — Sellers Ranked by Bundle Count"}</div>
+            <div className="results-title">
+              {totalSellers === 0
+                ? "No Bundle Opportunities Found"
+                : sellerCount === 0
+                ? "No Results Match Current Filters"
+                : "Results — Sellers Ranked by Bundle Count"}
+            </div>
 
-            {sellerCount === 0 ? (
-              <div className="no-results">{singleIssueMode ? "No seller has more than one listing for this issue. Try raising your max price, or check back later." : "No single seller carries more than one of your issues. You may need to buy these separately, or try broadening your search."}</div>
-            ) : (<>
-              {wave2Loading && (
-                <div className="wave2-banner">
-                  <span className="wave2-spinner" />
-                  Loading additional results…
-                </div>
+            {wave2Loading && (
+              <div className="wave2-banner">
+                <span className="wave2-spinner" />
+                Loading additional results…
+              </div>
+            )}
+
+            <div className="stats-row">
+              <div className="stat-box"><div className="stat-number">{results.issueCount}</div><div className="stat-label">{singleIssueMode ? "Issue Searched" : "Issues Searched"}</div></div>
+              <div className="stat-box"><div className="stat-number">{totalSellers}</div><div className="stat-label">Total Sellers Found</div></div>
+              <div className="stat-box"><div className="stat-number">{sellerCount}</div><div className="stat-label">{singleIssueMode ? "Multi-Copy Sellers" : "Bundle Opportunities"}</div></div>
+            </div>
+
+            {/* Filter & Sort — always visible so users can adjust when filtered to zero */}
+            <div className="filter-toggle-row">
+              <button
+                className={`btn-filter-toggle${filtersOpen ? " active" : ""}`}
+                onClick={() => setFiltersOpen(o => !o)}
+              >
+                Filter &amp; Sort {filtersOpen ? "▲" : "▼"}
+                {filtersActive && !filtersOpen && <span className="filter-active-dot" />}
+              </button>
+              {filtersActive && (
+                <button className="btn-filter-reset" onClick={resetFilters}>Reset</button>
               )}
+            </div>
 
-              <div className="stats-row">
-                <div className="stat-box"><div className="stat-number">{results.issueCount}</div><div className="stat-label">{singleIssueMode ? "Issue Searched" : "Issues Searched"}</div></div>
-                <div className="stat-box"><div className="stat-number">{totalSellers}</div><div className="stat-label">Total Sellers Found</div></div>
-                <div className="stat-box"><div className="stat-number">{sellerCount}</div><div className="stat-label">{singleIssueMode ? "Multi-Copy Sellers" : "Bundle Opportunities"}</div></div>
-              </div>
-
-              {/* Filter & Sort panel */}
-              <div className="filter-toggle-row">
-                <button
-                  className={`btn-filter-toggle${filtersOpen ? " active" : ""}`}
-                  onClick={() => setFiltersOpen(o => !o)}
-                >
-                  Filter &amp; Sort {filtersOpen ? "▲" : "▼"}
-                  {filtersActive && !filtersOpen && <span className="filter-active-dot" />}
-                </button>
-                {filtersActive && (
-                  <button className="btn-filter-reset" onClick={resetFilters}>Reset</button>
-                )}
-              </div>
-
-              {filtersOpen && (
-                <div className="filter-panel">
-                  <div className="filter-grid">
-                    {/* Price range */}
-                    <div className="filter-section">
-                      <span className="filter-section-label">Price per issue</span>
-                      <div className="filter-row">
-                        <span style={{ fontSize: "0.8rem", fontWeight: 600 }}>From</span>
-                        <span style={{ fontWeight: 600 }}>$</span>
-                        <input
-                          className="filter-input"
-                          type="number"
-                          placeholder="0"
-                          value={filters.minPrice}
-                          onChange={e => setFilter("minPrice", e.target.value)}
-                          min="0" step="0.50"
-                        />
-                        <span style={{ fontSize: "0.8rem", fontWeight: 600 }}>to</span>
-                        <span style={{ fontWeight: 600 }}>$</span>
-                        <input
-                          className="filter-input"
-                          type="number"
-                          placeholder="any"
-                          value={filters.maxPrice}
-                          onChange={e => setFilter("maxPrice", e.target.value)}
-                          min="0" step="0.50"
-                        />
-                      </div>
+            {filtersOpen && (
+              <div className="filter-panel">
+                <div className="filter-grid">
+                  {/* Price range */}
+                  <div className="filter-section">
+                    <span className="filter-section-label">Price per issue</span>
+                    <div className="filter-row">
+                      <span style={{ fontSize: "0.8rem", fontWeight: 600 }}>From</span>
+                      <span style={{ fontWeight: 600 }}>$</span>
+                      <input
+                        className="filter-input"
+                        type="number"
+                        placeholder="0"
+                        value={filters.minPrice}
+                        onChange={e => setFilter("minPrice", e.target.value)}
+                        min="0" step="0.50"
+                      />
+                      <span style={{ fontSize: "0.8rem", fontWeight: 600 }}>to</span>
+                      <span style={{ fontWeight: 600 }}>$</span>
+                      <input
+                        className="filter-input"
+                        type="number"
+                        placeholder="any"
+                        value={filters.maxPrice}
+                        onChange={e => setFilter("maxPrice", e.target.value)}
+                        min="0" step="0.50"
+                      />
                     </div>
+                  </div>
 
-                    {/* Min bundle size */}
-                    <div className="filter-section">
-                      <span className="filter-section-label">Min issues per bundle</span>
-                      <div className="filter-row">
-                        <input
-                          className="filter-input"
-                          type="number"
-                          value={filters.minBundle}
-                          onChange={e => setFilter("minBundle", Math.max(2, parseInt(e.target.value) || 2))}
-                          min="2" step="1"
-                          style={{ width: "60px" }}
-                        />
-                        <span style={{ fontSize: "0.8rem", fontWeight: 400 }}>issues minimum</span>
-                      </div>
+                  {/* Min bundle size */}
+                  <div className="filter-section">
+                    <span className="filter-section-label">Min issues per bundle</span>
+                    <div className="filter-row">
+                      <input
+                        className="filter-input"
+                        type="number"
+                        value={filters.minBundle}
+                        onChange={e => setFilter("minBundle", Math.max(2, parseInt(e.target.value) || 2))}
+                        min="2" step="1"
+                        style={{ width: "60px" }}
+                      />
+                      <span style={{ fontSize: "0.8rem", fontWeight: 400 }}>issues minimum</span>
                     </div>
+                  </div>
 
-                    {/* Shipping filter */}
-                    <div className="filter-section">
-                      <span className="filter-section-label">Free shipping</span>
-                      <div className="filter-radio-group">
-                        {[["included", "Any"], ["required", "Free only"], ["excluded", "No free"]].map(([val, label]) => (
-                          <label key={val} className="filter-radio-label">
-                            <input
-                              type="radio"
-                              name="shipping-filter"
-                              value={val}
-                              checked={filters.shipping === val}
-                              onChange={() => setFilter("shipping", val)}
-                            />
-                            {label}
-                          </label>
-                        ))}
-                      </div>
+                  {/* Shipping filter */}
+                  <div className="filter-section">
+                    <span className="filter-section-label">Free shipping</span>
+                    <div className="filter-radio-group">
+                      {[["included", "Any"], ["required", "Free only"], ["excluded", "No free"]].map(([val, label]) => (
+                        <label key={val} className="filter-radio-label">
+                          <input
+                            type="radio"
+                            name="shipping-filter"
+                            value={val}
+                            checked={filters.shipping === val}
+                            onChange={() => setFilter("shipping", val)}
+                          />
+                          {label}
+                        </label>
+                      ))}
                     </div>
+                  </div>
 
-                    {/* Sort */}
-                    <div className="filter-section">
-                      <span className="filter-section-label">Sort by</span>
-                      <div className="filter-radio-group" style={{ flexDirection: "column", gap: "0.3rem" }}>
-                        {[
-                          ["bundle_size", "Bundle size (most issues first)"],
-                          ["est_price_per_issue", "Lowest est. price per issue"],
-                          ["est_shipping", "Lowest est. shipping"],
-                        ].map(([val, label]) => (
-                          <label key={val} className="filter-radio-label">
-                            <input
-                              type="radio"
-                              name="sort-by"
-                              value={val}
-                              checked={sortBy === val}
-                              onChange={() => setSortBy(val)}
-                            />
-                            {label}
-                          </label>
-                        ))}
-                      </div>
+                  {/* Sort */}
+                  <div className="filter-section">
+                    <span className="filter-section-label">Sort by</span>
+                    <div className="filter-radio-group" style={{ flexDirection: "column", gap: "0.3rem" }}>
+                      {[
+                        ["bundle_size", "Bundle size (most issues first)"],
+                        ["est_price_per_issue", "Lowest est. price per issue"],
+                        ["est_shipping", "Lowest est. shipping"],
+                      ].map(([val, label]) => (
+                        <label key={val} className="filter-radio-label">
+                          <input
+                            type="radio"
+                            name="sort-by"
+                            value={val}
+                            checked={sortBy === val}
+                            onChange={() => setSortBy(val)}
+                          />
+                          {label}
+                        </label>
+                      ))}
                     </div>
+                  </div>
 
-                    {/* Required issues — only shown for multi-issue searches */}
-                    {!singleIssueMode && results.issues?.length > 1 && (
+                  {/* Required issues — only shown for multi-issue searches */}
+                  {!singleIssueMode && results.issues?.length > 1 && (() => {
+                    const allSelected = results.issues.every(i => filters.requiredIssues.includes(i));
+                    return (
                       <div className="filter-section" style={{ gridColumn: "1 / -1" }}>
                         <hr className="filter-divider" style={{ marginTop: 0, marginBottom: "0.75rem" }} />
-                        <span className="filter-section-label">Required issues (only show sellers who have these)</span>
+                        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.5rem", flexWrap: "wrap" }}>
+                          <span className="filter-section-label" style={{ margin: 0 }}>Required issues (only show sellers who have these)</span>
+                          <button
+                            className="btn-filter-reset"
+                            style={{ textDecoration: "none", background: "#ffe066", border: "1.5px solid #1a1a1a", padding: "1px 8px", fontSize: "0.72rem", fontWeight: 600, letterSpacing: "0.5px", cursor: "pointer" }}
+                            onClick={() => setFilter("requiredIssues", allSelected ? [] : [...results.issues])}
+                          >
+                            {allSelected ? "Deselect All" : "Select All"}
+                          </button>
+                        </div>
                         <div className="filter-checkboxes">
                           {results.issues.map(issue => (
                             <label
@@ -1021,11 +1035,21 @@ export default function Preview() {
                           ))}
                         </div>
                       </div>
-                    )}
-                  </div>
+                    );
+                  })()}
                 </div>
-              )}
+              </div>
+            )}
 
+            {sellerCount === 0 ? (
+              <div className="no-results">
+                {totalSellers === 0
+                  ? (singleIssueMode
+                      ? "No seller has more than one listing for this issue. Try checking back later."
+                      : "No single seller carries more than one of your issues. You may need to buy these separately, or try broadening your search.")
+                  : "No sellers match the current filters. Try adjusting or resetting them above."}
+              </div>
+            ) : (<>
               <div className="share-panel">
                 <div className="share-title">Save or Share These Results</div>
                 <div className="share-buttons">
