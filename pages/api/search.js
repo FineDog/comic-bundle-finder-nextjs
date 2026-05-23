@@ -1,19 +1,15 @@
 // pages/api/search.js
-// Runs on Vercel's servers — credentials and logic never reach the browser.
-
 import { titleMatchesQuery } from "../../lib/parse-title.js";
 
 const EBAY_APP_ID  = process.env.EBAY_APP_ID;
 const EBAY_SECRET  = process.env.EBAY_SECRET;
 const CAMPAIGN_ID  = process.env.EBAY_CAMPAIGN_ID || "";
-const CATEGORY_ID  = "259104"; // eBay: Comics > Single Issues
+const CATEGORY_ID  = "259104";
 const MAX_RESULTS  = 200;
 const CONCURRENCY  = 8;
 
 let cachedToken    = null;
 let tokenExpiresAt = 0;
-
-// ─── eBay auth ────────────────────────────────────────────────────────────────
 
 async function getEbayToken() {
   if (cachedToken && Date.now() < tokenExpiresAt) return cachedToken;
@@ -29,11 +25,9 @@ async function getEbayToken() {
   const data = await res.json();
   if (!data.access_token) throw new Error("Failed to get eBay token.");
   cachedToken = data.access_token;
-  tokenExpiresAt = Date.now() + (data.expires_in - 60) * 1000; // 60s early expiry buffer
+  tokenExpiresAt = Date.now() + (data.expires_in - 60) * 1000;
   return cachedToken;
 }
-
-// ─── Affiliate URL ────────────────────────────────────────────────────────────
 
 function makeAffiliateUrl(url) {
   if (!CAMPAIGN_ID || !url) return url;
@@ -41,18 +35,10 @@ function makeAffiliateUrl(url) {
   return url.includes("?") ? `${url}&${suffix}` : `${url}?${suffix}`;
 }
 
-// ─── Canonical hyphenated title list ─────────────────────────────────────────
-
-// When a user omits a hyphen (e.g. "spiderman"), the Browse API returns far
-// fewer results than "spider-man".  If a word matches a dehyphenated form
-// here we run a second query with the canonical form and merge the results.
 const HYPHENATED_WORDS = [
-  // Spider-* family
   "spider-man", "spider-girl", "spider-gwen", "spider-woman",
   "spider-verse", "spider-ham",
-  // X-* family
   "x-men", "x-force", "x-factor", "x-23", "x-statix", "x-treme",
-  // Other hyphenated series
   "she-hulk", "man-thing", "star-lord",
 ];
 
@@ -70,49 +56,56 @@ function getQueryVariants(issueName) {
   return [...variants];
 }
 
-// ─── eBay search ──────────────────────────────────────────────────────────────
-
-async function searchEbay(token, issueName, maxPrice) {
+// Returns { items: [...], total: number }
+// total is the max across all query variants — used by the frontend to decide if wave 2 is needed.
+async function searchEbay(token, issueName, offset = 0, zip = null) {
   const EXCLUSIONS = "-lot -set -full -run -collection -bundle -wholesale";
-  const filter = `price:[0..${maxPrice}],buyingOptions:{FIXED_PRICE},conditions:{NEW|USED}`;
+  const filter = `buyingOptions:{FIXED_PRICE},conditions:{NEW|USED}`;
   const encodedFilter = encodeURIComponent(filter)
     .replace(/%7B/g, "{").replace(/%7D/g, "}")
     .replace(/%7C/g, "|").replace(/%5B/g, "[")
     .replace(/%5D/g, "]").replace(/%2C/g, ",")
     .replace(/%3A/g, ":");
 
-  const queryNames = getQueryVariants(issueName);
+  const endUserCtx = zip
+    ? `contextualLocation=country%3DUS%2Czip%3D${encodeURIComponent(zip)}`
+    : null;
 
+  const queryNames = getQueryVariants(issueName);
   const seenUrls = new Set();
-  const results = [];
+  const items = [];
+  let total = 0;
 
   for (const queryName of queryNames) {
     const params = new URLSearchParams({
       q: `${queryName} ${EXCLUSIONS}`,
       category_ids: CATEGORY_ID,
       limit: MAX_RESULTS,
+      offset,
     });
     const url = `https://api.ebay.com/buy/browse/v1/item_summary/search?${params}&filter=${encodedFilter}`;
-    const res = await fetch(url, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "X-EBAY-C-MARKETPLACE-ID": "EBAY_US",
-      },
-    });
+    const headers = {
+      Authorization: `Bearer ${token}`,
+      "X-EBAY-C-MARKETPLACE-ID": "EBAY_US",
+    };
+    if (endUserCtx) headers["X-EBAY-C-ENDUSERCTX"] = endUserCtx;
+
+    const res = await fetch(url, { headers });
     if (!res.ok) continue;
 
     const data = await res.json();
+    total = Math.max(total, data.total || 0);
+
     for (const item of data.itemSummaries || []) {
       const rawUrl = item.itemWebUrl || "";
       if (seenUrls.has(rawUrl)) continue;
       seenUrls.add(rawUrl);
 
       const title = item.title || "";
-      const priceStr = item.price?.value || "0";
-      if (parseFloat(priceStr) > maxPrice) continue;
       if (!titleMatchesQuery(title, issueName)) continue;
 
       const seller = item.seller?.username || "unknown";
+      const priceStr = item.price?.value || "0";
       const itemUrl = makeAffiliateUrl(rawUrl);
       const shippingOpts = item.shippingOptions || [];
       let shipping = "unknown";
@@ -127,47 +120,22 @@ async function searchEbay(token, issueName, maxPrice) {
         .filter(Boolean)
         .join(" | ");
 
-      results.push({ seller, price: priceStr, title, url: itemUrl, shipping, promotions });
+      items.push({ seller, price: priceStr, title, url: itemUrl, shipping, promotions });
     }
   }
 
-  return results;
+  return { items, total };
 }
 
-// ─── Handler ──────────────────────────────────────────────────────────────────
-
-export default async function handler(req, res) {
-  if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed." });
-  if (!EBAY_APP_ID || !EBAY_SECRET) return res.status(500).json({ error: "eBay credentials not configured." });
-
-  const issues = [...new Set((req.body.issues || []).map((i) => i.trim()).filter(Boolean))];
-  const maxPrice = parseFloat(req.body.max_price) || 10.0;
-
-  if (!issues.length) return res.status(400).json({ error: "No issues provided." });
-
-  let token;
-  try {
-    token = await getEbayToken();
-  } catch (e) {
-    return res.status(500).json({ error: `eBay authentication failed: ${e.message}` });
+function buildSellerIssueMap(existing, issue, items) {
+  for (const listing of items) {
+    if (!existing[listing.seller]) existing[listing.seller] = {};
+    if (!existing[listing.seller][issue]) existing[listing.seller][issue] = [];
+    existing[listing.seller][issue].push(listing);
   }
+}
 
-  const sellerIssues = {};
-
-  // Run searches in parallel, CONCURRENCY at a time
-  for (let i = 0; i < issues.length; i += CONCURRENCY) {
-    const batch = issues.slice(i, i + CONCURRENCY);
-    const batchResults = await Promise.all(batch.map(issue => searchEbay(token, issue, maxPrice)));
-    for (let j = 0; j < batch.length; j++) {
-      const issue = batch[j];
-      for (const listing of batchResults[j]) {
-        if (!sellerIssues[listing.seller]) sellerIssues[listing.seller] = {};
-        if (!sellerIssues[listing.seller][issue]) sellerIssues[listing.seller][issue] = [];
-        sellerIssues[listing.seller][issue].push(listing);
-      }
-    }
-  }
-
+function buildRows(sellerIssues) {
   const rows = [];
   for (const [seller, issuesFound] of Object.entries(sellerIssues)) {
     const bundleCount = Object.keys(issuesFound).length;
@@ -186,7 +154,57 @@ export default async function handler(req, res) {
       }
     }
   }
-
   rows.sort((a, b) => b.bundle_count - a.bundle_count || a.seller.localeCompare(b.seller));
-  return res.status(200).json({ results: rows });
+  return rows;
+}
+
+export default async function handler(req, res) {
+  if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed." });
+  if (!EBAY_APP_ID || !EBAY_SECRET) return res.status(500).json({ error: "eBay credentials not configured." });
+
+  const { issues, issueOffsets, zip } = req.body;
+
+  let token;
+  try {
+    token = await getEbayToken();
+  } catch (e) {
+    return res.status(500).json({ error: `eBay authentication failed: ${e.message}` });
+  }
+
+  // Wave 2: client sends specific issue+offset pairs to fetch additional pages
+  if (issueOffsets && Array.isArray(issueOffsets)) {
+    const sellerIssues = {};
+    for (let i = 0; i < issueOffsets.length; i += CONCURRENCY) {
+      const batch = issueOffsets.slice(i, i + CONCURRENCY);
+      const batchResults = await Promise.all(
+        batch.map(({ issue, offset }) => searchEbay(token, issue, offset, zip || null))
+      );
+      for (let j = 0; j < batch.length; j++) {
+        buildSellerIssueMap(sellerIssues, batch[j].issue, batchResults[j].items);
+      }
+    }
+    return res.status(200).json({ results: buildRows(sellerIssues) });
+  }
+
+  // Wave 1: normal search across all issues at offset 0
+  if (!issues?.length) return res.status(400).json({ error: "No issues provided." });
+  const deduped = [...new Set(issues.map((i) => i.trim()).filter(Boolean))];
+
+  const sellerIssues = {};
+  const totals = {};
+
+  for (let i = 0; i < deduped.length; i += CONCURRENCY) {
+    const batch = deduped.slice(i, i + CONCURRENCY);
+    const batchResults = await Promise.all(
+      batch.map((issue) => searchEbay(token, issue, 0, zip || null))
+    );
+    for (let j = 0; j < batch.length; j++) {
+      const issue = batch[j];
+      const { items, total } = batchResults[j];
+      totals[issue] = total;
+      buildSellerIssueMap(sellerIssues, issue, items);
+    }
+  }
+
+  return res.status(200).json({ results: buildRows(sellerIssues), totals });
 }

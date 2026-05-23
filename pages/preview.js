@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useEffect } from "react";
 import Head from "next/head";
 import Link from "next/link";
 import * as XLSX from "xlsx";
@@ -9,12 +9,19 @@ const STAGES = [
   { pct: 22, msg: "Authenticating…" },
   { pct: 35, msg: "Searching eBay listings…" },
   { pct: 50, msg: "Checking seller inventories…" },
-  { pct: 63, msg: "Filtering by price…" },
+  { pct: 63, msg: "Filtering listings…" },
   { pct: 74, msg: "Verifying issue numbers…" },
   { pct: 83, msg: "Tallying bundle opportunities…" },
   { pct: 90, msg: "Sorting by seller…" },
   { pct: 94, msg: "Almost there…" },
 ];
+
+// Wave 1 returns MAX_RESULTS per issue; wave 2 fetches the remainder.
+const EBAY_PAGE_SIZE = 200;
+
+// Estimated USPS Media Mail shipping range (Zone 1 → Zone 8) shown when
+// geolocation is unavailable and the listing uses calculated shipping.
+const SHIPPING_FALLBACK = "~$4–$6";
 
 // ── Utility ───────────────────────────────────────────────────────────────────
 
@@ -32,13 +39,11 @@ function parseCSVLine(line) {
 function yearFromDateString(s) {
   if (!s) return "";
   const m = s.match(/^(\d{4})-/); if (m) return m[1];
-  // "Sep-00" → 2000, "Sep-99" → 1999 (CLZ format)
   const clz = s.match(/^[A-Za-z]{3}-(\d{2})$/);
   if (clz) { const y = parseInt(clz[1], 10); return String(y < 30 ? 2000 + y : 1900 + y); }
   const d = new Date(s); return isNaN(d) ? "" : String(d.getFullYear());
 }
 
-// Returns { year, month } (month is 1-indexed) or null
 function monthYearFromDateString(s) {
   if (!s) return null;
   const iso = s.match(/^(\d{4})-(\d{2})/);
@@ -54,8 +59,6 @@ function monthYearFromDateString(s) {
   return isNaN(d) ? null : { year: d.getFullYear(), month: d.getMonth() + 1 };
 }
 
-// Add `offset` months to a {year, month} date and return the resulting year as a string.
-// If month is unknown (plain text import), fall back to year only — no date math possible.
 function yearAfterMonths(date, offset) {
   if (!date) return "";
   if (!date.month) return String(date.year);
@@ -68,9 +71,9 @@ function esc(s) { return String(s || ""); }
 
 function cleanSeriesName(name) {
   return name
-    .replace(/\s*\(Vol\.\s*\d+\)/gi, "")          // "(Vol. 1)" — must come before bare Vol. strip
-    .replace(/,?\s*Vol\.\s*\d+/gi, "")             // ", Vol. 1" CLZ format
-    .replace(/\s*\(\d{4}\s*[-–]\s*(?:\d{4}|[Pp]resent)\)/g, "") // "(2000 - 2006)"
+    .replace(/\s*\(Vol\.\s*\d+\)/gi, "")
+    .replace(/,?\s*Vol\.\s*\d+/gi, "")
+    .replace(/\s*\(\d{4}\s*[-–]\s*(?:\d{4}|[Pp]resent)\)/g, "")
     .replace(/\s{2,}/g, " ")
     .trim();
 }
@@ -80,7 +83,7 @@ function parseIssueNum(s) {
   return m ? parseInt(m[1], 10) : null;
 }
 
-// ── Search parsers (want list → string[]) ─────────────────────────────────────
+// ── Search parsers ────────────────────────────────────────────────────────────
 
 async function parseComicGeeksXLSX(file) {
   const ab = await file.arrayBuffer();
@@ -134,14 +137,13 @@ function formatLabel(r) {
   return `Loaded ${r.issues.length} issue${r.issues.length===1?"":"s"} from file.`;
 }
 
-// ── Gap analysis parsers (collection → structured items) ──────────────────────
+// ── Gap analysis parsers ──────────────────────────────────────────────────────
 
 async function parseComicGeeksForGaps(file) {
   const ab = await file.arrayBuffer();
   const wb = XLSX.read(ab, { type: "array" });
   const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval: "" });
   if (!rows.length) return { items: [], format: "unknown", count: 0 };
-  // Not a Comic Geeks export — treat each row's first cell as a plain issue line
   if (!("Full Title" in rows[0])) {
     const items = rows
       .map(r => plainLineToItem(String(Object.values(r)[0] || "").trim()))
@@ -155,34 +157,22 @@ async function parseComicGeeksForGaps(file) {
     const issueDate = monthYearFromDateString(String(r["Release Date"] || ""));
     const numMatch = fullTitle.match(/#(\d+)/);
     if (!numMatch) continue;
-    // Fall back to extracting series from full title if Series column is absent
     const rawSeries = series || fullTitle.replace(/\s*#\d+.*$/, "").trim();
-    items.push({
-      seriesKey: rawSeries,
-      seriesClean: cleanSeriesName(rawSeries),
-      issueNum: parseInt(numMatch[1], 10),
-      issueDate,
-    });
+    items.push({ seriesKey: rawSeries, seriesClean: cleanSeriesName(rawSeries), issueNum: parseInt(numMatch[1], 10), issueDate });
   }
   return { items, format: "comicgeeks", count: items.length };
 }
 
-// Parses a single plain-text issue line into { seriesRaw, issueNum, year } or null.
-// Handles: "Series #N", "Series #N (YYYY)", "Series N", "Series N (YYYY)"
 function parsePlainIssueLine(line) {
   const yearMatch = line.match(/\((\d{4})\)/);
   const year = yearMatch ? parseInt(yearMatch[1], 10) : null;
   const withoutYear = line.replace(/\s*\(\d{4}\)\s*/, " ").trim();
-
-  // Prefer explicit # notation
   const hashMatch = withoutYear.match(/#(\d+)/);
   if (hashMatch) {
     const seriesRaw = withoutYear.replace(/\s*#\d+.*$/, "").trim();
     if (!seriesRaw) return null;
     return { seriesRaw, issueNum: parseInt(hashMatch[1], 10), year };
   }
-
-  // Fall back: last token is the issue number, everything before it is the series
   const spaceMatch = withoutYear.match(/^(.+?)\s+(\d+)\s*$/);
   if (spaceMatch) {
     const seriesRaw = spaceMatch[1].trim();
@@ -190,20 +180,13 @@ function parsePlainIssueLine(line) {
     if (!seriesRaw || issueNum < 1) return null;
     return { seriesRaw, issueNum, year };
   }
-
   return null;
 }
 
-// Convert a parsed plain line into a structured item for gap analysis
 function plainLineToItem(line) {
   const parsed = parsePlainIssueLine(line);
   if (!parsed) return null;
-  return {
-    seriesKey: parsed.seriesRaw,
-    seriesClean: parsed.seriesRaw,
-    issueNum: parsed.issueNum,
-    issueDate: parsed.year ? { year: parsed.year, month: null } : null,
-  };
+  return { seriesKey: parsed.seriesRaw, seriesClean: parsed.seriesRaw, issueNum: parsed.issueNum, issueDate: parsed.year ? { year: parsed.year, month: null } : null };
 }
 
 async function parseCLZForGaps(file) {
@@ -212,13 +195,10 @@ async function parseCLZForGaps(file) {
   if (!lines.length) return { items: [], format: "unknown", count: 0 };
   const headers = parseCSVLine(lines[0]).map(h => h.toLowerCase());
   const si = headers.indexOf("series"), ii = headers.indexOf("issue"), di = headers.indexOf("release date");
-
-  // No CLZ headers — treat every line as a plain issue string
   if (si === -1 || ii === -1) {
     const items = lines.map(plainLineToItem).filter(Boolean);
     return { items, format: "plain", count: items.length };
   }
-
   const items = [];
   for (let i = 1; i < lines.length; i++) {
     const c = parseCSVLine(lines[i]);
@@ -227,12 +207,7 @@ async function parseCLZForGaps(file) {
     const issueDate = di >= 0 ? monthYearFromDateString(c[di]?.trim() || "") : null;
     const issueNum = parseIssueNum(issueRaw);
     if (!series || issueNum === null) continue;
-    items.push({
-      seriesKey: series,
-      seriesClean: cleanSeriesName(series),
-      issueNum,
-      issueDate,
-    });
+    items.push({ seriesKey: series, seriesClean: cleanSeriesName(series), issueNum, issueDate });
   }
   return { items, format: "clz", count: items.length };
 }
@@ -262,13 +237,11 @@ function formatCollectionLabel(r) {
 // ── Gap analysis ──────────────────────────────────────────────────────────────
 
 function analyzeGaps(items, threshold = 5) {
-  // Group by original series key (preserves Vol. distinctions between series)
   const seriesMap = new Map();
   for (const item of items) {
     if (!seriesMap.has(item.seriesKey)) {
       seriesMap.set(item.seriesKey, { displayName: item.seriesClean, owned: new Map() });
     }
-    // owned: issueNum → issueDate ({year,month}|null), first writer wins
     const owned = seriesMap.get(item.seriesKey).owned;
     if (!owned.has(item.issueNum)) owned.set(item.issueNum, item.issueDate);
   }
@@ -277,34 +250,129 @@ function analyzeGaps(items, threshold = 5) {
   for (const series of seriesMap.values()) {
     const ownedNums = [...series.owned.keys()].sort((a, b) => a - b);
     if (ownedNums.length === 0) continue;
-
     const fmt = (n, year) => `${series.displayName} #${n}${year ? ` (${year})` : ""}`;
-
-    // Leading gap: issues 1 through minNum-1, only when minNum <= threshold.
-    // Use the min issue's date as the anchor and count backwards (negative offsets).
     const min = ownedNums[0];
     if (min <= threshold && min > 1) {
       const anchor = series.owned.get(min);
-      for (let n = 1; n < min; n++) {
-        gaps.push(fmt(n, yearAfterMonths(anchor, n - min)));
-      }
+      for (let n = 1; n < min; n++) gaps.push(fmt(n, yearAfterMonths(anchor, n - min)));
     }
-
-    // Internal gaps no larger than threshold.
-    // Anchor from the lower neighbor: gap issue at position lo+k is k months after lo.
     for (let i = 0; i < ownedNums.length - 1; i++) {
       const lo = ownedNums[i], hi = ownedNums[i + 1];
       const gapSize = hi - lo - 1;
       if (gapSize > 0 && gapSize <= threshold) {
         const loDate = series.owned.get(lo);
-        for (let n = lo + 1; n < hi; n++) {
-          gaps.push(fmt(n, yearAfterMonths(loDate, n - lo)));
-        }
+        for (let n = lo + 1; n < hi; n++) gaps.push(fmt(n, yearAfterMonths(loDate, n - lo)));
       }
     }
   }
-
   return gaps;
+}
+
+// ── Result processing ─────────────────────────────────────────────────────────
+
+// Merge wave 2 rows into wave 1, deduplicated by URL, with bundle counts recomputed.
+function mergeAndRecount(rows1, rows2) {
+  const urlSet = new Set(rows1.map(r => r.url));
+  const merged = [...rows1];
+  for (const r of rows2) {
+    if (!urlSet.has(r.url)) {
+      urlSet.add(r.url);
+      merged.push(r);
+    }
+  }
+  const sellerIssues = {};
+  for (const r of merged) {
+    if (!sellerIssues[r.seller]) sellerIssues[r.seller] = new Set();
+    sellerIssues[r.seller].add(r.issue);
+  }
+  return merged.map(r => ({ ...r, bundle_count: sellerIssues[r.seller].size }));
+}
+
+// Apply filters and sort to raw rows. Returns sorted array of [sellerName, sellerData].
+function getFilteredSellers(rows, issueCount, filters, sortBy) {
+  // 1. Row-level price filter
+  const minP = parseFloat(filters.minPrice);
+  const maxP = parseFloat(filters.maxPrice);
+  let filtered = rows;
+  if (!isNaN(minP) && minP > 0) filtered = filtered.filter(r => parseFloat(r.price) >= minP);
+  if (!isNaN(maxP) && maxP > 0) filtered = filtered.filter(r => parseFloat(r.price) <= maxP);
+
+  // 2. Row-level shipping filter
+  if (filters.shipping === "required") {
+    filtered = filtered.filter(r => r.shipping === "0.00");
+  } else if (filters.shipping === "excluded") {
+    filtered = filtered.filter(r => r.shipping !== "0.00");
+  }
+
+  // 3. Group by seller
+  const sellerMap = {};
+  for (const r of filtered) {
+    if (!sellerMap[r.seller]) sellerMap[r.seller] = { listings: [] };
+    sellerMap[r.seller].listings.push(r);
+  }
+
+  // 4. Compute per-seller metrics
+  for (const data of Object.values(sellerMap)) {
+    const uniqueIssues = new Set(data.listings.map(l => l.issue));
+    data.bundle_count = issueCount === 1 ? data.listings.length : uniqueIssues.size;
+
+    // Cheapest listing per unique issue
+    const cheapestPerIssue = {};
+    for (const l of data.listings) {
+      const p = parseFloat(l.price) || 0;
+      if (!(l.issue in cheapestPerIssue) || p < parseFloat(cheapestPerIssue[l.issue].price)) {
+        cheapestPerIssue[l.issue] = l;
+      }
+    }
+
+    // Shipping metrics across cheapest-per-issue listings
+    let totalIndividualShipping = 0;
+    let maxShipping = 0;
+    let hasUnknownShipping = false;
+    for (const l of Object.values(cheapestPerIssue)) {
+      const ship = parseFloat(l.shipping);
+      if (!isFinite(ship) || l.shipping === "unknown") {
+        hasUnknownShipping = true;
+      } else {
+        totalIndividualShipping += ship;
+        if (ship > maxShipping) maxShipping = ship;
+      }
+    }
+
+    const sumCheapest = Object.values(cheapestPerIssue).reduce((a, l) => a + (parseFloat(l.price) || 0), 0);
+    const numUnique = Object.keys(cheapestPerIssue).length;
+
+    data.cheapestPerIssue = cheapestPerIssue;
+    data.maxShipping = maxShipping;
+    data.hasUnknownShipping = hasUnknownShipping;
+    // Sum of cheapest prices (not including shipping)
+    data.subtotal = sumCheapest;
+    // Est. total = cheapest prices + one shipping charge
+    data.estTotal = sumCheapest + maxShipping;
+    data.estPerIssue = numUnique > 0 ? data.estTotal / numUnique : 0;
+    // How much you'd save vs buying each item separately from this seller
+    data.shippingSavings = hasUnknownShipping ? null : Math.max(0, totalIndividualShipping - maxShipping);
+  }
+
+  // 5. Seller-level filters
+  const minBundle = Math.max(2, parseInt(filters.minBundle) || 2);
+  const entries = Object.entries(sellerMap).filter(([, data]) => {
+    if (data.bundle_count < minBundle) return false;
+    if (filters.requiredIssues.length > 0) {
+      const sellerIssueSet = new Set(data.listings.map(l => l.issue));
+      if (!filters.requiredIssues.every(ri => sellerIssueSet.has(ri))) return false;
+    }
+    return true;
+  });
+
+  // 6. Sort
+  entries.sort(([, a], [, b]) => {
+    if (sortBy === "est_price_per_issue") return a.estPerIssue - b.estPerIssue;
+    if (sortBy === "est_shipping") return a.maxShipping - b.maxShipping;
+    return b.bundle_count - a.bundle_count;
+  });
+
+  return entries;
 }
 
 // ── Analytics ─────────────────────────────────────────────────────────────────
@@ -320,16 +388,28 @@ export default function Preview() {
 
   // Search tab state
   const [issueInput, setIssueInput] = useState("");
-  const [maxPrice, setMaxPrice] = useState("10");
   const [status, setStatus] = useState({ msg: "", type: "" });
   const [progress, setProgress] = useState({ visible: false, pct: 0, msg: "" });
   const [results, setResults] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
   const [uploadMsg, setUploadMsg] = useState("");
+  const [wave2Loading, setWave2Loading] = useState(false);
+  const [userZip, setUserZip] = useState(null);
+
+  // Filter + sort state
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [filters, setFilters] = useState({
+    minPrice: "",
+    maxPrice: "",
+    shipping: "included", // "included" | "required" | "excluded"
+    minBundle: 2,
+    requiredIssues: [],
+  });
+  const [sortBy, setSortBy] = useState("bundle_size"); // "bundle_size" | "est_price_per_issue" | "est_shipping"
+
   const timerRef = useRef(null);
-  const pendingMaxPrice = useRef(10);
   const fileInputRef = useRef(null);
-  const searchSource = useRef(null); // "manual"|"comicgeeks"|"clz"|"txt"|"gap_analyzer"
+  const searchSource = useRef(null);
 
   // Save / email state
   const [savedId, setSavedId] = useState(null);
@@ -350,7 +430,24 @@ export default function Preview() {
   const [isCollectionDragging, setIsCollectionDragging] = useState(false);
   const collectionFileInputRef = useRef(null);
 
-  // ── Search tab handlers ──────────────────────────────────────────────
+  // Geolocate on mount for shipping estimates
+  useEffect(() => {
+    fetch("/api/geolocate")
+      .then(r => r.json())
+      .then(({ zip }) => setUserZip(zip || null))
+      .catch(() => setUserZip(null));
+  }, []);
+
+  // ── Derived state ──────────────────────────────────────────────────────
+
+  const singleIssueMode = results?.issueCount === 1;
+  const sellerEntries = results
+    ? getFilteredSellers(results.rows, results.issueCount, filters, sortBy)
+    : [];
+  const sellerCount = sellerEntries.length;
+  const totalSellers = results ? new Set(results.rows.map(r => r.seller)).size : 0;
+
+  // ── Search tab handlers ────────────────────────────────────────────────
 
   async function handleFile(file) {
     setUploadMsg("Reading file…");
@@ -375,27 +472,68 @@ export default function Preview() {
     if (success) { setProgress({ visible: true, pct: 100, msg: "Done!" }); setTimeout(() => setProgress(p => ({ ...p, visible: false })), 800); }
     else setProgress(p => ({ ...p, visible: false }));
   }
+
   function handleSearch() {
     const issues = issueInput.split("\n").map(l => l.trim()).filter(Boolean);
     if (!issues.length) { setStatus({ msg: "Please enter at least one issue.", type: "error" }); return; }
-    pendingMaxPrice.current = parseFloat(maxPrice) || 10;
     setStatus({ msg: "", type: "" }); setResults(null); setUploadMsg("");
     setSavedId(null); setShareMsg(""); setShowEmailForm(false); setEmailMsg("");
+    setFilters(f => ({ ...f, requiredIssues: [] }));
     const source = searchSource.current || "manual";
     track("search_started", { source, issue_count: issues.length });
     searchSource.current = null;
     executeSearch(issues);
   }
+
   async function executeSearch(issues) {
-    setResults(null); startProgress();
+    setResults(null); setWave2Loading(false); startProgress();
     try {
-      const res = await fetch("/api/search", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ issues, max_price: pendingMaxPrice.current }) });
-      const data = await res.json(); if (!res.ok) throw new Error(data.error || "Server error");
+      // Wave 1
+      const res = await fetch("/api/search", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ issues, zip: userZip }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Server error");
+
       const bundleCount = new Set(data.results.filter(r => r.bundle_count >= 2).map(r => r.seller)).size;
       track("search_completed", { issue_count: issues.length, bundle_count: bundleCount });
-      finishProgress(true); setResults({ rows: data.results, issueCount: issues.length });
-    } catch (err) { finishProgress(false); setStatus({ msg: `Error: ${err.message}. Try again in a moment.`, type: "error" }); }
+      finishProgress(true);
+      setResults({ rows: data.results, issueCount: issues.length, issues });
+
+      // Determine which issues need additional pages
+      const wave2Tasks = [];
+      for (const [issue, total] of Object.entries(data.totals || {})) {
+        for (let offset = EBAY_PAGE_SIZE; offset < total; offset += EBAY_PAGE_SIZE) {
+          wave2Tasks.push({ issue, offset });
+        }
+      }
+
+      if (wave2Tasks.length > 0) {
+        setWave2Loading(true);
+        try {
+          const res2 = await fetch("/api/search", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ issueOffsets: wave2Tasks, zip: userZip }),
+          });
+          const data2 = await res2.json();
+          if (res2.ok && data2.results?.length) {
+            setResults(prev => ({
+              ...prev,
+              rows: mergeAndRecount(prev.rows, data2.results),
+            }));
+          }
+        } catch {} // wave 2 failure is non-fatal
+        setWave2Loading(false);
+      }
+    } catch (err) {
+      finishProgress(false);
+      setStatus({ msg: `Error: ${err.message}. Try again in a moment.`, type: "error" });
+    }
   }
+
   function copyText(text) {
     if (navigator.clipboard?.writeText) {
       navigator.clipboard.writeText(text).catch(() => copyTextFallback(text));
@@ -410,6 +548,7 @@ export default function Preview() {
     document.execCommand("copy");
     document.body.removeChild(ta);
   }
+
   async function handleSaveResults() {
     setSaving(true); setShareMsg("");
     try {
@@ -417,7 +556,6 @@ export default function Preview() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       setSavedId(data.id);
-      track("results_saved", { issue_count: results.issueCount });
       const url = `https://comicbundlefinder.com/results/${data.id}`;
       copyText(url);
       setShareMsg("Link copied to clipboard!");
@@ -438,32 +576,41 @@ export default function Preview() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       if (data.id && !savedId) setSavedId(data.id);
-      track("results_emailed", { issue_count: results.issueCount });
       setEmailMsg("Sent! Check your inbox.");
       setShowEmailForm(false);
     } catch (e) { setEmailMsg(`Error: ${e.message}`); }
     setEmailing(false);
   }
-  function groupResults(rows, issueCount) {
-    const s = {};
-    for (const r of rows) { if (!s[r.seller]) s[r.seller] = { bundle_count: r.bundle_count, listings: [] }; s[r.seller].listings.push(r); }
-    if (issueCount === 1) {
-      // Single-issue mode: seller qualifies if they have 2+ separate listings
-      for (const n of Object.keys(s)) {
-        if (s[n].listings.length < 2) delete s[n];
-        else s[n].bundle_count = s[n].listings.length;
-      }
-    } else {
-      for (const n of Object.keys(s)) { if (s[n].bundle_count < 2) delete s[n]; }
-    }
-    return s;
-  }
-  const singleIssueMode = results?.issueCount === 1;
-  const sellers = results ? groupResults(results.rows, results.issueCount) : {};
-  const sellerCount = results ? Object.keys(sellers).length : 0;
-  const totalSellers = results ? new Set(results.rows.map(r => r.seller)).size : 0;
 
-  // ── Gap analyzer handlers ────────────────────────────────────────────
+  // ── Filter helpers ─────────────────────────────────────────────────────
+
+  function setFilter(key, value) {
+    setFilters(f => ({ ...f, [key]: value }));
+  }
+  function toggleRequiredIssue(issue) {
+    setFilters(f => {
+      const current = f.requiredIssues;
+      return {
+        ...f,
+        requiredIssues: current.includes(issue)
+          ? current.filter(i => i !== issue)
+          : [...current, issue],
+      };
+    });
+  }
+  function resetFilters() {
+    setFilters({ minPrice: "", maxPrice: "", shipping: "included", minBundle: 2, requiredIssues: [] });
+    setSortBy("bundle_size");
+  }
+  const filtersActive =
+    filters.minPrice !== "" ||
+    filters.maxPrice !== "" ||
+    filters.shipping !== "included" ||
+    filters.minBundle > 2 ||
+    filters.requiredIssues.length > 0 ||
+    sortBy !== "bundle_size";
+
+  // ── Gap analyzer handlers ──────────────────────────────────────────────
 
   async function handleCollectionFile(file) {
     setCollectionMsg("Reading file…");
@@ -487,7 +634,6 @@ export default function Preview() {
   function onCollectionDrop(e) { e.preventDefault(); setIsCollectionDragging(false); const f = e.dataTransfer.files?.[0]; if (f) handleCollectionFile(f); }
 
   function runGapSearch(gapList) {
-    pendingMaxPrice.current = parseFloat(maxPrice) || 10;
     setIssueInput(gapList.join("\n"));
     setUploadMsg(`${gapList.length} gap issue${gapList.length === 1 ? "" : "s"} from Gap Analyzer.`);
     setActiveTab("search");
@@ -511,8 +657,7 @@ export default function Preview() {
       ta.value = text;
       ta.style.cssText = "position:fixed;top:0;left:0;opacity:0;pointer-events:none";
       document.body.appendChild(ta);
-      ta.focus();
-      ta.select();
+      ta.focus(); ta.select();
       const ok = document.execCommand("copy");
       document.body.removeChild(ta);
       return ok;
@@ -527,6 +672,8 @@ export default function Preview() {
       finish(tryExecCommand());
     }
   }
+
+  // ── Render ─────────────────────────────────────────────────────────────
 
   return (<>
     <Head>
@@ -573,10 +720,6 @@ export default function Preview() {
       .hint{font-size:0.78rem;color:#666;margin-top:0.4rem;font-weight:400;line-height:1.5}
       .upload-msg{font-size:0.8rem;font-weight:600;color:#003399;margin-top:0.5rem;letter-spacing:0.5px}
       label{display:block;font-weight:600;font-size:0.9rem;letter-spacing:1px;text-transform:uppercase;margin-bottom:0.5rem}
-      .price-row{display:flex;align-items:center;gap:0.75rem;margin-top:1rem;flex-wrap:wrap}
-      .price-row label{margin:0;font-size:0.82rem;white-space:nowrap}
-      .price-input{width:90px;border:2px solid #1a1a1a;background:#fffdf4;font-family:'Oswald',sans-serif;font-size:0.95rem;font-weight:600;padding:0.3rem 0.5rem;color:#1a1a1a;text-align:center}
-      .price-input:focus{outline:none;border-color:#003399;box-shadow:2px 2px 0 #003399}
       .btn-search{display:inline-block;background:#003399;color:#fffdf4;border:3px solid #1a1a1a;box-shadow:4px 4px 0 #1a1a1a;font-family:'Bangers',cursive;font-size:1.6rem;letter-spacing:2px;padding:0.3rem 2.5rem 0.4rem;cursor:pointer;margin-top:1.25rem;transition:transform 0.08s,box-shadow 0.08s}
       .btn-search:hover{background:#0044cc}
       .btn-search:active{transform:translate(3px,3px);box-shadow:1px 1px 0 #1a1a1a}
@@ -588,22 +731,48 @@ export default function Preview() {
       .progress-track{border:2px solid #1a1a1a;background:#f0e6c4;height:24px;position:relative;overflow:hidden}
       .progress-fill{height:100%;background:#cc1f00;transition:width 0.7s ease}
       .progress-pct{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;font-family:'Bangers',cursive;font-size:0.85rem;letter-spacing:1px;color:#fffdf4;text-shadow:1px 1px 0 #1a1a1a}
-      .stats-row{display:flex;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap}
+      .stats-row{display:flex;gap:1rem;margin-bottom:1.25rem;flex-wrap:wrap}
       .stat-box{flex:1;min-width:110px;background:#ffe066;border:2px solid #1a1a1a;padding:0.6rem 1rem;text-align:center}
       .stat-number{font-family:'Bangers',cursive;font-size:2.2rem;color:#cc1f00;line-height:1}
       .stat-label{font-size:0.68rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#1a1a1a;margin-top:2px}
       .results-title{font-family:'Bangers',cursive;font-size:2rem;letter-spacing:2px;color:#cc1f00;margin-bottom:1.25rem}
+      .wave2-banner{display:inline-flex;align-items:center;gap:0.5rem;background:#ffe066;border:2px solid #1a1a1a;font-size:0.75rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:0.3rem 0.85rem;margin-bottom:1.25rem}
+      .wave2-spinner{width:10px;height:10px;border:2px solid #1a1a1a;border-top-color:transparent;border-radius:50%;animation:spin 0.6s linear infinite;display:inline-block;flex-shrink:0}
+      @keyframes spin{to{transform:rotate(360deg)}}
+      .filter-toggle-row{display:flex;align-items:center;gap:0.75rem;margin-bottom:1.25rem;flex-wrap:wrap}
+      .btn-filter-toggle{background:#ffe066;color:#1a1a1a;border:2px solid #1a1a1a;box-shadow:2px 2px 0 #1a1a1a;font-family:'Oswald',sans-serif;font-size:0.78rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:0.3rem 0.9rem;cursor:pointer;white-space:nowrap}
+      .btn-filter-toggle:hover{background:#ffd700}
+      .btn-filter-toggle.active{background:#003399;color:#fffdf4}
+      .btn-filter-toggle.active:hover{background:#0044cc}
+      .filter-active-dot{width:8px;height:8px;background:#cc1f00;border:1.5px solid #1a1a1a;border-radius:50%;display:inline-block;margin-left:2px;vertical-align:middle}
+      .btn-filter-reset{background:none;border:none;color:#cc1f00;font-family:'Oswald',sans-serif;font-size:0.75rem;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;cursor:pointer;text-decoration:underline;padding:0}
+      .filter-panel{background:#f8f3e3;border:2px solid #1a1a1a;padding:1.1rem 1.25rem;margin-bottom:1.5rem}
+      .filter-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem 2rem}
+      @media(max-width:600px){.filter-grid{grid-template-columns:1fr}}
+      .filter-section{margin-bottom:0}
+      .filter-section-label{font-size:0.68rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:#1a1a1a;margin-bottom:0.45rem;display:block}
+      .filter-row{display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap}
+      .filter-input{width:72px;border:2px solid #1a1a1a;background:#fffdf4;font-family:'Oswald',sans-serif;font-size:0.9rem;font-weight:600;padding:0.25rem 0.4rem;text-align:center;color:#1a1a1a}
+      .filter-input:focus{outline:none;border-color:#003399;box-shadow:2px 2px 0 #003399}
+      .filter-radio-group{display:flex;gap:0.65rem;flex-wrap:wrap}
+      .filter-radio-label{display:flex;align-items:center;gap:0.3rem;font-size:0.8rem;font-weight:400;cursor:pointer;user-select:none}
+      .filter-divider{border:none;border-top:1.5px solid #d4c9a8;margin:0.9rem 0;grid-column:1/-1}
+      .filter-checkboxes{display:flex;flex-wrap:wrap;gap:0.4rem;max-height:120px;overflow-y:auto}
+      .filter-checkbox-label{display:flex;align-items:center;gap:0.3rem;font-size:0.75rem;font-weight:400;cursor:pointer;background:#fffdf4;border:1.5px solid #1a1a1a;padding:2px 7px;white-space:nowrap;user-select:none}
+      .filter-checkbox-label.checked{background:#003399;color:#fffdf4;border-color:#003399}
       .seller-group{margin-bottom:1.75rem}
-      .seller-header{background:#003399;color:#fffdf4;padding:0.5rem 0.75rem;display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;border:2px solid #1a1a1a;border-bottom:none}
+      .seller-header{background:#003399;color:#fffdf4;padding:0.5rem 0.75rem;display:flex;align-items:center;gap:0.6rem;flex-wrap:wrap;border:2px solid #1a1a1a;border-bottom:none}
       .seller-name{font-family:'Bangers',cursive;font-size:1.35rem;letter-spacing:1px}
       .bundle-badge{background:#cc1f00;color:#fffdf4;font-size:0.68rem;font-weight:600;padding:2px 8px;border:1.5px solid #1a1a1a;letter-spacing:1px;text-transform:uppercase;white-space:nowrap}
-      .subtotal-badge{font-size:0.78rem;font-weight:600;color:#fffdf4;background:#003399;border:1.5px solid #ffe066;padding:2px 8px;letter-spacing:0.5px;white-space:nowrap}
+      .subtotal-badge{font-size:0.73rem;font-weight:600;color:#fffdf4;background:#003399;border:1.5px solid #ffe066;padding:2px 8px;letter-spacing:0.5px;white-space:nowrap}
+      .badge-est{font-size:0.73rem;font-weight:600;color:#1a1a1a;background:#ffe066;border:1.5px solid #1a1a1a;padding:2px 8px;letter-spacing:0.5px;white-space:nowrap}
+      .badge-savings{font-size:0.73rem;font-weight:600;color:#fffdf4;background:#1a1a1a;border:1.5px solid #ffe066;padding:2px 8px;letter-spacing:0.5px;white-space:nowrap}
       .listings-table{width:100%;border-collapse:collapse;border:2px solid #1a1a1a;font-size:0.82rem;table-layout:fixed}
       .listings-table th{background:#1a1a1a;color:#fffdf4;padding:0.4rem 0.6rem;text-align:left;font-weight:600;letter-spacing:0.8px;text-transform:uppercase;font-size:0.7rem;white-space:nowrap}
       .listings-table td{padding:0.45rem 0.6rem;border-bottom:1px solid #d4c9a8;vertical-align:top;font-weight:400;overflow:hidden;text-overflow:ellipsis;word-break:break-word}
       .listings-table tr:last-child td{border-bottom:none}
       .listings-table tr:nth-child(even) td{background:#f8f3e3}
-      .col-issue{width:22%}.col-title{width:38%}.col-price{width:9%;text-align:right}.col-ship{width:11%;text-align:right}.col-promo{width:11%}.col-link{width:9%;text-align:center}
+      .col-issue{width:22%}.col-title{width:38%}.col-price{width:9%;text-align:right}.col-ship{width:13%;text-align:right}.col-promo{width:9%}.col-link{width:9%;text-align:center}
       .listing-link{color:#cc1f00;font-weight:600;text-decoration:none;white-space:nowrap;font-size:0.8rem}
       .listing-link:hover{text-decoration:underline}
       .promo-pill{display:inline-block;background:#cc1f00;color:#fffdf4;font-size:0.65rem;font-weight:600;padding:1px 5px;letter-spacing:0.5px;text-transform:uppercase;line-height:1.6}
@@ -654,7 +823,8 @@ export default function Preview() {
       .btn-guides{display:inline-block;background:#ffe066;color:#1a1a1a;border:3px solid #1a1a1a;box-shadow:4px 4px 0 #1a1a1a;font-family:'Bangers',cursive;font-size:1.35rem;letter-spacing:2px;padding:0.3rem 1.75rem 0.4rem;cursor:pointer;text-decoration:none;transition:transform 0.08s,box-shadow 0.08s,background 0.08s}
       .btn-guides:hover{background:#ffd700}
       .btn-guides:active{transform:translate(3px,3px);box-shadow:1px 1px 0 #1a1a1a}
-      @media(max-width:600px){.col-title{display:none}.col-issue{width:40%}}
+      .ship-fallback{color:#888;font-size:0.75rem}
+      @media(max-width:600px){.col-title{display:none}.col-issue{width:40%}.filter-grid{grid-template-columns:1fr}}
     `}</style>
     <div className="container">
       <div className="panel title-panel">
@@ -690,12 +860,6 @@ export default function Preview() {
             Type issues manually, or upload a .xlsx / .csv / .txt want list from League of Comic Geeks or CLZ.<br />
             Format: Series Name #Number — e.g. &ldquo;Amazing Spider-Man #300&rdquo; or &ldquo;Black Widow #10 (2014)&rdquo;
           </div>
-          <div className="price-row">
-            <label htmlFor="max-price">Max price per issue:</label>
-            <span style={{ fontWeight: 600, fontSize: "0.95rem" }}>$</span>
-            <input className="price-input" type="number" id="max-price" value={maxPrice} onChange={e => setMaxPrice(e.target.value)} min="0.01" max="999" step="0.50" />
-            <span className="hint" style={{ margin: 0 }}>(listings above this price are excluded)</span>
-          </div>
           <div className="search-action-row">
             <button className="btn-search" style={{ marginTop: 0 }} onClick={handleSearch} disabled={progress.visible}>Find Bundles!</button>
             <span className="or-text">— or —</span>
@@ -712,17 +876,156 @@ export default function Preview() {
             </div>
           )}
         </div>
+
         {results && (
           <div className="panel">
             <div className="results-title">{sellerCount === 0 ? "No Bundle Opportunities Found" : "Results — Sellers Ranked by Bundle Count"}</div>
+
             {sellerCount === 0 ? (
               <div className="no-results">{singleIssueMode ? "No seller has more than one listing for this issue. Try raising your max price, or check back later." : "No single seller carries more than one of your issues. You may need to buy these separately, or try broadening your search."}</div>
             ) : (<>
+              {wave2Loading && (
+                <div className="wave2-banner">
+                  <span className="wave2-spinner" />
+                  Loading additional results…
+                </div>
+              )}
+
               <div className="stats-row">
                 <div className="stat-box"><div className="stat-number">{results.issueCount}</div><div className="stat-label">{singleIssueMode ? "Issue Searched" : "Issues Searched"}</div></div>
                 <div className="stat-box"><div className="stat-number">{totalSellers}</div><div className="stat-label">Total Sellers Found</div></div>
                 <div className="stat-box"><div className="stat-number">{sellerCount}</div><div className="stat-label">{singleIssueMode ? "Multi-Copy Sellers" : "Bundle Opportunities"}</div></div>
               </div>
+
+              {/* Filter & Sort panel */}
+              <div className="filter-toggle-row">
+                <button
+                  className={`btn-filter-toggle${filtersOpen ? " active" : ""}`}
+                  onClick={() => setFiltersOpen(o => !o)}
+                >
+                  Filter &amp; Sort {filtersOpen ? "▲" : "▼"}
+                  {filtersActive && !filtersOpen && <span className="filter-active-dot" />}
+                </button>
+                {filtersActive && (
+                  <button className="btn-filter-reset" onClick={resetFilters}>Reset</button>
+                )}
+              </div>
+
+              {filtersOpen && (
+                <div className="filter-panel">
+                  <div className="filter-grid">
+                    {/* Price range */}
+                    <div className="filter-section">
+                      <span className="filter-section-label">Price per issue</span>
+                      <div className="filter-row">
+                        <span style={{ fontSize: "0.8rem", fontWeight: 600 }}>From</span>
+                        <span style={{ fontWeight: 600 }}>$</span>
+                        <input
+                          className="filter-input"
+                          type="number"
+                          placeholder="0"
+                          value={filters.minPrice}
+                          onChange={e => setFilter("minPrice", e.target.value)}
+                          min="0" step="0.50"
+                        />
+                        <span style={{ fontSize: "0.8rem", fontWeight: 600 }}>to</span>
+                        <span style={{ fontWeight: 600 }}>$</span>
+                        <input
+                          className="filter-input"
+                          type="number"
+                          placeholder="any"
+                          value={filters.maxPrice}
+                          onChange={e => setFilter("maxPrice", e.target.value)}
+                          min="0" step="0.50"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Min bundle size */}
+                    <div className="filter-section">
+                      <span className="filter-section-label">Min issues per bundle</span>
+                      <div className="filter-row">
+                        <input
+                          className="filter-input"
+                          type="number"
+                          value={filters.minBundle}
+                          onChange={e => setFilter("minBundle", Math.max(2, parseInt(e.target.value) || 2))}
+                          min="2" step="1"
+                          style={{ width: "60px" }}
+                        />
+                        <span style={{ fontSize: "0.8rem", fontWeight: 400 }}>issues minimum</span>
+                      </div>
+                    </div>
+
+                    {/* Shipping filter */}
+                    <div className="filter-section">
+                      <span className="filter-section-label">Free shipping</span>
+                      <div className="filter-radio-group">
+                        {[["included", "Any"], ["required", "Free only"], ["excluded", "No free"]].map(([val, label]) => (
+                          <label key={val} className="filter-radio-label">
+                            <input
+                              type="radio"
+                              name="shipping-filter"
+                              value={val}
+                              checked={filters.shipping === val}
+                              onChange={() => setFilter("shipping", val)}
+                            />
+                            {label}
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Sort */}
+                    <div className="filter-section">
+                      <span className="filter-section-label">Sort by</span>
+                      <div className="filter-radio-group" style={{ flexDirection: "column", gap: "0.3rem" }}>
+                        {[
+                          ["bundle_size", "Bundle size (most issues first)"],
+                          ["est_price_per_issue", "Lowest est. price per issue"],
+                          ["est_shipping", "Lowest est. shipping"],
+                        ].map(([val, label]) => (
+                          <label key={val} className="filter-radio-label">
+                            <input
+                              type="radio"
+                              name="sort-by"
+                              value={val}
+                              checked={sortBy === val}
+                              onChange={() => setSortBy(val)}
+                            />
+                            {label}
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Required issues — only shown for multi-issue searches */}
+                    {!singleIssueMode && results.issues?.length > 1 && (
+                      <div className="filter-section" style={{ gridColumn: "1 / -1" }}>
+                        <hr className="filter-divider" style={{ marginTop: 0, marginBottom: "0.75rem" }} />
+                        <span className="filter-section-label">Required issues (only show sellers who have these)</span>
+                        <div className="filter-checkboxes">
+                          {results.issues.map(issue => (
+                            <label
+                              key={issue}
+                              className={`filter-checkbox-label${filters.requiredIssues.includes(issue) ? " checked" : ""}`}
+                            >
+                              <input
+                                type="checkbox"
+                                style={{ display: "none" }}
+                                checked={filters.requiredIssues.includes(issue)}
+                                onChange={() => toggleRequiredIssue(issue)}
+                              />
+                              {issue}
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
               <div className="share-panel">
                 <div className="share-title">Save or Share These Results</div>
                 <div className="share-buttons">
@@ -749,34 +1052,48 @@ export default function Preview() {
                 )}
                 {emailMsg && <span className="share-feedback" style={{ color: emailMsg.startsWith("Error") ? "#cc1f00" : "#003399" }}>{emailMsg}</span>}
               </div>
-              {Object.entries(sellers).map(([name, data]) => {
-                const cpi = {};
-                for (const l of data.listings) { const p = parseFloat(l.price) || 0; if (!(l.issue in cpi) || p < cpi[l.issue]) cpi[l.issue] = p; }
-                const subtotal = Object.values(cpi).reduce((a, b) => a + b, 0);
+
+              {sellerEntries.map(([name, data]) => {
+                const estPerIssueStr = `~$${data.estPerIssue.toFixed(2)}/issue`;
+                const savingsStr = data.shippingSavings !== null && data.shippingSavings > 0.01
+                  ? `save ~$${data.shippingSavings.toFixed(2)} shipping`
+                  : null;
+
                 return (
                   <div className="seller-group" key={name}>
                     <div className="seller-header">
                       <span className="seller-name">{esc(name)}</span>
                       <span className="bundle-badge">{singleIssueMode ? `${data.bundle_count} listings` : `${data.bundle_count} issues`} — bundle shipping!</span>
-                      <span className="subtotal-badge">from ${subtotal.toFixed(2)} in items</span>
+                      <span className="subtotal-badge">from ${data.subtotal.toFixed(2)} in items</span>
+                      <span className="badge-est">{estPerIssueStr}</span>
+                      {savingsStr && <span className="badge-savings">{savingsStr}</span>}
                     </div>
                     <table className="listings-table">
                       <thead><tr>
                         <th className="col-issue">Issue You Need</th>
                         <th className="col-title">Listing Title</th>
                         <th className="col-price">Price</th>
-                        <th className="col-ship">Shipping</th>
+                        <th className="col-ship">Est. Shipping</th>
                         <th className="col-promo">Promo</th>
                         <th className="col-link">Link</th>
                       </tr></thead>
                       <tbody>
                         {data.listings.map((l, i) => {
-                          const ship = l.shipping === "0.00" ? "FREE" : l.shipping === "unknown" ? "—" : `$${parseFloat(l.shipping).toFixed(2)}`;
+                          let shipDisplay;
+                          if (l.shipping === "0.00") {
+                            shipDisplay = "FREE";
+                          } else if (l.shipping === "unknown") {
+                            shipDisplay = userZip
+                              ? <span className="ship-fallback">calc.</span>
+                              : <span className="ship-fallback">{SHIPPING_FALLBACK}</span>;
+                          } else {
+                            shipDisplay = `$${parseFloat(l.shipping).toFixed(2)}`;
+                          }
                           return (<tr key={i}>
                             <td className="col-issue">{esc(l.issue)}</td>
                             <td className="col-title">{esc(l.title)}</td>
                             <td className="col-price">${parseFloat(l.price).toFixed(2)}</td>
-                            <td className="col-ship">{ship}</td>
+                            <td className="col-ship">{shipDisplay}</td>
                             <td className="col-promo">{l.promotions ? <span className="promo-pill">{l.promotions.split("|")[0].trim()}</span> : ""}</td>
                             <td className="col-link"><a className="listing-link" href={l.url} target="_blank" rel="noopener noreferrer">View →</a></td>
                           </tr>);
@@ -856,6 +1173,7 @@ export default function Preview() {
           )}
         </div>
       )}
+
       <div className="panel" style={{ textAlign: "center", fontSize: "0.8rem", fontWeight: 400, color: "#666", padding: "0.85rem 1.75rem" }}>
         Bugs? Feature requests? Email us at <a href="mailto:hello@comicbundlefinder.com" style={{ color: "#003399", fontWeight: 600 }}>hello@comicbundlefinder.com</a>
         <div style={{ marginTop: "0.75rem" }}>
