@@ -7,8 +7,10 @@
 // Or set env vars manually:
 //   $env:METRON_USERNAME='...'; $env:METRON_PASSWORD='...'; node scripts/fetch-series-issues.js --series-id=1581 --output=xmen-vol1-issues.json
 
-const fs = require("fs");
-const path = require("path");
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const METRON_USERNAME = process.env.METRON_USERNAME;
 const METRON_PASSWORD = process.env.METRON_PASSWORD;
