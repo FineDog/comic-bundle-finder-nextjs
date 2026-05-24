@@ -17,6 +17,30 @@ export default function CollectionGuides() {
       <Head>
         <title>Collection Guides — Comic Bundle Finder</title>
         <meta name="description" content="Browse pre-built collection guides for classic comic runs. Find eBay bundle deals issue by issue." />
+        <meta property="og:title" content="Collection Guides — Comic Bundle Finder" />
+        <meta property="og:description" content="Browse pre-built collection guides for classic comic runs. Find eBay bundle deals issue by issue." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://www.comicbundlefinder.com/collection-guides" />
+        <meta property="og:image" content="https://www.comicbundlefinder.com/preview.png" />
+        <meta name="robots" content="index, follow" />
+        <link rel="canonical" href="https://www.comicbundlefinder.com/collection-guides" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "CollectionPage",
+              "name": "Collection Guides — Comic Bundle Finder",
+              "description": "Browse pre-built collection guides for classic comic runs. Find eBay bundle deals issue by issue.",
+              "url": "https://www.comicbundlefinder.com/collection-guides",
+              "isPartOf": {
+                "@type": "WebSite",
+                "name": "Comic Bundle Finder",
+                "url": "https://www.comicbundlefinder.com",
+              },
+            }),
+          }}
+        />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Oswald:wght@400;600&display=swap" rel="stylesheet" />

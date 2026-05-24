@@ -539,6 +539,25 @@ export default function Preview() {
       <meta name="robots" content="index, follow" />
       <meta name="google-site-verification" content="gk8gi9ve5gW7xgq_LqiuiLSwhH4I8k8JUbsYKYRK8V4" />
       <link rel="canonical" href="https://www.comicbundlefinder.com" />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "WebApplication",
+            "name": "Comic Bundle Finder",
+            "description": "Search eBay for comic book bundle deals. Paste your want list and find sellers who carry multiple issues — save money on combined shipping.",
+            "url": "https://www.comicbundlefinder.com",
+            "applicationCategory": "UtilitiesApplication",
+            "operatingSystem": "Web",
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "USD",
+            },
+          }),
+        }}
+      />
       <link rel="preconnect" href="https://fonts.googleapis.com" />
       <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Oswald:wght@400;600&display=swap" rel="stylesheet" />
