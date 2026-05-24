@@ -3,23 +3,12 @@ import Link from "next/link";
 import { SERIES } from "../lib/series-config";
 
 // Groups control how series are displayed on this page.
-// Multi-slug groups share one card; linkedBelow/linkedAbove renders a
-// visual connector between the X-Men and Uncanny X-Men cards.
+// Multi-slug groups share one card.
 const GROUPS = [
-  {
-    slugs: ["amazing-spider-man-vol-1", "amazing-spider-man-vol-2"],
-  },
-  {
-    slugs: ["daredevil-vol-1", "daredevil-vol-2"],
-  },
-  {
-    slugs: ["x-men-vol-1"],
-    linkedBelow: true,
-  },
-  {
-    slugs: ["uncanny-x-men"],
-    linkedAbove: true,
-  },
+  { slugs: ["amazing-spider-man-vol-1", "amazing-spider-man-vol-2"] },
+  { slugs: ["daredevil-vol-1", "daredevil-vol-2"] },
+  { slugs: ["x-men-vol-1"] },
+  { slugs: ["uncanny-x-men"] },
 ];
 
 export default function CollectionGuides() {
@@ -49,8 +38,6 @@ export default function CollectionGuides() {
         /* Series groups */
         .series-list{display:flex;flex-direction:column;gap:1.25rem;margin-bottom:1.75rem}
         .series-card{border:3px solid #1a1a1a;box-shadow:5px 5px 0 #1a1a1a;background:#fffdf4;display:flex;overflow:hidden}
-        .series-card.linked-below{margin-bottom:0;box-shadow:5px 0 0 #1a1a1a}
-        .series-card.linked-above{box-shadow:5px 5px 0 #1a1a1a}
         .series-card-accent{width:8px;flex-shrink:0;background:#cc1f00}
         .series-card-body{flex:1;padding:1.25rem 1.5rem;min-width:0}
         .series-card-name{font-family:'Bangers',cursive;font-size:1.6rem;letter-spacing:2px;color:#1a1a1a;line-height:1.1;margin-bottom:1rem}
@@ -66,11 +53,7 @@ export default function CollectionGuides() {
         .btn-series:hover{background:#0044cc}
         .btn-series:active{transform:translate(3px,3px);box-shadow:1px 1px 0 #1a1a1a}
 
-        /* Connector between X-Men and Uncanny X-Men */
-        .series-connector{display:flex;align-items:center;gap:0.5rem;padding:0.3rem 1.5rem 0.3rem calc(8px + 1.5rem);background:#f0e6c4;border-left:3px solid #1a1a1a;border-right:3px solid #1a1a1a;font-size:0.7rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:#888}
-        .series-connector::before{content:'';display:block;width:1px;height:12px;background:#aaa}
-
-        @media(max-width:540px){.volume-row{flex-direction:column;align-items:flex-start;gap:0.75rem}}
+@media(max-width:540px){.volume-row{flex-direction:column;align-items:flex-start;gap:0.75rem}}
       `}</style>
       <div className="container">
         <div className="panel title-panel">
@@ -97,27 +80,20 @@ export default function CollectionGuides() {
             const cardName = configs[0]?.config.displayName;
 
             return (
-              <div key={i}>
-                <div className={`series-card${group.linkedBelow ? " linked-below" : ""}${group.linkedAbove ? " linked-above" : ""}`}>
-                  <div className="series-card-accent" />
-                  <div className="series-card-body">
-                    <div className="series-card-name">{cardName}</div>
-                    {configs.map(({ slug, config }) => (
-                      <div className="volume-row" key={slug}>
-                        <div className="volume-info">
-                          <div className="volume-subtitle">{config.subtitle}</div>
-                          <div className="volume-blurb">{config.seoBlurb}</div>
-                        </div>
-                        <Link href={`/series/${slug}`} className="btn-series">Browse Series &rarr;</Link>
+              <div className="series-card" key={i}>
+                <div className="series-card-accent" />
+                <div className="series-card-body">
+                  <div className="series-card-name">{cardName}</div>
+                  {configs.map(({ slug, config }) => (
+                    <div className="volume-row" key={slug}>
+                      <div className="volume-info">
+                        <div className="volume-subtitle">{config.subtitle}</div>
+                        <div className="volume-blurb">{config.seoBlurb}</div>
                       </div>
-                    ))}
-                  </div>
+                      <Link href={`/series/${slug}`} className="btn-series">Browse Series &rarr;</Link>
+                    </div>
+                  ))}
                 </div>
-                {group.linkedBelow && (
-                  <div className="series-connector">
-                    <span>↓ retitled as The Uncanny X-Men</span>
-                  </div>
-                )}
               </div>
             );
           })}
