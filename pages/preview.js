@@ -772,10 +772,9 @@ export default function Preview() {
       .listings-table td{padding:0.45rem 0.6rem;border-bottom:1px solid #d4c9a8;vertical-align:top;font-weight:400;overflow:hidden;text-overflow:ellipsis;word-break:break-word}
       .listings-table tr:last-child td{border-bottom:none}
       .listings-table tr:nth-child(even) td{background:#f8f3e3}
-      .col-issue{width:22%}.col-title{width:38%}.col-price{width:9%;text-align:right}.col-ship{width:13%;text-align:right}.col-promo{width:9%}.col-link{width:9%;text-align:center}
+      .col-issue{width:24%}.col-title{width:42%}.col-price{width:10%;text-align:right}.col-ship{width:14%;text-align:right}.col-link{width:10%;text-align:center}
       .listing-link{color:#cc1f00;font-weight:600;text-decoration:none;white-space:nowrap;font-size:0.8rem}
       .listing-link:hover{text-decoration:underline}
-      .promo-pill{display:inline-block;background:#cc1f00;color:#fffdf4;font-size:0.65rem;font-weight:600;padding:1px 5px;letter-spacing:0.5px;text-transform:uppercase;line-height:1.6}
       .no-results{text-align:center;padding:2rem;color:#666;font-size:0.95rem;font-weight:400}
       .disclosure{font-size:0.72rem;color:#888;text-align:center;font-weight:400;margin-top:1.25rem;line-height:1.5;border-top:1px solid #d4c9a8;padding-top:0.75rem}
       .share-panel{border-bottom:2px solid #d4c9a8;margin-bottom:1.5rem;padding-bottom:1.25rem}
@@ -1098,7 +1097,6 @@ export default function Preview() {
                         <th className="col-title">Listing Title</th>
                         <th className="col-price">Price</th>
                         <th className="col-ship">Est. Shipping</th>
-                        <th className="col-promo">Promo</th>
                         <th className="col-link">Link</th>
                       </tr></thead>
                       <tbody>
@@ -1118,7 +1116,6 @@ export default function Preview() {
                             <td className="col-title">{esc(l.title)}</td>
                             <td className="col-price">${parseFloat(l.price).toFixed(2)}</td>
                             <td className="col-ship">{shipDisplay}</td>
-                            <td className="col-promo">{l.promotions ? <span className="promo-pill">{l.promotions.split("|")[0].trim()}</span> : ""}</td>
                             <td className="col-link"><a className="listing-link" href={l.url} target="_blank" rel="noopener noreferrer">View →</a></td>
                           </tr>);
                         })}
