@@ -3,3 +3,5 @@ Allow: /
 
 User-agent: facebookexternalhit
 Allow: /
+
+Sitemap: https://www.comicbundlefinder.com/sitemap.xml

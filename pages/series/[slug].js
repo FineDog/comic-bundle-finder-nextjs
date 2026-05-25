@@ -164,6 +164,28 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
         <meta property="og:image" content="https://www.comicbundlefinder.com/preview.png" />
         <meta name="robots" content="index, follow" />
         <link rel="canonical" href={`https://www.comicbundlefinder.com/series/${slug}`} />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebPage",
+              "name": seoTitle,
+              "description": metaDescription,
+              "url": `https://www.comicbundlefinder.com/series/${slug}`,
+              "isPartOf": {
+                "@type": "WebSite",
+                "name": "Comic Bundle Finder",
+                "url": "https://www.comicbundlefinder.com",
+              },
+              "about": {
+                "@type": "ComicSeries",
+                "name": displayName,
+                "description": seoBlurb,
+              },
+            }),
+          }}
+        />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Oswald:wght@400;600&display=swap" rel="stylesheet" />
