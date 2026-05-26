@@ -1,6 +1,7 @@
 import Head from "next/head";
 import Link from "next/link";
 import { SERIES } from "../lib/series-config";
+import SiteNav from "../components/SiteNav";
 
 // Groups control how series are displayed on this page.
 // Multi-slug groups share one card.
@@ -80,14 +81,7 @@ export default function CollectionGuides() {
 @media(max-width:540px){.volume-row{flex-direction:column;align-items:flex-start;gap:0.75rem}}
       `}</style>
       <div className="container">
-        <div className="panel title-panel">
-          <h1>Collection Guides</h1>
-          <div className="tagline">Browse classic runs &mdash; find eBay bundle deals issue by issue</div>
-        </div>
-
-        <div className="panel-nav">
-          <Link href="/" className="back-link">← Back to Comic Bundle Finder</Link>
-        </div>
+        <SiteNav />
 
         <div className="panel">
           <div className="caption">What are Collection Guides?</div>

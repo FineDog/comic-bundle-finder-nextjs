@@ -1,5 +1,6 @@
 import Head from "next/head";
 import { getBlobUrl } from "../../lib/blob-url";
+import SiteNav from "../../components/SiteNav";
 
 function esc(s) { return String(s || ""); }
 
@@ -72,10 +73,7 @@ export default function ResultsPage({ data }) {
       @media(max-width:600px){.col-title{display:none}.col-issue{width:40%}}
     `}</style>
     <div className="container">
-      <div className="panel title-panel">
-        <h1>Comic Bundle Finder</h1>
-        <div className="tagline">Find sellers with multiple issues you need &mdash; save on shipping</div>
-      </div>
+      <SiteNav />
 
       <div className="saved-banner">
         <div>

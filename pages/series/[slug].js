@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Head from "next/head";
 import Link from "next/link";
 import { SERIES, getSeriesConfig } from "../../lib/series-config";
+import SiteNav from "../../components/SiteNav";
 
 const MAX_AUTO_SKIP = 30; // stop auto-advancing after this many consecutive empty batches
 
@@ -259,13 +260,14 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
       `}</style>
 
       <div className="container">
-        <div className="panel title-panel">
-          <h1>{displayName}</h1>
-          <div className="series-sub">{subtitle} &middot; {totalIssues} issues &middot; eBay Bundle Deals</div>
-        </div>
+        <SiteNav />
 
-        <div className="panel-nav">
-          <Link href="/" className="back-link">← Back to Comic Bundle Finder</Link>
+        <div style={{ background: "#fffdf4", border: "3px solid #1a1a1a", boxShadow: "6px 6px 0 #1a1a1a", marginBottom: "1.75rem", display: "flex", overflow: "hidden" }}>
+          <div style={{ width: 8, flexShrink: 0, background: "#cc1f00" }} />
+          <div style={{ padding: "1rem 1.5rem" }}>
+            <h2 style={{ fontFamily: "'Bangers', cursive", fontSize: "clamp(1.75rem,5vw,2.8rem)", letterSpacing: "3px", color: "#1a1a1a", lineHeight: 1, margin: 0 }}>{displayName}</h2>
+            <div className="series-sub" style={{ marginTop: "0.4rem" }}>{subtitle} &middot; {totalIssues} issues &middot; eBay Bundle Deals</div>
+          </div>
         </div>
 
         <div className="panel">

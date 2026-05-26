@@ -1,7 +1,9 @@
 import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/router";
 import Head from "next/head";
 import Link from "next/link";
 import * as XLSX from "xlsx";
+import SiteNav from "../components/SiteNav";
 
 const STAGES = [
   { pct: 5,  msg: "Waking up the server…" },
@@ -384,7 +386,13 @@ function track(event, data) {
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function Preview() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState("search");
+
+  useEffect(() => {
+    if (!router.isReady) return;
+    setActiveTab(router.query.tab === "analyzer" ? "analyzer" : "search");
+  }, [router.isReady, router.query.tab]);
 
   // Search tab state
   const [issueInput, setIssueInput] = useState("");
@@ -716,15 +724,6 @@ export default function Preview() {
       body{background-color:#f0e6c4;background-image:radial-gradient(circle,#c8b98a 1px,transparent 1px);background-size:10px 10px;font-family:'Oswald',sans-serif;color:#1a1a1a;min-height:100vh;padding:2rem 1rem 4rem}
       .container{max-width:960px;margin:0 auto}
       .panel{background:#fffdf4;border:3px solid #1a1a1a;box-shadow:6px 6px 0 #1a1a1a;padding:1.5rem 1.75rem;margin-bottom:1.75rem}
-      .title-panel{background:#cc1f00;text-align:center;padding:1.25rem 1.75rem 1rem}
-      .title-panel h1{font-family:'Bangers',cursive;font-size:clamp(2.5rem,8vw,5rem);color:#fffdf4;letter-spacing:4px;text-shadow:4px 4px 0 #1a1a1a;line-height:1}
-      .tagline{color:#ffe066;font-size:0.85rem;letter-spacing:2px;text-transform:uppercase;margin-top:0.4rem;font-weight:400}
-      .tab-bar{display:flex;gap:0;margin-bottom:1.75rem;border:3px solid #1a1a1a;box-shadow:4px 4px 0 #1a1a1a}
-      .tab-btn{flex:1;font-family:'Bangers',cursive;font-size:1.3rem;letter-spacing:2px;padding:0.55rem 1rem 0.65rem;border:none;cursor:pointer;transition:background 0.1s;text-transform:uppercase}
-      .tab-btn.active{background:#cc1f00;color:#fffdf4}
-      .tab-btn:not(.active){background:#fffdf4;color:#1a1a1a}
-      .tab-btn:not(.active):hover{background:#ffe066}
-      .tab-btn:first-child{border-right:2px solid #1a1a1a}
       .caption{display:inline-block;background:#ffe066;border:2px solid #1a1a1a;padding:0.3rem 0.7rem;font-size:0.8rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:1rem}
       .label-row{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:0.5rem;flex-wrap:wrap}
       .label-row label{font-weight:600;font-size:0.9rem;letter-spacing:1px;text-transform:uppercase;margin:0}
@@ -845,15 +844,7 @@ export default function Preview() {
       @media(max-width:600px){.col-title{display:none}.col-issue{width:40%}.filter-grid{grid-template-columns:1fr}}
     `}</style>
     <div className="container">
-      <div className="panel title-panel">
-        <h1>Comic Bundle Finder</h1>
-        <div className="tagline">Find sellers with multiple issues you need &mdash; save on shipping</div>
-      </div>
-
-      <div className="tab-bar">
-        <button className={`tab-btn${activeTab === "search" ? " active" : ""}`} onClick={() => setActiveTab("search")}>Search</button>
-        <button className={`tab-btn${activeTab === "analyzer" ? " active" : ""}`} onClick={() => setActiveTab("analyzer")}>Gap Analyzer</button>
-      </div>
+      <SiteNav />
 
       {activeTab === "search" && (<>
         <div className="panel" style={{ fontSize: "0.88rem", fontWeight: 400, lineHeight: 1.8, color: "#333" }}>
@@ -880,8 +871,6 @@ export default function Preview() {
           </div>
           <div className="search-action-row">
             <button className="btn-search" style={{ marginTop: 0 }} onClick={handleSearch} disabled={progress.visible}>Find Bundles!</button>
-            <span className="or-text">— or —</span>
-            <Link href="/collection-guides" className="btn-guides">Get Started with Collection Guides</Link>
           </div>
           {status.msg && <div className={status.type === "error" ? "s-error" : "s-loading"}>{status.msg}</div>}
           {progress.visible && (
