@@ -72,7 +72,7 @@ export default function ResultsPage({ data }) {
       .disclosure{font-size:0.72rem;color:#888;text-align:center;font-weight:400;margin-top:1.25rem;line-height:1.5;border-top:1px solid #d4c9a8;padding-top:0.75rem}
       @media(max-width:600px){.col-title{display:none}.col-issue{width:40%}}
     `}</style>
-    <div className="container">
+    <div className="page-wrap">
       <SiteNav />
 
       <div className="saved-banner">

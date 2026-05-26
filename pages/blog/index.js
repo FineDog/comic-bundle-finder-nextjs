@@ -41,7 +41,7 @@ export default function BlogIndex({ posts }) {
         .post-desc{font-size:0.88rem;font-weight:400;line-height:1.7;color:#444}
         .empty{font-size:0.9rem;color:#666;font-weight:400}
       `}</style>
-      <div className="container">
+      <div className="page-wrap">
         <SiteNav />
 
         <div className="post-list">

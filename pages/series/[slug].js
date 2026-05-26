@@ -259,7 +259,7 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
         @media(max-width:600px){.col-title{display:none}.col-issue{width:40%}}
       `}</style>
 
-      <div className="container">
+      <div className="page-wrap">
         <SiteNav />
 
         <div style={{ background: "#fffdf4", border: "3px solid #1a1a1a", boxShadow: "6px 6px 0 #1a1a1a", marginBottom: "1.75rem", display: "flex", overflow: "hidden" }}>

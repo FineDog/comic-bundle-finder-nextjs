@@ -38,7 +38,7 @@ export default function Faq({ frontmatter, html }) {
         .faq a:hover{text-decoration:underline}
         .faq strong{font-weight:600;color:#1a1a1a}
       `}</style>
-      <div className="container">
+      <div className="page-wrap">
         <SiteNav />
 
         <div className="panel">

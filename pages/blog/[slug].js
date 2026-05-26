@@ -57,7 +57,7 @@ export default function BlogPost({ frontmatter, html }) {
         .prose pre code{background:none;border:none;padding:0;font-size:0.85rem}
         .prose hr{border:none;border-top:2px dashed #ccc;margin:1.75rem 0}
       `}</style>
-      <div className="container">
+      <div className="page-wrap">
         <SiteNav />
 
         <div className="panel">

@@ -80,7 +80,7 @@ export default function CollectionGuides() {
 
 @media(max-width:540px){.volume-row{flex-direction:column;align-items:flex-start;gap:0.75rem}}
       `}</style>
-      <div className="container">
+      <div className="page-wrap">
         <SiteNav />
 
         <div className="panel">

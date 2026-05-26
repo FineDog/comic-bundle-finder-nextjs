@@ -825,7 +825,7 @@ export default function Preview() {
       .ship-fallback{color:#888;font-size:0.75rem}
       @media(max-width:600px){.col-title{display:none}.col-issue{width:40%}.filter-grid{grid-template-columns:1fr}}
     `}</style>
-    <div className="container">
+    <div className="page-wrap">
       <div className="panel title-panel">
         <h1>Comic Bundle Finder</h1>
         <div className="tagline">Find sellers with multiple issues you need &mdash; save on shipping</div>
