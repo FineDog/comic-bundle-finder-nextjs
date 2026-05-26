@@ -3,17 +3,17 @@ import { useRouter } from "next/router";
 
 export default function SiteNav() {
   const router = useRouter();
-  const isAnalyzer = router.query.tab === "analyzer";
   const path = router.pathname;
 
-  const activeSearch = path === "/" && !isAnalyzer;
-  const activeAnalyzer = path === "/" && isAnalyzer;
+  const activeSearch = path === "/";
+  const activeAnalyzer = path === "/gap-analyzer";
   const activeGuides = path === "/collection-guides" || path.startsWith("/series/");
   const activeAbout = path === "/faq";
 
   return (
     <>
       <style>{`
+        .page-wrap{max-width:960px;margin:0 auto}
         .snav-header{display:block;background:#cc1f00;text-align:center;padding:1.25rem 1.75rem 1rem;border:3px solid #1a1a1a;box-shadow:6px 0 0 #1a1a1a;text-decoration:none;transition:filter 0.12s}
         .snav-header:hover{filter:brightness(1.1)}
         .snav-h1{font-family:'Bangers',cursive;font-size:clamp(2.5rem,8vw,5rem);color:#fffdf4;letter-spacing:4px;text-shadow:4px 4px 0 #1a1a1a;line-height:1;margin:0}
@@ -31,7 +31,7 @@ export default function SiteNav() {
       </Link>
       <nav className="snav-bar">
         <Link href="/" className={`snav-item${activeSearch ? " snav-active" : ""}`}>Search</Link>
-        <Link href="/?tab=analyzer" className={`snav-item${activeAnalyzer ? " snav-active" : ""}`}>Gap Analyzer</Link>
+        <Link href="/gap-analyzer" className={`snav-item${activeAnalyzer ? " snav-active" : ""}`}>Gap Analyzer</Link>
         <Link href="/collection-guides" className={`snav-item${activeGuides ? " snav-active" : ""}`}>Collection Guides</Link>
         <Link href="/faq" className={`snav-item${activeAbout ? " snav-active" : ""}`}>About</Link>
       </nav>
