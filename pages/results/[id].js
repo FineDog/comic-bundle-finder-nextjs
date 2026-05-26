@@ -39,7 +39,7 @@ export default function ResultsPage({ data }) {
     <style>{`
       *{box-sizing:border-box;margin:0;padding:0}
       body{background-color:#f0e6c4;background-image:radial-gradient(circle,#c8b98a 1px,transparent 1px);background-size:10px 10px;min-height:100vh;font-family:'Oswald',sans-serif;color:#1a1a1a;padding:2rem 1rem 4rem}
-      .container{max-width:860px;margin:0 auto;padding:24px 16px}
+
       .panel{background:#fffdf4;border:3px solid #1a1a1a;box-shadow:6px 6px 0 #1a1a1a;padding:1.5rem 1.75rem;margin-bottom:1.5rem}
       .title-panel{background:#cc1f00;text-align:center;padding:1.25rem 1.75rem 1rem}
       .title-panel h1{font-family:'Bangers',cursive;font-size:clamp(2.5rem,8vw,5rem);color:#fffdf4;letter-spacing:4px;text-shadow:4px 4px 0 #1a1a1a;line-height:1}
