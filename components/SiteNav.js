@@ -7,7 +7,7 @@ export default function SiteNav() {
 
   const activeSearch = path === "/";
   const activeAnalyzer = path === "/gap-analyzer";
-  const activeGuides = path === "/collection-guides" || path.startsWith("/series/");
+  const activeGuides = path === "/collection-guides" || path.startsWith("/series/") || path.startsWith("/arc/");
   const activeAbout = path === "/faq";
 
   return (
