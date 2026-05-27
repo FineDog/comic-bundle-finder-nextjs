@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useSession, signIn, signOut } from "next-auth/react";
 import Head from "next/head";
 import Link from "next/link";
 import * as XLSX from "xlsx";
@@ -384,6 +385,7 @@ function track(event, data) {
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function Preview() {
+  const { data: session } = useSession();
   const [activeTab, setActiveTab] = useState("search");
 
   // Search tab state
@@ -716,9 +718,12 @@ export default function Preview() {
       body{background-color:#f0e6c4;background-image:radial-gradient(circle,#c8b98a 1px,transparent 1px);background-size:10px 10px;font-family:'Oswald',sans-serif;color:#1a1a1a;min-height:100vh;padding:2rem 1rem 4rem}
       .container{max-width:960px;margin:0 auto}
       .panel{background:#fffdf4;border:3px solid #1a1a1a;box-shadow:6px 6px 0 #1a1a1a;padding:1.5rem 1.75rem;margin-bottom:1.75rem}
-      .title-panel{background:#cc1f00;text-align:center;padding:1.25rem 1.75rem 1rem}
+      .title-panel{background:#cc1f00;text-align:center;padding:1.25rem 1.75rem 1rem;position:relative}
       .title-panel h1{font-family:'Bangers',cursive;font-size:clamp(2.5rem,8vw,5rem);color:#fffdf4;letter-spacing:4px;text-shadow:4px 4px 0 #1a1a1a;line-height:1}
       .tagline{color:#ffe066;font-size:0.85rem;letter-spacing:2px;text-transform:uppercase;margin-top:0.4rem;font-weight:400}
+      .auth-corner{position:absolute;top:0.75rem;right:0.85rem;display:flex;align-items:center;gap:0.5rem}
+      .btn-auth{background:#fffdf4;color:#1a1a1a;border:2px solid #1a1a1a;box-shadow:2px 2px 0 #1a1a1a;font-family:'Oswald',sans-serif;font-size:0.72rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:0.25rem 0.65rem;cursor:pointer;text-decoration:none;display:inline-block}
+      .btn-auth:hover{background:#ffe066}
       .tab-bar{display:flex;gap:0;margin-bottom:1.75rem;border:3px solid #1a1a1a;box-shadow:4px 4px 0 #1a1a1a}
       .tab-btn{flex:1;font-family:'Bangers',cursive;font-size:1.3rem;letter-spacing:2px;padding:0.55rem 1rem 0.65rem;border:none;cursor:pointer;transition:background 0.1s;text-transform:uppercase}
       .tab-btn.active{background:#cc1f00;color:#fffdf4}
@@ -848,6 +853,13 @@ export default function Preview() {
       <div className="panel title-panel">
         <h1>Comic Bundle Finder</h1>
         <div className="tagline">Find sellers with multiple issues you need &mdash; save on shipping</div>
+        <div className="auth-corner">
+          {session ? (
+            <Link href="/account" className="btn-auth">My Account</Link>
+          ) : (
+            <button className="btn-auth" onClick={() => signIn()}>Sign In</button>
+          )}
+        </div>
       </div>
 
       <div className="tab-bar">

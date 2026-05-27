@@ -11,10 +11,13 @@
     "test": "node --test lib/parse-title.test.js"
   },
   "dependencies": {
+    "@auth/pg-adapter": "^1.11.2",
     "@vercel/analytics": "^2.0.1",
     "@vercel/blob": "^2.3.3",
     "@vercel/speed-insights": "^2.0.0",
     "next": "16.2.4",
+    "next-auth": "^4.24.14",
+    "pg": "^8.21.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "resend": "^6.12.3",
