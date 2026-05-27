@@ -348,7 +348,7 @@ export async function getStaticProps({ params }) {
 
   // 2. Fetch all issues for this arc (paginated)
   const allIssues = [];
-  let nextUrl = `https://metron.cloud/api/issue/?arc_id=${arcId}&page_size=100`;
+  let nextUrl = `https://metron.cloud/api/arc/${arcId}/issue_list/?page_size=100`;
 
   while (nextUrl) {
     let issueRes;
