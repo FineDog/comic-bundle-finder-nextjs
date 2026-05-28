@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Head from "next/head";
 import Link from "next/link";
 import { SERIES_GROUPS } from "../lib/series-config";
@@ -9,6 +9,30 @@ import SiteNav from "../components/SiteNav";
 export default function CollectionGuides({ arcs }) {
   const [query, setQuery] = useState("");
   const [seriesQuery, setSeriesQuery] = useState("");
+  const [charQuery, setCharQuery] = useState("");
+  const [charResults, setCharResults] = useState(null);
+  const [charLoading, setCharLoading] = useState(false);
+
+  useEffect(() => {
+    if (charQuery.trim().length < 3) {
+      setCharResults(null);
+      setCharLoading(false);
+      return;
+    }
+    setCharLoading(true);
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/characters/search?q=${encodeURIComponent(charQuery.trim())}`);
+        const data = await res.json();
+        setCharResults(Array.isArray(data) ? data : []);
+      } catch {
+        setCharResults([]);
+      } finally {
+        setCharLoading(false);
+      }
+    }, 350);
+    return () => clearTimeout(timer);
+  }, [charQuery]);
 
   const seriesItems = Object.entries(SERIES_GROUPS).map(([slug, g]) => ({ slug, name: g.name }));
   const seriesMatches =
@@ -172,6 +196,46 @@ export default function CollectionGuides({ arcs }) {
           {seriesQuery.trim().length < 2 && (
             <p className="arc-hint">
               Type at least 2 characters to search {seriesItems.length} series.
+            </p>
+          )}
+        </div>
+
+        {/* Character Search */}
+        <div className="panel">
+          <div className="section-title">Characters</div>
+          <div className="caption">Search by Character Name</div>
+          <div className="arc-search-wrap">
+            <input
+              className="arc-search-input"
+              type="search"
+              placeholder="e.g. Spider-Man, Wolverine, Daredevil…"
+              value={charQuery}
+              onChange={(e) => setCharQuery(e.target.value)}
+              autoComplete="off"
+            />
+          </div>
+          {charLoading && (
+            <p className="arc-hint" style={{ marginTop: "0.75rem" }}>Searching Metron…</p>
+          )}
+          {!charLoading && charResults !== null && (
+            <div className="arc-results">
+              {charResults.length === 0 ? (
+                <p className="arc-no-results">No characters found for &ldquo;{charQuery.trim()}&rdquo;.</p>
+              ) : (
+                charResults.slice(0, 20).map((c) => (
+                  <div className="arc-result-card" key={c.id}>
+                    <span className="arc-result-name">{c.name}</span>
+                    <Link href={`/character/${c.id}`} className="arc-result-link">
+                      View Character &rarr;
+                    </Link>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+          {!charLoading && charResults === null && (
+            <p className="arc-hint">
+              Type at least 3 characters to search the Metron database live.
             </p>
           )}
         </div>
