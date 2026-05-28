@@ -2,24 +2,73 @@ import fs from "fs";
 import path from "path";
 import Head from "next/head";
 import Link from "next/link";
-import { SERIES, SERIES_GROUPS } from "../../lib/series-config";
+import { SERIES } from "../../lib/series-config";
 import SiteNav from "../../components/SiteNav";
 
-export default function SeriesGuidePage({ groupSlug, groupName, volumes }) {
+// --- Matching helpers (run server-side in getServerSideProps) ---
+
+function getBaseName(name) {
+  // Strip trailing "(YYYY)" from series names like "The Amazing Spider-Man (1963)"
+  return name.replace(/\s*\(\d{4,}\)\s*$/, "").trim();
+}
+
+function getYearFromName(name) {
+  const m = /\((\d{4})\)\s*$/.exec(name.trim());
+  return m ? parseInt(m[1]) : null;
+}
+
+function normalizeName(name) {
+  return name
+    .toLowerCase()
+    .replace(/^the\s+/, "")        // strip leading "The "
+    .replace(/[^a-z0-9\s]/g, " ") // punctuation/hyphens -> space
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+// Match a Metron series name to one of our local SERIES slugs by display name + year
+function findLocalSlug(metronName) {
+  const year = getYearFromName(metronName);
+  if (!year) return null;
+  const baseNorm = normalizeName(getBaseName(metronName));
+  for (const [slug, config] of Object.entries(SERIES)) {
+    if (config.yearBegan !== year) continue;
+    if (normalizeName(config.displayName) === baseNorm) return slug;
+  }
+  return null;
+}
+
+// --- Component ---
+
+export default function SeriesGuidePage({ groupName, groupSlug, volumes }) {
+  const title = `${groupName} — Series Guide | Comic Bundle Finder`;
+
   return (
     <>
       <Head>
-        <title>{groupName} — Series Guide | Comic Bundle Finder</title>
-        <meta name="description" content={`Browse all ${groupName} series volumes and find eBay bundle deals for every issue.`} />
-        <meta property="og:title" content={`${groupName} — Series Guide | Comic Bundle Finder`} />
+        <title>{title}</title>
+        <meta
+          name="description"
+          content={`Browse all ${groupName} volumes and find eBay bundle deals for every issue.`}
+        />
+        <meta property="og:title" content={title} />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content={`https://www.comicbundlefinder.com/series-guide/${groupSlug}`} />
+        <meta
+          property="og:url"
+          content={`https://www.comicbundlefinder.com/series-guide/${groupSlug}`}
+        />
         <meta property="og:image" content="https://www.comicbundlefinder.com/preview.png" />
         <meta name="robots" content="index, follow" />
-        <link rel="canonical" href={`https://www.comicbundlefinder.com/series-guide/${groupSlug}`} />
+        <link
+          rel="canonical"
+          href={`https://www.comicbundlefinder.com/series-guide/${groupSlug}`}
+        />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Oswald:wght@400;600&display=swap" rel="stylesheet" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Bangers&family=Oswald:wght@400;600&display=swap"
+          rel="stylesheet"
+        />
       </Head>
       <style>{`
         *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -38,20 +87,26 @@ export default function SeriesGuidePage({ groupSlug, groupName, volumes }) {
         .volume-card{background:#fffdf4;border:3px solid #1a1a1a;box-shadow:5px 5px 0 #1a1a1a;display:flex;overflow:hidden;margin-bottom:1.25rem}
         .volume-card:last-child{margin-bottom:0}
         .volume-card-accent{width:8px;flex-shrink:0;background:#003399}
+        .volume-card-accent.unavailable{background:#aaa}
         .volume-card-body{flex:1;padding:1.25rem 1.5rem;min-width:0}
         .volume-title{font-family:'Bangers',cursive;font-size:1.5rem;letter-spacing:2px;color:#1a1a1a;line-height:1.1;margin-bottom:0.5rem;display:flex;align-items:center;gap:0.6rem;flex-wrap:wrap}
         .issue-count{display:inline-block;background:#ffe066;border:2px solid #1a1a1a;padding:0.15rem 0.6rem;font-family:'Oswald',sans-serif;font-size:0.72rem;font-weight:600;letter-spacing:1px;text-transform:uppercase}
+        .coming-soon-badge{display:inline-block;background:#e8e0cc;border:2px solid #aaa;color:#666;padding:0.15rem 0.6rem;font-family:'Oswald',sans-serif;font-size:0.72rem;font-weight:600;letter-spacing:1px;text-transform:uppercase}
         .volume-blurb{font-size:0.88rem;font-weight:400;line-height:1.7;color:#444;margin-bottom:1rem}
         .btn-series{display:inline-block;background:#003399;color:#fffdf4;border:3px solid #1a1a1a;box-shadow:4px 4px 0 #1a1a1a;font-family:'Bangers',cursive;font-size:1.1rem;letter-spacing:2px;padding:0.3rem 1.25rem 0.4rem;cursor:pointer;text-decoration:none;white-space:nowrap;transition:transform 0.08s,box-shadow 0.08s}
         .btn-series:hover{background:#0044cc}
         .btn-series:active{transform:translate(3px,3px);box-shadow:1px 1px 0 #1a1a1a}
+        .no-volumes{font-size:0.9rem;color:#666;font-weight:400;padding:0.5rem 0}
+        .coming-soon-note{font-size:0.82rem;color:#888;font-style:italic;margin-top:0.25rem}
       `}</style>
 
       <div className="page-wrap">
         <SiteNav />
 
         <div className="panel-slim">
-          <Link href="/collection-guides" className="back-link">← Collection Guides</Link>
+          <Link href="/collection-guides" className="back-link">
+            &larr; Collection Guides
+          </Link>
         </div>
 
         <div className="series-header">
@@ -63,26 +118,50 @@ export default function SeriesGuidePage({ groupSlug, groupName, volumes }) {
 
         <div className="panel">
           <div className="caption">Select a Volume</div>
-          {volumes.map((v) => (
-            <div className="volume-card" key={v.slug}>
-              <div className="volume-card-accent" />
-              <div className="volume-card-body">
-                <div className="volume-title">
-                  {v.subtitle}
-                  {v.issueCount > 0 && (
-                    <span className="issue-count">{v.issueCount} issues</span>
+          {volumes.length === 0 ? (
+            <p className="no-volumes">
+              No volumes found for this series. Try searching for a different name.
+            </p>
+          ) : (
+            volumes.map((v) => (
+              <div className="volume-card" key={String(v.metronId)}>
+                <div className={"volume-card-accent" + (v.localSlug ? "" : " unavailable")} />
+                <div className="volume-card-body">
+                  <div className="volume-title">
+                    {v.subtitle}
+                    {v.issueCount > 0 && (
+                      <span className="issue-count">{v.issueCount} issues</span>
+                    )}
+                    {!v.localSlug && (
+                      <span className="coming-soon-badge">Coming Soon</span>
+                    )}
+                  </div>
+                  {v.seoBlurb && <div className="volume-blurb">{v.seoBlurb}</div>}
+                  {v.localSlug ? (
+                    <Link href={`/series/${v.localSlug}`} className="btn-series">
+                      Browse Series &rarr;
+                    </Link>
+                  ) : (
+                    <p className="coming-soon-note">
+                      This volume is not yet available on Comic Bundle Finder.
+                    </p>
                   )}
                 </div>
-                <div className="volume-blurb">{v.seoBlurb}</div>
-                <Link href={`/series/${v.slug}`} className="btn-series">
-                  Browse Series &rarr;
-                </Link>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
 
-        <div className="panel" style={{ textAlign: "center", fontSize: "0.8rem", fontWeight: 400, color: "#666", padding: "0.85rem 1.75rem" }}>
+        <div
+          className="panel"
+          style={{
+            textAlign: "center",
+            fontSize: "0.8rem",
+            fontWeight: 400,
+            color: "#666",
+            padding: "0.85rem 1.75rem",
+          }}
+        >
           Bugs? Feature requests? Email us at{" "}
           <a href="mailto:hello@comicbundlefinder.com" style={{ color: "#003399", fontWeight: 600 }}>
             hello@comicbundlefinder.com
@@ -93,15 +172,23 @@ export default function SeriesGuidePage({ groupSlug, groupName, volumes }) {
               target="_blank"
               rel="noopener noreferrer"
               style={{
-                display: "inline-flex", alignItems: "center", gap: "0.5rem",
-                background: "#003399", color: "#fffdf4",
-                border: "2px solid #1a1a1a", boxShadow: "3px 3px 0 #1a1a1a",
-                fontFamily: "'Oswald', sans-serif", fontWeight: 600,
-                fontSize: "0.82rem", letterSpacing: "1px", textTransform: "uppercase",
-                padding: "0.35rem 1rem", textDecoration: "none",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.5rem",
+                background: "#003399",
+                color: "#fffdf4",
+                border: "2px solid #1a1a1a",
+                boxShadow: "3px 3px 0 #1a1a1a",
+                fontFamily: "'Oswald', sans-serif",
+                fontWeight: 600,
+                fontSize: "0.82rem",
+                letterSpacing: "1px",
+                textTransform: "uppercase",
+                padding: "0.35rem 1rem",
+                textDecoration: "none",
               }}
             >
-              ☕ Support me on Ko-fi
+              Support me on Ko-fi
             </a>
           </div>
         </div>
@@ -110,40 +197,89 @@ export default function SeriesGuidePage({ groupSlug, groupName, volumes }) {
   );
 }
 
-export async function getStaticPaths() {
-  return {
-    paths: Object.keys(SERIES_GROUPS).map((slug) => ({ params: { slug } })),
-    fallback: false,
-  };
-}
+// --- Server-side data fetching ---
 
-export async function getStaticProps({ params }) {
+export async function getServerSideProps({ params }) {
   const { slug } = params;
-  const group = SERIES_GROUPS[slug];
-  if (!group) return { notFound: true };
 
-  const volumes = group.slugs.map((seriesSlug) => {
-    const config = SERIES[seriesSlug];
-    if (!config) return null;
+  // Convert slug to a search term: "amazing-spider-man" -> "amazing spider man"
+  const searchTerm = slug.replace(/-/g, " ");
+  const targetNorm = normalizeName(searchTerm);
+
+  const auth = Buffer.from(
+    `${process.env.METRON_USERNAME}:${process.env.METRON_PASSWORD}`
+  ).toString("base64");
+
+  let seriesData = [];
+  try {
+    const res = await fetch(
+      `https://metron.cloud/api/series/?name=${encodeURIComponent(searchTerm)}&page_size=100`,
+      { headers: { Authorization: `Basic ${auth}` } }
+    );
+    if (res.ok) {
+      const data = await res.json();
+      seriesData = data.results || [];
+    }
+  } catch {
+    // Metron unreachable — render empty state
+  }
+
+  // Keep only series whose base name exactly matches the target (e.g., only "The Amazing
+  // Spider-Man" and not "The Amazing Spider-Man: Brand New Day" or similar spin-offs)
+  const matched = seriesData.filter((s) => {
+    const baseNorm = normalizeName(getBaseName(s.name));
+    return baseNorm === targetNorm;
+  });
+
+  // Sort chronologically
+  matched.sort((a, b) => {
+    const yA = getYearFromName(a.name) || 9999;
+    const yB = getYearFromName(b.name) || 9999;
+    return yA - yB;
+  });
+
+  // Build volume objects
+  const volumes = matched.map((s) => {
+    const localSlug = findLocalSlug(s.name);
+    const localConfig = localSlug ? SERIES[localSlug] : null;
+
     let issueCount = 0;
-    try {
-      const issues = JSON.parse(
-        fs.readFileSync(path.join(process.cwd(), "data", config.dataFile), "utf-8")
-      );
-      issueCount = issues.length;
-    } catch {}
+    if (localConfig) {
+      try {
+        const issues = JSON.parse(
+          fs.readFileSync(path.join(process.cwd(), "data", localConfig.dataFile), "utf-8")
+        );
+        issueCount = issues.length;
+      } catch {
+        // Data file not present yet
+      }
+    }
+
+    const year = getYearFromName(s.name);
     return {
-      slug: seriesSlug,
-      subtitle: config.subtitle,
-      seoBlurb: config.seoBlurb,
+      metronId: s.id,
+      name: s.name,
+      // For local series use the rich subtitle; for others show the start year
+      subtitle: localConfig ? localConfig.subtitle : (year ? String(year) : getBaseName(s.name)),
+      seoBlurb: localConfig ? localConfig.seoBlurb : "",
+      localSlug: localSlug || null,
       issueCount,
     };
-  }).filter(Boolean);
+  });
+
+  // Group name for the header: use first result's base name, or a title-cased fallback
+  const groupName =
+    matched.length > 0
+      ? getBaseName(matched[0].name)
+      : slug
+          .split("-")
+          .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+          .join(" ");
 
   return {
     props: {
       groupSlug: slug,
-      groupName: group.name,
+      groupName,
       volumes,
     },
   };

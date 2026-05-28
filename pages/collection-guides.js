@@ -1,91 +1,126 @@
 import fs from "fs";
 import path from "path";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import Head from "next/head";
 import Link from "next/link";
-import { SERIES_GROUPS } from "../lib/series-config";
 import SiteNav from "../components/SiteNav";
 
-export default function CollectionGuides({ arcs }) {
-  const [query, setQuery] = useState("");
-  const [seriesQuery, setSeriesQuery] = useState("");
-  const [charQuery, setCharQuery] = useState("");
-  const [charSuggestions, setCharSuggestions] = useState([]);
-  const [charSuggestLoading, setCharSuggestLoading] = useState(false);
-  const [charSelectedIdx, setCharSelectedIdx] = useState(-1);
-  const [charResults, setCharResults] = useState(null); // { count, results } after full search
-  const [charSearching, setCharSearching] = useState(false);
-  const [charSubmittedQuery, setCharSubmittedQuery] = useState("");
+// --- Client-side helpers for series search ---
 
-  // Debounced typeahead — filters API results to startswith matches only
+function getBaseName(name) {
+  return name.replace(/\s*\(\d{4,}\)\s*$/, "").trim();
+}
+
+function nameToSlug(name) {
+  return name
+    .toLowerCase()
+    .replace(/^the\s+/, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+// Deduplicate Metron results by base name, optionally filtering with filterFn
+function deduplicateByBaseName(results, filterFn) {
+  const seen = new Set();
+  return results.reduce((acc, r) => {
+    const baseName = getBaseName(r.name);
+    const key = baseName.toLowerCase();
+    if (!seen.has(key) && (!filterFn || filterFn(baseName))) {
+      seen.add(key);
+      acc.push({ baseName, slug: nameToSlug(baseName) });
+    }
+    return acc;
+  }, []);
+}
+
+export default function CollectionGuides({ arcs }) {
+  // Story arc search (local)
+  const [query, setQuery] = useState("");
+
+  // Series search (live Metron)
+  const [seriesQuery, setSeriesQuery] = useState("");
+  const [seriesSuggestions, setSeriesSuggestions] = useState([]);
+  const [seriesSuggestLoading, setSeriesSuggestLoading] = useState(false);
+  const [seriesSelectedIdx, setSeriesSelectedIdx] = useState(-1);
+  const [seriesResults, setSeriesResults] = useState(null);
+  const [seriesSearching, setSeriesSearching] = useState(false);
+  const [seriesSubmittedQuery, setSeriesSubmittedQuery] = useState("");
+
+  // Debounced series typeahead — shows suggestions that START WITH the query
   useEffect(() => {
-    const q = charQuery.trim();
+    const q = seriesQuery.trim();
     if (q.length < 3) {
-      setCharSuggestions([]);
-      setCharSuggestLoading(false);
-      setCharSelectedIdx(-1);
+      setSeriesSuggestions([]);
+      setSeriesSuggestLoading(false);
+      setSeriesSelectedIdx(-1);
       return;
     }
-    setCharSuggestLoading(true);
+    setSeriesSuggestLoading(true);
     const timer = setTimeout(async () => {
       try {
-        const res = await fetch(`/api/characters/search?q=${encodeURIComponent(q)}`);
+        const res = await fetch(`/api/series/search?q=${encodeURIComponent(q)}`);
         const data = await res.json();
         const lower = q.toLowerCase();
-        const suggestions = (data.results || [])
-          .filter((c) => c.name.toLowerCase().startsWith(lower))
-          .slice(0, 8);
-        setCharSuggestions(suggestions);
-        setCharSelectedIdx(-1);
+        const suggestions = deduplicateByBaseName(
+          data.results || [],
+          (baseName) => {
+            const b = baseName.toLowerCase();
+            // Match if base name or base name minus "The " starts with the query
+            return b.startsWith(lower) || b.replace(/^the\s+/, "").startsWith(lower);
+          }
+        ).slice(0, 8);
+        setSeriesSuggestions(suggestions);
+        setSeriesSelectedIdx(-1);
       } catch {
-        setCharSuggestions([]);
+        setSeriesSuggestions([]);
       } finally {
-        setCharSuggestLoading(false);
+        setSeriesSuggestLoading(false);
       }
     }, 350);
     return () => clearTimeout(timer);
-  }, [charQuery]);
+  }, [seriesQuery]);
 
-  function handleCharSearch(queryOverride) {
-    const q = (queryOverride || charQuery).trim();
+  function handleSeriesSearch(queryOverride) {
+    const q = (queryOverride || seriesQuery).trim();
     if (q.length < 3) return;
-    setCharSuggestions([]);
-    setCharSelectedIdx(-1);
-    setCharSearching(true);
-    setCharSubmittedQuery(q);
-    setCharResults(null);
-    fetch(`/api/characters/search?q=${encodeURIComponent(q)}`)
+    setSeriesSuggestions([]);
+    setSeriesSelectedIdx(-1);
+    setSeriesSearching(true);
+    setSeriesSubmittedQuery(q);
+    setSeriesResults(null);
+    fetch(`/api/series/search?q=${encodeURIComponent(q)}`)
       .then((r) => r.json())
-      .then((data) => { setCharResults(data); setCharSearching(false); })
-      .catch(() => { setCharResults({ count: 0, results: [] }); setCharSearching(false); });
+      .then((data) => {
+        setSeriesResults(deduplicateByBaseName(data.results || []));
+        setSeriesSearching(false);
+      })
+      .catch(() => {
+        setSeriesResults([]);
+        setSeriesSearching(false);
+      });
   }
 
-  function handleCharKeyDown(e) {
+  function handleSeriesKeyDown(e) {
     if (e.key === "ArrowDown") {
       e.preventDefault();
-      setCharSelectedIdx((i) => (i < charSuggestions.length - 1 ? i + 1 : i));
+      setSeriesSelectedIdx((i) => (i < seriesSuggestions.length - 1 ? i + 1 : i));
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
-      setCharSelectedIdx((i) => (i > 0 ? i - 1 : -1));
+      setSeriesSelectedIdx((i) => (i > 0 ? i - 1 : -1));
     } else if (e.key === "Enter") {
       e.preventDefault();
-      if (charSelectedIdx >= 0 && charSuggestions[charSelectedIdx]) {
-        window.location.href = `/character/${charSuggestions[charSelectedIdx].id}`;
+      if (seriesSelectedIdx >= 0 && seriesSuggestions[seriesSelectedIdx]) {
+        window.location.href = `/series-guide/${seriesSuggestions[seriesSelectedIdx].slug}`;
       } else {
-        handleCharSearch();
+        handleSeriesSearch();
       }
     } else if (e.key === "Escape") {
-      setCharSuggestions([]);
-      setCharSelectedIdx(-1);
+      setSeriesSuggestions([]);
+      setSeriesSelectedIdx(-1);
     }
   }
 
-  const seriesItems = Object.entries(SERIES_GROUPS).map(([slug, g]) => ({ slug, name: g.name }));
-  const seriesMatches =
-    seriesQuery.trim().length >= 2
-      ? seriesItems.filter((s) => s.name.toLowerCase().includes(seriesQuery.trim().toLowerCase()))
-      : [];
-
+  // Story arc local filtering
   const matches =
     query.trim().length >= 2
       ? arcs
@@ -97,9 +132,15 @@ export default function CollectionGuides({ arcs }) {
     <>
       <Head>
         <title>Collection Guides — Comic Bundle Finder</title>
-        <meta name="description" content="Browse pre-built collection guides for classic comic runs and story arcs. Find eBay bundle deals issue by issue." />
+        <meta
+          name="description"
+          content="Browse pre-built collection guides for classic comic runs and story arcs. Find eBay bundle deals issue by issue."
+        />
         <meta property="og:title" content="Collection Guides — Comic Bundle Finder" />
-        <meta property="og:description" content="Browse pre-built collection guides for classic comic runs and story arcs. Find eBay bundle deals issue by issue." />
+        <meta
+          property="og:description"
+          content="Browse pre-built collection guides for classic comic runs and story arcs. Find eBay bundle deals issue by issue."
+        />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://www.comicbundlefinder.com/collection-guides" />
         <meta property="og:image" content="https://www.comicbundlefinder.com/preview.png" />
@@ -112,7 +153,8 @@ export default function CollectionGuides({ arcs }) {
               "@context": "https://schema.org",
               "@type": "CollectionPage",
               "name": "Collection Guides — Comic Bundle Finder",
-              "description": "Browse pre-built collection guides for classic comic runs and story arcs. Find eBay bundle deals issue by issue.",
+              "description":
+                "Browse pre-built collection guides for classic comic runs and story arcs. Find eBay bundle deals issue by issue.",
               "url": "https://www.comicbundlefinder.com/collection-guides",
               "isPartOf": {
                 "@type": "WebSite",
@@ -124,7 +166,10 @@ export default function CollectionGuides({ arcs }) {
         />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Oswald:wght@400;600&display=swap" rel="stylesheet" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Bangers&family=Oswald:wght@400;600&display=swap"
+          rel="stylesheet"
+        />
       </Head>
       <style>{`
         *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -135,7 +180,7 @@ export default function CollectionGuides({ arcs }) {
         .intro{font-size:0.88rem;font-weight:400;line-height:1.8;color:#333}
         .section-title{font-family:'Bangers',cursive;font-size:1.8rem;letter-spacing:2px;color:#cc1f00;margin-bottom:1.25rem}
 
-        /* Arc search */
+        /* Search inputs and result cards */
         .arc-search-wrap{position:relative;margin-bottom:1rem}
         .arc-search-input{width:100%;border:3px solid #1a1a1a;background:#fffdf4;font-family:'Oswald',sans-serif;font-size:1rem;font-weight:400;padding:0.6rem 0.85rem;color:#1a1a1a;box-shadow:3px 3px 0 #1a1a1a}
         .arc-search-input:focus{outline:none;border-color:#003399;box-shadow:3px 3px 0 #003399}
@@ -152,18 +197,18 @@ export default function CollectionGuides({ arcs }) {
 
         @media(max-width:540px){.arc-result-card{flex-direction:column;align-items:flex-start}}
 
-        /* Character autocomplete dropdown */
-        .char-input-wrap{position:relative}
-        .char-search-row{display:flex;gap:0.5rem;margin-bottom:0}
-        .char-dropdown{position:absolute;top:100%;left:0;right:0;z-index:200;background:#fffdf4;border:2px solid #1a1a1a;border-top:none;box-shadow:4px 4px 0 #1a1a1a}
-        .char-dropdown-item{padding:0.5rem 0.85rem;cursor:pointer;font-family:'Oswald',sans-serif;font-size:0.95rem;font-weight:400;border-bottom:1px solid #e8e0cc;color:#1a1a1a}
-        .char-dropdown-item:last-child{border-bottom:none}
-        .char-dropdown-item.char-selected,.char-dropdown-item:hover{background:#f0e6c4;font-weight:600}
-        .char-dropdown-loading{padding:0.5rem 0.85rem;font-family:'Oswald',sans-serif;font-size:0.88rem;font-weight:400;color:#888;font-style:italic}
-        .char-search-btn{background:#cc1f00;color:#fffdf4;border:3px solid #1a1a1a;box-shadow:3px 3px 0 #1a1a1a;font-family:'Bangers',cursive;font-size:1rem;letter-spacing:1.5px;padding:0.35rem 1rem 0.4rem;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:transform 0.08s,box-shadow 0.08s}
-        .char-search-btn:hover{background:#a81800}
-        .char-search-btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 #1a1a1a}
+        /* Autocomplete dropdown (shared by series search) */
+        .search-input-wrap{position:relative}
+        .search-dropdown{position:absolute;top:100%;left:0;right:0;z-index:200;background:#fffdf4;border:2px solid #1a1a1a;border-top:none;box-shadow:4px 4px 0 #1a1a1a}
+        .search-dropdown-item{padding:0.5rem 0.85rem;cursor:pointer;font-family:'Oswald',sans-serif;font-size:0.95rem;font-weight:400;border-bottom:1px solid #e8e0cc;color:#1a1a1a}
+        .search-dropdown-item:last-child{border-bottom:none}
+        .search-dropdown-item.search-selected,.search-dropdown-item:hover{background:#f0e6c4;font-weight:600}
+        .search-dropdown-loading{padding:0.5rem 0.85rem;font-family:'Oswald',sans-serif;font-size:0.88rem;font-weight:400;color:#888;font-style:italic}
+        .search-btn{background:#cc1f00;color:#fffdf4;border:3px solid #1a1a1a;box-shadow:3px 3px 0 #1a1a1a;font-family:'Bangers',cursive;font-size:1rem;letter-spacing:1.5px;padding:0.35rem 1rem 0.4rem;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:transform 0.08s,box-shadow 0.08s}
+        .search-btn:hover{background:#a81800}
+        .search-btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 #1a1a1a}
       `}</style>
+
       <div className="page-wrap">
         <SiteNav />
 
@@ -171,8 +216,8 @@ export default function CollectionGuides({ arcs }) {
           <div className="caption">What are Collection Guides?</div>
           <p className="intro">
             Already know which series or story arc you&rsquo;re collecting? Skip the manual search.
-            Collection Guides let you pull live eBay bundle deals for any run or arc you need —
-            no want list required.
+            Collection Guides let you pull live eBay bundle deals for any run or arc you need
+            &mdash; no want list required.
           </p>
         </div>
 
@@ -182,7 +227,7 @@ export default function CollectionGuides({ arcs }) {
           <div className="caption">Search by Arc Name</div>
           {arcs.length === 0 ? (
             <p className="arc-coming-soon">
-              Arc search index is being built — check back soon.
+              Arc search index is being built &mdash; check back soon.
             </p>
           ) : (
             <>
@@ -190,7 +235,7 @@ export default function CollectionGuides({ arcs }) {
                 <input
                   className="arc-search-input"
                   type="search"
-                  placeholder="e.g. Brand New Day, Infinity Gauntlet, Knightfall…"
+                  placeholder="e.g. Brand New Day, Infinity Gauntlet, Knightfall..."
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   autoComplete="off"
@@ -199,7 +244,9 @@ export default function CollectionGuides({ arcs }) {
               {query.trim().length >= 2 && (
                 <div className="arc-results">
                   {matches.length === 0 ? (
-                    <p className="arc-no-results">No arcs found for &ldquo;{query.trim()}&rdquo;.</p>
+                    <p className="arc-no-results">
+                      No arcs found for &ldquo;{query.trim()}&rdquo;.
+                    </p>
                   ) : (
                     matches.map((arc) => (
                       <div className="arc-result-card" key={arc.id}>
@@ -221,107 +268,104 @@ export default function CollectionGuides({ arcs }) {
           )}
         </div>
 
-        {/* Series Guides */}
+        {/* Series Guides — live Metron search */}
         <div className="panel">
           <div className="section-title">Series Guides</div>
           <div className="caption">Search by Series Name</div>
-          <div className="arc-search-wrap">
-            <input
-              className="arc-search-input"
-              type="search"
-              placeholder="e.g. Spider-Man, Daredevil, X-Men…"
-              value={seriesQuery}
-              onChange={(e) => setSeriesQuery(e.target.value)}
-              autoComplete="off"
-            />
-          </div>
-          {seriesQuery.trim().length >= 2 && (
-            <div className="arc-results">
-              {seriesMatches.length === 0 ? (
-                <p className="arc-no-results">No series found for &ldquo;{seriesQuery.trim()}&rdquo;.</p>
-              ) : (
-                seriesMatches.map((s) => (
-                  <div className="arc-result-card" key={s.slug}>
-                    <span className="arc-result-name">{s.name}</span>
-                    <Link href={`/series-guide/${s.slug}`} className="arc-result-link">
-                      View Volumes &rarr;
-                    </Link>
-                  </div>
-                ))
-              )}
-            </div>
-          )}
-          {seriesQuery.trim().length < 2 && (
-            <p className="arc-hint">
-              Type at least 2 characters to search {seriesItems.length} series.
-            </p>
-          )}
-        </div>
 
-        {/* Character Search */}
-        <div className="panel">
-          <div className="section-title">Characters</div>
-          <div className="caption">Search by Character Name</div>
-
-          <div style={{ display: "flex", gap: "0.5rem", alignItems: "flex-start", marginBottom: "0.75rem" }}>
-            <div className="char-input-wrap" style={{ flex: 1 }}>
+          <div
+            style={{
+              display: "flex",
+              gap: "0.5rem",
+              alignItems: "flex-start",
+              marginBottom: "0.75rem",
+            }}
+          >
+            <div className="search-input-wrap" style={{ flex: 1 }}>
               <input
                 className="arc-search-input"
                 type="text"
-                placeholder="e.g. Spider-Man, Wolverine, Daredevil…"
-                value={charQuery}
-                onChange={(e) => { setCharQuery(e.target.value); setCharResults(null); setCharSubmittedQuery(""); }}
-                onKeyDown={handleCharKeyDown}
-                onBlur={() => setTimeout(() => { setCharSuggestions([]); setCharSelectedIdx(-1); }, 150)}
+                placeholder="e.g. Spider-Man, Daredevil, X-Men..."
+                value={seriesQuery}
+                onChange={(e) => {
+                  setSeriesQuery(e.target.value);
+                  setSeriesResults(null);
+                  setSeriesSubmittedQuery("");
+                }}
+                onKeyDown={handleSeriesKeyDown}
+                onBlur={() =>
+                  setTimeout(() => {
+                    setSeriesSuggestions([]);
+                    setSeriesSelectedIdx(-1);
+                  }, 150)
+                }
                 autoComplete="off"
               />
               {/* Autocomplete dropdown — startswith suggestions while typing */}
-              {charResults === null && (charSuggestions.length > 0 || charSuggestLoading) && (
-                <div className="char-dropdown">
-                  {charSuggestLoading && <div className="char-dropdown-loading">Searching…</div>}
-                  {!charSuggestLoading && charSuggestions.map((c, i) => (
-                    <div
-                      key={c.id}
-                      className={`char-dropdown-item${i === charSelectedIdx ? " char-selected" : ""}`}
-                      onMouseDown={(e) => e.preventDefault()}
-                      onClick={() => { window.location.href = `/character/${c.id}`; }}
-                      onMouseEnter={() => setCharSelectedIdx(i)}
-                    >
-                      {c.name}
-                    </div>
-                  ))}
-                </div>
-              )}
+              {seriesResults === null &&
+                (seriesSuggestions.length > 0 || seriesSuggestLoading) && (
+                  <div className="search-dropdown">
+                    {seriesSuggestLoading && (
+                      <div className="search-dropdown-loading">Searching...</div>
+                    )}
+                    {!seriesSuggestLoading &&
+                      seriesSuggestions.map((s, i) => (
+                        <div
+                          key={s.slug}
+                          className={
+                            "search-dropdown-item" +
+                            (i === seriesSelectedIdx ? " search-selected" : "")
+                          }
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={() => {
+                            window.location.href = `/series-guide/${s.slug}`;
+                          }}
+                          onMouseEnter={() => setSeriesSelectedIdx(i)}
+                        >
+                          {s.baseName}
+                        </div>
+                      ))}
+                  </div>
+                )}
             </div>
-            <button type="button" className="char-search-btn" onClick={() => handleCharSearch()}>
+            <button
+              type="button"
+              className="search-btn"
+              onClick={() => handleSeriesSearch()}
+            >
               Search
             </button>
           </div>
 
           {/* Hint before typing */}
-          {charResults === null && !charSuggestLoading && charSuggestions.length === 0 && charQuery.trim().length < 3 && (
-            <p className="arc-hint">Type at least 3 characters to search the Metron database live.</p>
-          )}
+          {seriesResults === null &&
+            !seriesSuggestLoading &&
+            seriesSuggestions.length === 0 &&
+            seriesQuery.trim().length < 3 && (
+              <p className="arc-hint">
+                Type at least 3 characters to search the Metron series database.
+              </p>
+            )}
 
-          {/* Full results after submit */}
-          {charSearching && <p className="arc-hint">Searching Metron…</p>}
-          {charResults !== null && !charSearching && (
+          {/* Full results after Search / Enter */}
+          {seriesSearching && <p className="arc-hint">Searching Metron...</p>}
+          {seriesResults !== null && !seriesSearching && (
             <>
-              {charResults.results?.length === 0 ? (
-                <p className="arc-no-results">No characters found for &ldquo;{charSubmittedQuery}&rdquo;.</p>
+              {seriesResults.length === 0 ? (
+                <p className="arc-no-results">
+                  No series found for &ldquo;{seriesSubmittedQuery}&rdquo;.
+                </p>
               ) : (
                 <>
                   <p className="arc-hint" style={{ marginBottom: "0.5rem" }}>
-                    {charResults.count > charResults.results.length
-                      ? `Showing ${charResults.results.length} of ${charResults.count} results — refine your search to narrow down.`
-                      : `${charResults.results.length} result${charResults.results.length !== 1 ? "s" : ""} for "${charSubmittedQuery}"`}
+                    {seriesResults.length} series found for &ldquo;{seriesSubmittedQuery}&rdquo;
                   </p>
                   <div className="arc-results">
-                    {charResults.results.map((c) => (
-                      <div className="arc-result-card" key={c.id}>
-                        <span className="arc-result-name">{c.name}</span>
-                        <Link href={`/character/${c.id}`} className="arc-result-link">
-                          View Character &rarr;
+                    {seriesResults.map((s) => (
+                      <div className="arc-result-card" key={s.slug}>
+                        <span className="arc-result-name">{s.baseName}</span>
+                        <Link href={`/series-guide/${s.slug}`} className="arc-result-link">
+                          View Volumes &rarr;
                         </Link>
                       </div>
                     ))}
@@ -332,7 +376,16 @@ export default function CollectionGuides({ arcs }) {
           )}
         </div>
 
-        <div className="panel" style={{ textAlign: "center", fontSize: "0.8rem", fontWeight: 400, color: "#666", padding: "0.85rem 1.75rem" }}>
+        <div
+          className="panel"
+          style={{
+            textAlign: "center",
+            fontSize: "0.8rem",
+            fontWeight: 400,
+            color: "#666",
+            padding: "0.85rem 1.75rem",
+          }}
+        >
           Bugs? Feature requests? Email us at{" "}
           <a href="mailto:hello@comicbundlefinder.com" style={{ color: "#003399", fontWeight: 600 }}>
             hello@comicbundlefinder.com
@@ -343,15 +396,23 @@ export default function CollectionGuides({ arcs }) {
               target="_blank"
               rel="noopener noreferrer"
               style={{
-                display: "inline-flex", alignItems: "center", gap: "0.5rem",
-                background: "#003399", color: "#fffdf4",
-                border: "2px solid #1a1a1a", boxShadow: "3px 3px 0 #1a1a1a",
-                fontFamily: "'Oswald', sans-serif", fontWeight: 600,
-                fontSize: "0.82rem", letterSpacing: "1px", textTransform: "uppercase",
-                padding: "0.35rem 1rem", textDecoration: "none",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.5rem",
+                background: "#003399",
+                color: "#fffdf4",
+                border: "2px solid #1a1a1a",
+                boxShadow: "3px 3px 0 #1a1a1a",
+                fontFamily: "'Oswald', sans-serif",
+                fontWeight: 600,
+                fontSize: "0.82rem",
+                letterSpacing: "1px",
+                textTransform: "uppercase",
+                padding: "0.35rem 1rem",
+                textDecoration: "none",
               }}
             >
-              ☕ Support me on Ko-fi
+              Support me on Ko-fi
             </a>
           </div>
         </div>
