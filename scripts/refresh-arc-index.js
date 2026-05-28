@@ -45,7 +45,17 @@ console.log("Fetching story arcs from Metron...");
 while (nextUrl) {
   process.stdout.write(`  Page ${page}... `);
 
-  const res = await fetch(nextUrl, { headers: HEADERS });
+  let res;
+  // Retry up to 3 times on 429 with exponential backoff
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    res = await fetch(nextUrl, { headers: HEADERS });
+    if (res.status !== 429) break;
+    const retryAfter = parseInt(res.headers.get("retry-after") || "60", 10);
+    const wait = retryAfter * 1000;
+    console.log(`\n  Rate limited (429). Waiting ${retryAfter}s before retry ${attempt}/3...`);
+    await sleep(wait);
+  }
+
   if (!res.ok) {
     console.error(`\nMetron returned ${res.status} on page ${page}. Aborting.`);
     process.exit(1);
@@ -67,7 +77,7 @@ while (nextUrl) {
   page++;
 
   // Polite delay between pages
-  if (nextUrl) await sleep(300);
+  if (nextUrl) await sleep(1000);
 }
 
 arcs.sort((a, b) => a.name.localeCompare(b.name));
