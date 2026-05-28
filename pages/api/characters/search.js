@@ -11,7 +11,7 @@ export default async function handler(req, res) {
   let metronRes;
   try {
     metronRes = await fetch(
-      `https://metron.cloud/api/character/?name=${encodeURIComponent(q)}`,
+      `https://metron.cloud/api/character/?name=${encodeURIComponent(q)}&page_size=100`,
       { headers: { Authorization: `Basic ${auth}` } }
     );
   } catch {
