@@ -218,7 +218,8 @@ export async function getServerSideProps({ params }) {
     );
     if (res.ok) {
       const data = await res.json();
-      seriesData = data.results || [];
+      // Metron uses "series" field for the title, not "name"
+      seriesData = (data.results || []).map((s) => ({ ...s, name: s.series }));
     }
   } catch {
     // Metron unreachable — render empty state

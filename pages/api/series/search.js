@@ -27,7 +27,7 @@ export default async function handler(req, res) {
     count: data.count,
     results: (data.results || []).map((s) => ({
       id: s.id,
-      name: s.name,
+      name: s.series,        // Metron uses "series" field, not "name"
       yearBegan: s.year_began || null,
     })),
   });
