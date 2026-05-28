@@ -259,30 +259,30 @@ export default function CollectionGuides({ arcs }) {
         </div>
 
         {/* Character Search */}
-        <div className=”panel”>
-          <div className=”section-title”>Characters</div>
-          <div className=”caption”>Search by Character Name</div>
+        <div className="panel">
+          <div className="section-title">Characters</div>
+          <div className="caption">Search by Character Name</div>
 
-          <div style={{ display: “flex”, gap: “0.5rem”, alignItems: “flex-start”, marginBottom: “0.75rem” }}>
-            <div className=”char-input-wrap” style={{ flex: 1 }}>
+          <div style={{ display: "flex", gap: "0.5rem", alignItems: "flex-start", marginBottom: "0.75rem" }}>
+            <div className="char-input-wrap" style={{ flex: 1 }}>
               <input
-                className=”arc-search-input”
-                type=”text”
-                placeholder=”e.g. Spider-Man, Wolverine, Daredevil…”
+                className="arc-search-input"
+                type="text"
+                placeholder="e.g. Spider-Man, Wolverine, Daredevil…"
                 value={charQuery}
-                onChange={(e) => { setCharQuery(e.target.value); setCharResults(null); setCharSubmittedQuery(“”); }}
+                onChange={(e) => { setCharQuery(e.target.value); setCharResults(null); setCharSubmittedQuery(""); }}
                 onKeyDown={handleCharKeyDown}
                 onBlur={() => setTimeout(() => { setCharSuggestions([]); setCharSelectedIdx(-1); }, 150)}
-                autoComplete=”off”
+                autoComplete="off"
               />
               {/* Autocomplete dropdown — startswith suggestions while typing */}
               {charResults === null && (charSuggestions.length > 0 || charSuggestLoading) && (
-                <div className=”char-dropdown”>
-                  {charSuggestLoading && <div className=”char-dropdown-loading”>Searching…</div>}
+                <div className="char-dropdown">
+                  {charSuggestLoading && <div className="char-dropdown-loading">Searching…</div>}
                   {!charSuggestLoading && charSuggestions.map((c, i) => (
                     <div
                       key={c.id}
-                      className={`char-dropdown-item${i === charSelectedIdx ? “ char-selected” : “”}`}
+                      className={`char-dropdown-item${i === charSelectedIdx ? " char-selected" : ""}`}
                       onMouseDown={(e) => e.preventDefault()}
                       onClick={() => { window.location.href = `/character/${c.id}`; }}
                       onMouseEnter={() => setCharSelectedIdx(i)}
@@ -293,34 +293,34 @@ export default function CollectionGuides({ arcs }) {
                 </div>
               )}
             </div>
-            <button type=”button” className=”char-search-btn” onClick={() => handleCharSearch()}>
+            <button type="button" className="char-search-btn" onClick={() => handleCharSearch()}>
               Search
             </button>
           </div>
 
           {/* Hint before typing */}
           {charResults === null && !charSuggestLoading && charSuggestions.length === 0 && charQuery.trim().length < 3 && (
-            <p className=”arc-hint”>Type at least 3 characters to search the Metron database live.</p>
+            <p className="arc-hint">Type at least 3 characters to search the Metron database live.</p>
           )}
 
           {/* Full results after submit */}
-          {charSearching && <p className=”arc-hint”>Searching Metron…</p>}
+          {charSearching && <p className="arc-hint">Searching Metron…</p>}
           {charResults !== null && !charSearching && (
             <>
               {charResults.results?.length === 0 ? (
-                <p className=”arc-no-results”>No characters found for &ldquo;{charSubmittedQuery}&rdquo;.</p>
+                <p className="arc-no-results">No characters found for &ldquo;{charSubmittedQuery}&rdquo;.</p>
               ) : (
                 <>
-                  <p className=”arc-hint” style={{ marginBottom: “0.5rem” }}>
+                  <p className="arc-hint" style={{ marginBottom: "0.5rem" }}>
                     {charResults.count > charResults.results.length
                       ? `Showing ${charResults.results.length} of ${charResults.count} results — refine your search to narrow down.`
-                      : `${charResults.results.length} result${charResults.results.length !== 1 ? “s” : “”} for “${charSubmittedQuery}”`}
+                      : `${charResults.results.length} result${charResults.results.length !== 1 ? "s" : ""} for "${charSubmittedQuery}"`}
                   </p>
-                  <div className=”arc-results”>
+                  <div className="arc-results">
                     {charResults.results.map((c) => (
-                      <div className=”arc-result-card” key={c.id}>
-                        <span className=”arc-result-name”>{c.name}</span>
-                        <Link href={`/character/${c.id}`} className=”arc-result-link”>
+                      <div className="arc-result-card" key={c.id}>
+                        <span className="arc-result-name">{c.name}</span>
+                        <Link href={`/character/${c.id}`} className="arc-result-link">
                           View Character &rarr;
                         </Link>
                       </div>
