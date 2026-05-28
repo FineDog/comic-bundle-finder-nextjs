@@ -10,29 +10,51 @@ export default function CollectionGuides({ arcs }) {
   const [query, setQuery] = useState("");
   const [seriesQuery, setSeriesQuery] = useState("");
   const [charQuery, setCharQuery] = useState("");
-  const [charResults, setCharResults] = useState(null);
-  const [charLoading, setCharLoading] = useState(false);
+  const [charSuggestions, setCharSuggestions] = useState([]);
+  const [charSuggestLoading, setCharSuggestLoading] = useState(false);
+  const [charResults, setCharResults] = useState(null); // { count, results } after submit
+  const [charSearching, setCharSearching] = useState(false);
+  const [charSubmittedQuery, setCharSubmittedQuery] = useState("");
 
+  // Debounced typeahead — shows up to 8 suggestions while typing
   useEffect(() => {
     if (charQuery.trim().length < 3) {
-      setCharResults(null);
-      setCharLoading(false);
+      setCharSuggestions([]);
+      setCharSuggestLoading(false);
       return;
     }
-    setCharLoading(true);
+    setCharSuggestLoading(true);
     const timer = setTimeout(async () => {
       try {
         const res = await fetch(`/api/characters/search?q=${encodeURIComponent(charQuery.trim())}`);
         const data = await res.json();
-        setCharResults(Array.isArray(data) ? data : []);
+        setCharSuggestions(data.results ? data.results.slice(0, 8) : []);
       } catch {
-        setCharResults([]);
+        setCharSuggestions([]);
       } finally {
-        setCharLoading(false);
+        setCharSuggestLoading(false);
       }
     }, 350);
     return () => clearTimeout(timer);
   }, [charQuery]);
+
+  async function handleCharSearch(e) {
+    e.preventDefault();
+    const q = charQuery.trim();
+    if (q.length < 3) return;
+    setCharSearching(true);
+    setCharSuggestions([]);
+    setCharSubmittedQuery(q);
+    try {
+      const res = await fetch(`/api/characters/search?q=${encodeURIComponent(q)}`);
+      const data = await res.json();
+      setCharResults(data);
+    } catch {
+      setCharResults({ count: 0, results: [] });
+    } finally {
+      setCharSearching(false);
+    }
+  }
 
   const seriesItems = Object.entries(SERIES_GROUPS).map(([slug, g]) => ({ slug, name: g.name }));
   const seriesMatches =
@@ -204,39 +226,77 @@ export default function CollectionGuides({ arcs }) {
         <div className="panel">
           <div className="section-title">Characters</div>
           <div className="caption">Search by Character Name</div>
-          <div className="arc-search-wrap">
-            <input
-              className="arc-search-input"
-              type="search"
-              placeholder="e.g. Spider-Man, Wolverine, Daredevil…"
-              value={charQuery}
-              onChange={(e) => setCharQuery(e.target.value)}
-              autoComplete="off"
-            />
-          </div>
-          {charLoading && (
-            <p className="arc-hint" style={{ marginTop: "0.75rem" }}>Searching Metron…</p>
-          )}
-          {!charLoading && charResults !== null && (
-            <div className="arc-results">
-              {charResults.length === 0 ? (
-                <p className="arc-no-results">No characters found for &ldquo;{charQuery.trim()}&rdquo;.</p>
-              ) : (
-                charResults.slice(0, 20).map((c) => (
-                  <div className="arc-result-card" key={c.id}>
-                    <span className="arc-result-name">{c.name}</span>
-                    <Link href={`/character/${c.id}`} className="arc-result-link">
-                      View Character &rarr;
-                    </Link>
-                  </div>
-                ))
-              )}
+          <form onSubmit={handleCharSearch}>
+            <div style={{ display: "flex", gap: "0.5rem", marginBottom: "0.75rem" }}>
+              <div className="arc-search-wrap" style={{ flex: 1, marginBottom: 0 }}>
+                <input
+                  className="arc-search-input"
+                  type="search"
+                  placeholder="e.g. Spider-Man, Wolverine, Daredevil…"
+                  value={charQuery}
+                  onChange={(e) => { setCharQuery(e.target.value); setCharResults(null); setCharSubmittedQuery(""); }}
+                  autoComplete="off"
+                />
+              </div>
+              <button type="submit" className="arc-result-link" style={{ flexShrink: 0, border: "2px solid #1a1a1a", cursor: "pointer" }}>
+                Search
+              </button>
             </div>
+          </form>
+
+          {/* Typeahead suggestions — shown while typing, before submit */}
+          {charResults === null && (
+            <>
+              {charSuggestLoading && <p className="arc-hint">Searching Metron…</p>}
+              {!charSuggestLoading && charQuery.trim().length >= 3 && charSuggestions.length > 0 && (
+                <>
+                  <div className="arc-results">
+                    {charSuggestions.map((c) => (
+                      <div className="arc-result-card" key={c.id}>
+                        <span className="arc-result-name">{c.name}</span>
+                        <Link href={`/character/${c.id}`} className="arc-result-link">
+                          View Character &rarr;
+                        </Link>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="arc-hint" style={{ marginTop: "0.5rem" }}>
+                    Press Enter or click Search to see all results.
+                  </p>
+                </>
+              )}
+              {!charSuggestLoading && charQuery.trim().length < 3 && (
+                <p className="arc-hint">Type at least 3 characters to search the Metron database live.</p>
+              )}
+            </>
           )}
-          {!charLoading && charResults === null && (
-            <p className="arc-hint">
-              Type at least 3 characters to search the Metron database live.
-            </p>
+
+          {/* Full results after submit */}
+          {charSearching && <p className="arc-hint">Searching Metron…</p>}
+          {charResults !== null && !charSearching && (
+            <>
+              {charResults.results?.length === 0 ? (
+                <p className="arc-no-results">No characters found for &ldquo;{charSubmittedQuery}&rdquo;.</p>
+              ) : (
+                <>
+                  <p className="arc-hint" style={{ marginBottom: "0.5rem" }}>
+                    {charResults.count > charResults.results.length
+                      ? `Showing ${charResults.results.length} of ${charResults.count} results — refine your search to narrow down.`
+                      : `${charResults.results.length} result${charResults.results.length !== 1 ? "s" : ""} for “${charSubmittedQuery}”`}
+                  </p>
+                  <div className="arc-results">
+                    {charResults.results.map((c) => (
+                      <div className="arc-result-card" key={c.id}>
+                        <span className="arc-result-name">{c.name}</span>
+                        <Link href={`/character/${c.id}`} className="arc-result-link">
+                          View Character &rarr;
+                        </Link>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </>
           )}
         </div>
 

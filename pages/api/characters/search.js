@@ -23,5 +23,8 @@ export default async function handler(req, res) {
   }
 
   const data = await metronRes.json();
-  return res.json(data.results.map((c) => ({ id: c.id, name: c.name })));
+  return res.json({
+    count: data.count,
+    results: data.results.map((c) => ({ id: c.id, name: c.name })),
+  });
 }
