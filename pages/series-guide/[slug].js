@@ -87,17 +87,14 @@ export default function SeriesGuidePage({ groupName, groupSlug, volumes }) {
         .volume-card{background:#fffdf4;border:3px solid #1a1a1a;box-shadow:5px 5px 0 #1a1a1a;display:flex;overflow:hidden;margin-bottom:1.25rem}
         .volume-card:last-child{margin-bottom:0}
         .volume-card-accent{width:8px;flex-shrink:0;background:#003399}
-        .volume-card-accent.unavailable{background:#aaa}
         .volume-card-body{flex:1;padding:1.25rem 1.5rem;min-width:0}
         .volume-title{font-family:'Bangers',cursive;font-size:1.5rem;letter-spacing:2px;color:#1a1a1a;line-height:1.1;margin-bottom:0.5rem;display:flex;align-items:center;gap:0.6rem;flex-wrap:wrap}
         .issue-count{display:inline-block;background:#ffe066;border:2px solid #1a1a1a;padding:0.15rem 0.6rem;font-family:'Oswald',sans-serif;font-size:0.72rem;font-weight:600;letter-spacing:1px;text-transform:uppercase}
-        .coming-soon-badge{display:inline-block;background:#e8e0cc;border:2px solid #aaa;color:#666;padding:0.15rem 0.6rem;font-family:'Oswald',sans-serif;font-size:0.72rem;font-weight:600;letter-spacing:1px;text-transform:uppercase}
         .volume-blurb{font-size:0.88rem;font-weight:400;line-height:1.7;color:#444;margin-bottom:1rem}
         .btn-series{display:inline-block;background:#003399;color:#fffdf4;border:3px solid #1a1a1a;box-shadow:4px 4px 0 #1a1a1a;font-family:'Bangers',cursive;font-size:1.1rem;letter-spacing:2px;padding:0.3rem 1.25rem 0.4rem;cursor:pointer;text-decoration:none;white-space:nowrap;transition:transform 0.08s,box-shadow 0.08s}
         .btn-series:hover{background:#0044cc}
         .btn-series:active{transform:translate(3px,3px);box-shadow:1px 1px 0 #1a1a1a}
         .no-volumes{font-size:0.9rem;color:#666;font-weight:400;padding:0.5rem 0}
-        .coming-soon-note{font-size:0.82rem;color:#888;font-style:italic;margin-top:0.25rem}
       `}</style>
 
       <div className="page-wrap">
@@ -125,27 +122,21 @@ export default function SeriesGuidePage({ groupName, groupSlug, volumes }) {
           ) : (
             volumes.map((v) => (
               <div className="volume-card" key={String(v.metronId)}>
-                <div className={"volume-card-accent" + (v.localSlug ? "" : " unavailable")} />
+                <div className="volume-card-accent" />
                 <div className="volume-card-body">
                   <div className="volume-title">
                     {v.subtitle}
                     {v.issueCount > 0 && (
                       <span className="issue-count">{v.issueCount} issues</span>
                     )}
-                    {!v.localSlug && (
-                      <span className="coming-soon-badge">Coming Soon</span>
-                    )}
                   </div>
                   {v.seoBlurb && <div className="volume-blurb">{v.seoBlurb}</div>}
-                  {v.localSlug ? (
-                    <Link href={`/series/${v.localSlug}`} className="btn-series">
-                      Browse Series &rarr;
-                    </Link>
-                  ) : (
-                    <p className="coming-soon-note">
-                      This volume is not yet available on Comic Bundle Finder.
-                    </p>
-                  )}
+                  <Link
+                    href={"/series/" + (v.localSlug || "metron-" + v.metronId)}
+                    className="btn-series"
+                  >
+                    Browse Series &rarr;
+                  </Link>
                 </div>
               </div>
             ))
@@ -244,7 +235,8 @@ export async function getServerSideProps({ params }) {
     const localSlug = findLocalSlug(s.name);
     const localConfig = localSlug ? SERIES[localSlug] : null;
 
-    let issueCount = 0;
+    // Issue count: prefer local data file for configured series, else use Metron's count.
+    let issueCount = s.issue_count || 0;
     if (localConfig) {
       try {
         const issues = JSON.parse(
@@ -252,16 +244,28 @@ export async function getServerSideProps({ params }) {
         );
         issueCount = issues.length;
       } catch {
-        // Data file not present yet
+        issueCount = s.issue_count || 0;
       }
     }
 
+    // Build subtitle: local config has curated text; dynamic volumes get "Vol. N · YYYY–YYYY".
     const year = getYearFromName(s.name);
+    const yearEnd = s.year_end || null;
+    const vol = s.volume || null;
+    let subtitle;
+    if (localConfig) {
+      subtitle = localConfig.subtitle;
+    } else {
+      const yearRange = year
+        ? (yearEnd && yearEnd !== year ? year + String.fromCharCode(8211) + yearEnd : String(year))
+        : "";
+      subtitle = vol ? "Vol. " + vol + (yearRange ? " · " + yearRange : "") : yearRange;
+    }
+
     return {
       metronId: s.id,
       name: s.name,
-      // For local series use the rich subtitle; for others show the start year
-      subtitle: localConfig ? localConfig.subtitle : (year ? String(year) : getBaseName(s.name)),
+      subtitle,
       seoBlurb: localConfig ? localConfig.seoBlurb : "",
       localSlug: localSlug || null,
       issueCount,

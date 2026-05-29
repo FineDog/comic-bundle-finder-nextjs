@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Head from "next/head";
 import Link from "next/link";
 import { SERIES, getSeriesConfig } from "../../lib/series-config";
+import { fetchMetronSeriesMeta } from "../../lib/metron-issues";
 import SiteNav from "../../components/SiteNav";
 
 const MAX_AUTO_SKIP = 30; // stop auto-advancing after this many consecutive empty batches
@@ -34,9 +35,18 @@ function groupResults(rows, maxPrice) {
   return s;
 }
 
-export default function SeriesPage({ slug, displayName, subtitle, totalIssues, seoBlurb, seoTitle }) {
+// Convert a series display name to a URL slug (matches collection-guides / series-guide logic).
+function nameToSlug(name) {
+  return name
+    .toLowerCase()
+    .replace(/^the\s+/, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+export default function SeriesPage({ slug, displayName, subtitle, totalIssues, seoBlurb, seoTitle, groupSlug }) {
   const [startIdx, setStartIdx] = useState(0);
-  const [batchSize, setBatchSize] = useState(10);
+  const [batchSize, setBatchSize] = useState(50);
   const [maxPrice, setMaxPrice] = useState("10");
   const [showSlider, setShowSlider] = useState(false);
   const [data, setData] = useState(null);
@@ -151,7 +161,7 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
     setJumpInput("");
   }
 
-  const metaDescription = `Find the best eBay bundle deals for ${displayName} (${subtitle}). Browse all ${totalIssues} issues and find sellers carrying multiple issues you need — save big on combined shipping. Results updated daily.`;
+  const metaDescription = `Find the best eBay bundle deals for ${displayName} (${subtitle}). Browse all ${totalIssues} issues and find sellers carrying multiple issues you need — save big on combined shipping.`;
 
   return (
     <>
@@ -196,12 +206,12 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
         body{background-color:#f0e6c4;background-image:radial-gradient(circle,#c8b98a 1px,transparent 1px);background-size:10px 10px;font-family:'Oswald',sans-serif;color:#1a1a1a;min-height:100vh;padding:2rem 1rem 4rem}
 
         .panel{background:#fffdf4;border:3px solid #1a1a1a;box-shadow:6px 6px 0 #1a1a1a;padding:1.5rem 1.75rem;margin-bottom:1.75rem}
+        .panel-slim{background:#fffdf4;border:3px solid #1a1a1a;box-shadow:4px 4px 0 #1a1a1a;padding:0.6rem 1.25rem;margin-bottom:1.75rem;display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap}
         .panel-nav{background:#fffdf4;border:3px solid #1a1a1a;box-shadow:4px 4px 0 #1a1a1a;padding:0.6rem 1.25rem;margin-bottom:1.75rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem}
-        .title-panel{background:#cc1f00;text-align:center;padding:1.25rem 1.75rem 1rem}
-        .title-panel h1{font-family:'Bangers',cursive;font-size:clamp(2rem,7vw,4rem);color:#fffdf4;letter-spacing:4px;text-shadow:4px 4px 0 #1a1a1a;line-height:1}
         .series-sub{color:#ffe066;font-size:0.85rem;letter-spacing:2px;text-transform:uppercase;margin-top:0.4rem;font-weight:400}
         .back-link{font-size:0.78rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#003399;text-decoration:none}
         .back-link:hover{text-decoration:underline}
+        .breadcrumb-sep{font-size:0.78rem;color:#aaa;font-weight:400}
         .caption{display:inline-block;background:#ffe066;border:2px solid #1a1a1a;padding:0.3rem 0.7rem;font-size:0.8rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:1rem}
         .updated-badge{display:inline-block;background:#003399;color:#fffdf4;border:2px solid #1a1a1a;padding:0.25rem 0.7rem;font-size:0.72rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-left:0.75rem;vertical-align:middle}
         .controls-row{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1.25rem}
@@ -249,10 +259,9 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
         .listings-table td{padding:0.45rem 0.6rem;border-bottom:1px solid #d4c9a8;vertical-align:top;font-weight:400;overflow:hidden;text-overflow:ellipsis;word-break:break-word}
         .listings-table tr:last-child td{border-bottom:none}
         .listings-table tr:nth-child(even) td{background:#f8f3e3}
-        .col-issue{width:22%}.col-title{width:38%}.col-price{width:9%;text-align:right}.col-ship{width:11%;text-align:right}.col-promo{width:11%}.col-link{width:9%;text-align:center}
+        .col-issue{width:22%}.col-title{width:49%}.col-price{width:9%;text-align:right}.col-ship{width:11%;text-align:right}.col-link{width:9%;text-align:center}
         .listing-link{color:#cc1f00;font-weight:600;text-decoration:none;white-space:nowrap;font-size:0.8rem}
         .listing-link:hover{text-decoration:underline}
-        .promo-pill{display:inline-block;background:#cc1f00;color:#fffdf4;font-size:0.65rem;font-weight:600;padding:1px 5px;letter-spacing:0.5px;text-transform:uppercase;line-height:1.6}
         .disclosure{font-size:0.72rem;color:#888;text-align:center;font-weight:400;margin-top:1.25rem;line-height:1.5;border-top:1px solid #d4c9a8;padding-top:0.75rem}
         .seo-blurb{font-size:0.88rem;font-weight:400;line-height:1.8;color:#333}
         .seo-blurb strong{font-weight:600}
@@ -262,11 +271,25 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
       <div className="page-wrap">
         <SiteNav />
 
+        {/* Breadcrumb navigation */}
+        <div className="panel-slim">
+          <Link href="/collection-guides" className="back-link">&larr; Collection Guides</Link>
+          {groupSlug && (
+            <>
+              <span className="breadcrumb-sep">&rsaquo;</span>
+              <Link href={`/series-guide/${groupSlug}`} className="back-link">
+                {displayName} Volumes
+              </Link>
+            </>
+          )}
+        </div>
+
+        {/* Series header card */}
         <div style={{ background: "#fffdf4", border: "3px solid #1a1a1a", boxShadow: "6px 6px 0 #1a1a1a", marginBottom: "1.75rem", display: "flex", overflow: "hidden" }}>
           <div style={{ width: 8, flexShrink: 0, background: "#cc1f00" }} />
           <div style={{ padding: "1rem 1.5rem" }}>
             <h2 style={{ fontFamily: "'Bangers', cursive", fontSize: "clamp(1.75rem,5vw,2.8rem)", letterSpacing: "3px", color: "#1a1a1a", lineHeight: 1, margin: 0 }}>{displayName}</h2>
-            <div className="series-sub" style={{ marginTop: "0.4rem" }}>{subtitle} &middot; {totalIssues} issues &middot; eBay Bundle Deals</div>
+            <div className="series-sub" style={{ color: "#555", marginTop: "0.4rem" }}>{subtitle} &middot; {totalIssues} issues &middot; eBay Bundle Deals</div>
           </div>
         </div>
 
@@ -274,7 +297,7 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
           <p className="seo-blurb">
             Find the best eBay bundle deals for <strong>{displayName} ({subtitle})</strong> —{" "}
             {seoBlurb} This page finds sellers who carry multiple issues you need so you can save
-            on combined shipping instead of paying separately for every book. Results are updated daily.
+            on combined shipping instead of paying separately for every book.
           </p>
         </div>
 
@@ -289,8 +312,8 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
               )}
             </div>
             <div className="nav-buttons">
-              <button className="btn-nav" onClick={goPrev} disabled={!hasPrev || loading}>← Prev</button>
-              <button className="btn-nav" onClick={goNext} disabled={!hasNext || loading}>Next →</button>
+              <button className="btn-nav" onClick={goPrev} disabled={!hasPrev || loading}>&larr; Prev</button>
+              <button className="btn-nav" onClick={goNext} disabled={!hasNext || loading}>Next &rarr;</button>
             </div>
             <form className="jump-form" onSubmit={handleJump}>
               <span className="jump-label">Jump to #</span>
@@ -315,7 +338,7 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
             {showSlider && (
               <input
                 className="batch-slider"
-                type="range" min="1" max="20" value={batchSize}
+                type="range" min="1" max="50" value={batchSize}
                 onChange={(e) => setBatchSize(parseInt(e.target.value, 10))}
               />
             )}
@@ -342,7 +365,7 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
               <div><span className="loading-dots">Searching eBay</span></div>
               {scanning && (
                 <div className="loading-sub">
-                  No bundles in issues {displayStart}–{displayEnd} — scanning ahead…
+                  No bundles in issues {displayStart}&ndash;{displayEnd} &mdash; scanning ahead&hellip;
                 </div>
               )}
             </div>
@@ -354,7 +377,7 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
 
           {!loading && !scanning && !error && data && (
             <>
-              {wrapMsg && <div className="wrap-msg">↩ {wrapMsg}</div>}
+              {wrapMsg && <div className="wrap-msg">&#8617; {wrapMsg}</div>}
               <div className="results-title">
                 {sellerCount === 0
                   ? "No Bundle Opportunities Found"
@@ -394,7 +417,7 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
                       <div className="seller-group" key={name}>
                         <div className="seller-header">
                           <span className="seller-name">{esc(name)}</span>
-                          <span className="bundle-badge">{sellerData.bundle_count} issues — bundle shipping!</span>
+                          <span className="bundle-badge">{sellerData.bundle_count} issues &mdash; bundle shipping!</span>
                           <span className="subtotal-badge">from ${subtotal.toFixed(2)} in items</span>
                         </div>
                         <table className="listings-table">
@@ -404,7 +427,6 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
                               <th className="col-title">Listing Title</th>
                               <th className="col-price">Price</th>
                               <th className="col-ship">Shipping</th>
-                              <th className="col-promo">Promo</th>
                               <th className="col-link">Link</th>
                             </tr>
                           </thead>
@@ -422,13 +444,6 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
                                   <td className="col-title">{esc(l.title)}</td>
                                   <td className="col-price">${parseFloat(l.price).toFixed(2)}</td>
                                   <td className="col-ship">{ship}</td>
-                                  <td className="col-promo">
-                                    {l.promotions ? (
-                                      <span className="promo-pill">
-                                        {l.promotions.split("|")[0].trim()}
-                                      </span>
-                                    ) : ""}
-                                  </td>
                                   <td className="col-link">
                                     <a
                                       className="listing-link"
@@ -436,7 +451,7 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
                                       target="_blank"
                                       rel="noopener noreferrer"
                                     >
-                                      View →
+                                      View &rarr;
                                     </a>
                                   </td>
                                 </tr>
@@ -458,11 +473,11 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
 
         {!loading && !scanning && data && (
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "1.75rem" }}>
-            <button className="btn-nav" onClick={goPrev} disabled={!hasPrev}>← Prev</button>
+            <button className="btn-nav" onClick={goPrev} disabled={!hasPrev}>&larr; Prev</button>
             <span style={{ fontFamily: "'Bangers', cursive", fontSize: "1.2rem", letterSpacing: "1px", alignSelf: "center" }}>
-              {displayStart}–{displayEnd} / {totalIssues}
+              {displayStart}&ndash;{displayEnd} / {totalIssues}
             </span>
-            <button className="btn-nav" onClick={goNext} disabled={!hasNext}>Next →</button>
+            <button className="btn-nav" onClick={goNext} disabled={!hasNext}>Next &rarr;</button>
           </div>
         )}
 
@@ -485,7 +500,7 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
                 padding: "0.35rem 1rem", textDecoration: "none",
               }}
             >
-              ☕ Support me on Ko-fi
+              &#9749; Support me on Ko-fi
             </a>
           </div>
         </div>
@@ -494,21 +509,62 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
   );
 }
 
+// --- Static generation ---
+
 export async function getStaticPaths() {
   return {
     paths: Object.keys(SERIES).map((slug) => ({ params: { slug } })),
-    fallback: false,
+    fallback: "blocking",
   };
 }
 
 export async function getStaticProps({ params }) {
   const { slug } = params;
+
+  // --- Dynamic series: metron-[id] ---
+  const metronMatch = /^metron-(\d+)$/.exec(slug);
+  if (metronMatch) {
+    const metronId = parseInt(metronMatch[1], 10);
+    const meta = await fetchMetronSeriesMeta(metronId);
+    if (!meta) return { notFound: true };
+
+    const seriesName = meta.series || "";
+    const baseName = seriesName.replace(/\s*\(\d{4,}\)\s*$/, "").trim();
+    const yearMatch = /\((\d{4})\)\s*$/.exec(seriesName.trim());
+    const yearBegan = yearMatch ? parseInt(yearMatch[1]) : null;
+    const yearEnd = meta.year_end || null;
+    const vol = meta.volume || null;
+
+    const yearRange = yearBegan
+      ? yearEnd && yearEnd !== yearBegan
+        ? `${yearBegan}–${yearEnd}`
+        : String(yearBegan)
+      : "";
+    const subtitle = vol
+      ? `Vol. ${vol}${yearRange ? ` · ${yearRange}` : ""}`
+      : yearRange;
+
+    const displayName = baseName;
+    const groupSlug = nameToSlug(baseName);
+    const totalIssues = meta.issue_count || 0;
+    const seoTitle = `${displayName} ${subtitle} — eBay Bundle Deals | Comic Bundle Finder`;
+    const seoBlurb = `Browse all ${totalIssues} issues and find sellers carrying multiple books you need.`;
+
+    return {
+      props: { slug, displayName, subtitle, totalIssues, seoBlurb, seoTitle, groupSlug },
+      revalidate: 86400,
+    };
+  }
+
+  // --- Locally configured series ---
   const config = getSeriesConfig(slug);
   if (!config) return { notFound: true };
 
   const allIssues = JSON.parse(
     fs.readFileSync(path.join(process.cwd(), "data", config.dataFile), "utf-8")
   );
+
+  const groupSlug = nameToSlug(config.displayName);
 
   return {
     props: {
@@ -518,6 +574,7 @@ export async function getStaticProps({ params }) {
       totalIssues: allIssues.length,
       seoBlurb: config.seoBlurb,
       seoTitle: config.seoTitle,
+      groupSlug,
     },
   };
 }
