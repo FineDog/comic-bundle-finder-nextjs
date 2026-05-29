@@ -343,26 +343,35 @@ export async function getStaticProps({ params }) {
   if (!arcRes.ok) return { notFound: true };
   const arc = await arcRes.json();
 
-  // 2. Fetch all issues for this arc (paginated)
+  // 2. Fetch all issues for this arc via the issues endpoint (paginated)
+  // Uses arc_id filter on /api/issue/ — same pattern as series_id for series pages.
+  // The issue_list sub-endpoint (/api/arc/{id}/issue_list/) is unreliable:
+  // it may return a flat array or a 404 depending on the Metron API version.
   const allIssues = [];
-  let nextUrl = `https://metron.cloud/api/arc/${arcId}/issue_list/?page_size=100`;
-
-  while (nextUrl) {
+  let page = 1;
+  while (true) {
     let issueRes;
     try {
-      issueRes = await fetch(nextUrl, { headers });
+      issueRes = await fetch(
+        `https://metron.cloud/api/issue/?arc_id=${arcId}&page_size=100&page=${page}`,
+        { headers }
+      );
     } catch {
       break;
     }
     if (!issueRes.ok) break;
     const issueData = await issueRes.json();
     allIssues.push(...(issueData.results || []));
-    nextUrl = issueData.next || null;
+    if (!issueData.next) break;
+    page++;
   }
 
-  // Format issues as "Series Name #Number" for eBay search
+  // Format issues as "Series Name #Number" for eBay search.
+  // Metron always returns a pre-formatted `issue` field (e.g. "Batman #492") —
+  // use that first, fall back to reconstructing from series.name + number.
   const issues = allIssues
     .map((issue) => {
+      if (issue.issue && typeof issue.issue === "string") return issue.issue;
       const series = issue.series?.name || "";
       const num = issue.number || "";
       if (!series || !num) return "";
