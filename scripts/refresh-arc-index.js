@@ -5,7 +5,7 @@
 //   METRON_USERNAME=x METRON_PASSWORD=y node scripts/refresh-arc-index.js
 //
 // Output format:
-//   [{ "id": 123, "name": "Brand New Day", "slug": "123-brand-new-day" }, ...]
+//   [{ "id": 123, "name": "Brand New Day", "slug": "123-brand-new-day", "issueCount": 12 }, ...]
 
 import { writeFileSync, mkdirSync } from "fs";
 import { join } from "path";
@@ -68,6 +68,7 @@ while (nextUrl) {
       id: arc.id,
       name: arc.name,
       slug: `${arc.id}-${toSlug(arc.name)}`,
+      issueCount: arc.issue_count || 0,
     });
   }
 

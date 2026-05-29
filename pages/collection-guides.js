@@ -189,7 +189,12 @@ export default function CollectionGuides({ arcs }) {
                   ) : (
                     matches.map((arc) => (
                       <div className="arc-result-card" key={arc.id}>
-                        <span className="arc-result-name">{arc.name}</span>
+                        <span className="arc-result-name">
+                          {arc.name}
+                          {arc.issueCount > 0 && (
+                            <span className="series-stat-badge">{arc.issueCount} Issues</span>
+                          )}
+                        </span>
                         <Link href={`/arc/${arc.slug}`} className="arc-result-link">
                           Find Bundles &rarr;
                         </Link>
