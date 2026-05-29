@@ -46,7 +46,9 @@ export default function CollectionGuides({ arcs }) {
   const [seriesSearching, setSeriesSearching] = useState(false);
   const [seriesSubmittedQuery, setSeriesSubmittedQuery] = useState("");
 
-  // Debounced series typeahead — shows suggestions that START WITH the query
+  // Debounced series typeahead — shows the 8 most popular (by issue count) matching series.
+  // Metron caps at 100 results per page sorted alphabetically, so we sort client-side by
+  // issueCount to surface the canonical series (ASM 442 issues) above one-shots and specials.
   useEffect(() => {
     const q = seriesQuery.trim();
     if (q.length < 3) {
@@ -60,15 +62,11 @@ export default function CollectionGuides({ arcs }) {
       try {
         const res = await fetch(`/api/series/search?q=${encodeURIComponent(q)}`);
         const data = await res.json();
-        const lower = q.toLowerCase();
-        const suggestions = deduplicateByBaseName(
-          data.results || [],
-          (baseName) => {
-            const b = baseName.toLowerCase();
-            // Match if base name or base name minus "The " starts with the query
-            return b.startsWith(lower) || b.replace(/^the\s+/, "").startsWith(lower);
-          }
-        ).slice(0, 8);
+        // Sort by issueCount descending so long-running series appear first
+        const sorted = [...(data.results || [])].sort(
+          (a, b) => (b.issueCount || 0) - (a.issueCount || 0)
+        );
+        const suggestions = deduplicateByBaseName(sorted).slice(0, 8);
         setSeriesSuggestions(suggestions);
         setSeriesSelectedIdx(-1);
       } catch {
@@ -88,10 +86,15 @@ export default function CollectionGuides({ arcs }) {
     setSeriesSearching(true);
     setSeriesSubmittedQuery(q);
     setSeriesResults(null);
-    fetch(`/api/series/search?q=${encodeURIComponent(q)}`)
+    // full=1 paginates through up to 4 pages of Metron results for a complete set
+    fetch(`/api/series/search?q=${encodeURIComponent(q)}&full=1`)
       .then((r) => r.json())
       .then((data) => {
-        setSeriesResults(deduplicateByBaseName(data.results || []));
+        // Sort by issueCount so canonical runs appear before spin-offs / specials
+        const sorted = [...(data.results || [])].sort(
+          (a, b) => (b.issueCount || 0) - (a.issueCount || 0)
+        );
+        setSeriesResults(deduplicateByBaseName(sorted));
         setSeriesSearching(false);
       })
       .catch(() => {
