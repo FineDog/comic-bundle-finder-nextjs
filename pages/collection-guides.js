@@ -60,7 +60,7 @@ export default function CollectionGuides({ arcs }) {
     setSeriesSuggestLoading(true);
     const timer = setTimeout(async () => {
       try {
-        const res = await fetch(`/api/series/search?q=${encodeURIComponent(q)}`);
+        const res = await fetch(`/api/series/search?q=${encodeURIComponent(q)}&full=1`);
         const data = await res.json();
         // Sort by issueCount descending so long-running series appear first
         const sorted = [...(data.results || [])].sort(

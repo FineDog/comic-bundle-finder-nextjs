@@ -28,21 +28,19 @@ export default async function handler(req, res) {
   const totalCount = firstData.count || 0;
 
   // For full searches, paginate through up to 4 pages total to get a complete result set
-  // (Metron hard-caps page_size at 100, so 400 results max)
+  // (Metron hard-caps page_size at 100, so 400 results max).
+  // Pages are fetched in parallel so all 4 resolve in ~200ms instead of ~800ms sequentially.
   if (full && firstData.next) {
-    for (let page = 2; page <= 4; page++) {
-      if (allResults.length >= totalCount) break;
-      try {
-        const pageRes = await fetch(
-          `${baseUrl}&page=${page}`,
-          { headers: { Authorization: `Basic ${auth}` } }
-        );
-        if (!pageRes.ok) break;
-        const pageData = await pageRes.json();
-        allResults = allResults.concat(pageData.results || []);
-        if (!pageData.next) break;
-      } catch {
-        break;
+    const extraPages = await Promise.all(
+      [2, 3, 4].map((page) =>
+        fetch(`${baseUrl}&page=${page}`, { headers: { Authorization: `Basic ${auth}` } })
+          .then((r) => (r.ok ? r.json() : null))
+          .catch(() => null)
+      )
+    );
+    for (const pageData of extraPages) {
+      if (pageData && pageData.results) {
+        allResults = allResults.concat(pageData.results);
       }
     }
   }
