@@ -274,6 +274,19 @@ export default function Preview() {
       .catch(() => setUserZip(null));
   }, []);
 
+  // Pre-fill search from LOCG wishlist (account page → ?wishlist=...)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const wishlist = params.get("wishlist");
+    if (!wishlist) return;
+    const items = wishlist.split("\n").map(s => s.trim()).filter(Boolean);
+    if (!items.length) return;
+    setIssueInput(items.join("\n"));
+    setUploadMsg(`${items.length} wish list item${items.length === 1 ? "" : "s"} from League of Comic Geeks.`);
+    // Clean the URL so it doesn't re-trigger on refresh
+    window.history.replaceState({}, "", "/");
+  }, []);
+
   // Pre-fill search from Gap Analyzer
   useEffect(() => {
     const pending = sessionStorage.getItem("gap_search");
