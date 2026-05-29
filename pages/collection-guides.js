@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Head from "next/head";
 import Link from "next/link";
 import SiteNav from "../components/SiteNav";
@@ -28,9 +28,10 @@ function aggregateByBaseName(results) {
     const baseName = getBaseName(r.name);
     const key = baseName.toLowerCase();
     if (!groups.has(key)) {
-      groups.set(key, { baseName, slug: nameToSlug(baseName), total: 0 });
+      groups.set(key, { baseName, slug: nameToSlug(baseName), total: 0, volumes: 0 });
     }
     groups.get(key).total += r.issueCount || 0;
+    groups.get(key).volumes += 1;
   }
   return [...groups.values()].sort((a, b) => b.total - a.total);
 }
@@ -41,46 +42,13 @@ export default function CollectionGuides({ arcs }) {
 
   // Series search (live Metron)
   const [seriesQuery, setSeriesQuery] = useState("");
-  const [seriesSuggestions, setSeriesSuggestions] = useState([]);
-  const [seriesSuggestLoading, setSeriesSuggestLoading] = useState(false);
-  const [seriesSelectedIdx, setSeriesSelectedIdx] = useState(-1);
   const [seriesResults, setSeriesResults] = useState(null);
   const [seriesSearching, setSeriesSearching] = useState(false);
   const [seriesSubmittedQuery, setSeriesSubmittedQuery] = useState("");
 
-  // Debounced series typeahead — shows the 8 most popular (by issue count) matching series.
-  // Metron caps at 100 results per page sorted alphabetically, so we sort client-side by
-  // issueCount to surface the canonical series (ASM 442 issues) above one-shots and specials.
-  useEffect(() => {
+  function handleSeriesSearch() {
     const q = seriesQuery.trim();
-    if (q.length < 3) {
-      setSeriesSuggestions([]);
-      setSeriesSuggestLoading(false);
-      setSeriesSelectedIdx(-1);
-      return;
-    }
-    setSeriesSuggestLoading(true);
-    const timer = setTimeout(async () => {
-      try {
-        const res = await fetch(`/api/series/search?q=${encodeURIComponent(q)}&full=1`);
-        const data = await res.json();
-        const suggestions = aggregateByBaseName(data.results || []).slice(0, 8);
-        setSeriesSuggestions(suggestions);
-        setSeriesSelectedIdx(-1);
-      } catch {
-        setSeriesSuggestions([]);
-      } finally {
-        setSeriesSuggestLoading(false);
-      }
-    }, 350);
-    return () => clearTimeout(timer);
-  }, [seriesQuery]);
-
-  function handleSeriesSearch(queryOverride) {
-    const q = (queryOverride || seriesQuery).trim();
     if (q.length < 3) return;
-    setSeriesSuggestions([]);
-    setSeriesSelectedIdx(-1);
     setSeriesSearching(true);
     setSeriesSubmittedQuery(q);
     setSeriesResults(null);
@@ -95,26 +63,6 @@ export default function CollectionGuides({ arcs }) {
         setSeriesResults([]);
         setSeriesSearching(false);
       });
-  }
-
-  function handleSeriesKeyDown(e) {
-    if (e.key === "ArrowDown") {
-      e.preventDefault();
-      setSeriesSelectedIdx((i) => (i < seriesSuggestions.length - 1 ? i + 1 : i));
-    } else if (e.key === "ArrowUp") {
-      e.preventDefault();
-      setSeriesSelectedIdx((i) => (i > 0 ? i - 1 : -1));
-    } else if (e.key === "Enter") {
-      e.preventDefault();
-      if (seriesSelectedIdx >= 0 && seriesSuggestions[seriesSelectedIdx]) {
-        window.location.href = `/series-guide/${seriesSuggestions[seriesSelectedIdx].slug}`;
-      } else {
-        handleSeriesSearch();
-      }
-    } else if (e.key === "Escape") {
-      setSeriesSuggestions([]);
-      setSeriesSelectedIdx(-1);
-    }
   }
 
   // Story arc local filtering
@@ -194,13 +142,7 @@ export default function CollectionGuides({ arcs }) {
 
         @media(max-width:540px){.arc-result-card{flex-direction:column;align-items:flex-start}}
 
-        /* Autocomplete dropdown (shared by series search) */
-        .search-input-wrap{position:relative}
-        .search-dropdown{position:absolute;top:100%;left:0;right:0;z-index:200;background:#fffdf4;border:2px solid #1a1a1a;border-top:none;box-shadow:4px 4px 0 #1a1a1a}
-        .search-dropdown-item{padding:0.5rem 0.85rem;cursor:pointer;font-family:'Oswald',sans-serif;font-size:0.95rem;font-weight:400;border-bottom:1px solid #e8e0cc;color:#1a1a1a}
-        .search-dropdown-item:last-child{border-bottom:none}
-        .search-dropdown-item.search-selected,.search-dropdown-item:hover{background:#f0e6c4;font-weight:600}
-        .search-dropdown-loading{padding:0.5rem 0.85rem;font-family:'Oswald',sans-serif;font-size:0.88rem;font-weight:400;color:#888;font-style:italic}
+        .series-stat-badge{display:inline-block;background:#ffe066;border:1.5px solid #1a1a1a;padding:0.1rem 0.45rem;font-size:0.7rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-left:0.4rem;vertical-align:middle}
         .search-btn{background:#cc1f00;color:#fffdf4;border:3px solid #1a1a1a;box-shadow:3px 3px 0 #1a1a1a;font-family:'Bangers',cursive;font-size:1rem;letter-spacing:1.5px;padding:0.35rem 1rem 0.4rem;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:transform 0.08s,box-shadow 0.08s}
         .search-btn:hover{background:#a81800}
         .search-btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 #1a1a1a}
@@ -278,71 +220,31 @@ export default function CollectionGuides({ arcs }) {
               marginBottom: "0.75rem",
             }}
           >
-            <div className="search-input-wrap" style={{ flex: 1 }}>
-              <input
-                className="arc-search-input"
-                type="text"
-                placeholder="e.g. Spider-Man, Daredevil, X-Men..."
-                value={seriesQuery}
-                onChange={(e) => {
-                  setSeriesQuery(e.target.value);
-                  setSeriesResults(null);
-                  setSeriesSubmittedQuery("");
-                }}
-                onKeyDown={handleSeriesKeyDown}
-                onBlur={() =>
-                  setTimeout(() => {
-                    setSeriesSuggestions([]);
-                    setSeriesSelectedIdx(-1);
-                  }, 150)
-                }
-                autoComplete="off"
-              />
-              {/* Autocomplete dropdown — startswith suggestions while typing */}
-              {seriesResults === null &&
-                (seriesSuggestions.length > 0 || seriesSuggestLoading) && (
-                  <div className="search-dropdown">
-                    {seriesSuggestLoading && (
-                      <div className="search-dropdown-loading">Searching...</div>
-                    )}
-                    {!seriesSuggestLoading &&
-                      seriesSuggestions.map((s, i) => (
-                        <div
-                          key={s.slug}
-                          className={
-                            "search-dropdown-item" +
-                            (i === seriesSelectedIdx ? " search-selected" : "")
-                          }
-                          onMouseDown={(e) => e.preventDefault()}
-                          onClick={() => {
-                            window.location.href = `/series-guide/${s.slug}`;
-                          }}
-                          onMouseEnter={() => setSeriesSelectedIdx(i)}
-                        >
-                          {s.baseName}
-                        </div>
-                      ))}
-                  </div>
-                )}
-            </div>
+            <input
+              className="arc-search-input"
+              type="text"
+              placeholder="e.g. Spider-Man, Daredevil, X-Men..."
+              value={seriesQuery}
+              onChange={(e) => setSeriesQuery(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") handleSeriesSearch(); }}
+              autoComplete="off"
+              style={{ flex: 1 }}
+            />
             <button
               type="button"
               className="search-btn"
-              onClick={() => handleSeriesSearch()}
+              onClick={handleSeriesSearch}
             >
               Search
             </button>
           </div>
 
           {/* Hint before typing */}
-          {seriesResults === null &&
-            !seriesSuggestLoading &&
-            seriesSuggestions.length === 0 &&
-            seriesQuery.trim().length < 3 && (
-              <p className="arc-hint">
-                Type at least 3 characters to search the Metron series database.
-              </p>
-            )}
+          {seriesResults === null && seriesQuery.trim().length < 3 && (
+            <p className="arc-hint">
+              Type at least 3 characters to search the Metron series database.
+            </p>
+          )}
 
           {/* Full results after Search / Enter */}
           {seriesSearching && <p className="arc-hint">Searching Metron...</p>}
@@ -360,7 +262,11 @@ export default function CollectionGuides({ arcs }) {
                   <div className="arc-results">
                     {seriesResults.map((s) => (
                       <div className="arc-result-card" key={s.slug}>
-                        <span className="arc-result-name">{s.baseName}</span>
+                        <span className="arc-result-name">
+                          {s.baseName}
+                          <span className="series-stat-badge">{s.total.toLocaleString()} Issues</span>
+                          <span className="series-stat-badge">{s.volumes} Vol{s.volumes !== 1 ? "s" : ""}</span>
+                        </span>
                         <Link href={`/series-guide/${s.slug}`} className="arc-result-link">
                           View Volumes &rarr;
                         </Link>
