@@ -19,18 +19,20 @@ function nameToSlug(name) {
     .replace(/^-+|-+$/g, "");
 }
 
-// Deduplicate Metron results by base name, optionally filtering with filterFn
-function deduplicateByBaseName(results, filterFn) {
-  const seen = new Set();
-  return results.reduce((acc, r) => {
+// Aggregate Metron results by base name, summing issue counts across all volumes.
+// Sorting by total franchise issues (not single-volume max) gives a more intuitive ranking:
+// e.g. Superior Spider-Man (3 vols, 54 issues total) ranks above Spider-Gwen (2 vols, 39 issues).
+function aggregateByBaseName(results) {
+  const groups = new Map();
+  for (const r of results) {
     const baseName = getBaseName(r.name);
     const key = baseName.toLowerCase();
-    if (!seen.has(key) && (!filterFn || filterFn(baseName))) {
-      seen.add(key);
-      acc.push({ baseName, slug: nameToSlug(baseName) });
+    if (!groups.has(key)) {
+      groups.set(key, { baseName, slug: nameToSlug(baseName), total: 0 });
     }
-    return acc;
-  }, []);
+    groups.get(key).total += r.issueCount || 0;
+  }
+  return [...groups.values()].sort((a, b) => b.total - a.total);
 }
 
 export default function CollectionGuides({ arcs }) {
@@ -62,11 +64,7 @@ export default function CollectionGuides({ arcs }) {
       try {
         const res = await fetch(`/api/series/search?q=${encodeURIComponent(q)}&full=1`);
         const data = await res.json();
-        // Sort by issueCount descending so long-running series appear first
-        const sorted = [...(data.results || [])].sort(
-          (a, b) => (b.issueCount || 0) - (a.issueCount || 0)
-        );
-        const suggestions = deduplicateByBaseName(sorted).slice(0, 8);
+        const suggestions = aggregateByBaseName(data.results || []).slice(0, 8);
         setSeriesSuggestions(suggestions);
         setSeriesSelectedIdx(-1);
       } catch {
@@ -90,11 +88,7 @@ export default function CollectionGuides({ arcs }) {
     fetch(`/api/series/search?q=${encodeURIComponent(q)}&full=1`)
       .then((r) => r.json())
       .then((data) => {
-        // Sort by issueCount so canonical runs appear before spin-offs / specials
-        const sorted = [...(data.results || [])].sort(
-          (a, b) => (b.issueCount || 0) - (a.issueCount || 0)
-        );
-        setSeriesResults(deduplicateByBaseName(sorted));
+        setSeriesResults(aggregateByBaseName(data.results || []));
         setSeriesSearching(false);
       })
       .catch(() => {
