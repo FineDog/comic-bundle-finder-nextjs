@@ -206,7 +206,7 @@ export default function Account() {
                   <span>
                     <a
                       className="btn-locg"
-                      href={`https://leagueofcomicgeeks.com/profile/${savedUsername}/comics/wishlist`}
+                      href={`https://leagueofcomicgeeks.com/profile/${savedUsername}/import-comics`}
                       target="_blank"
                       rel="noopener noreferrer"
                     >
