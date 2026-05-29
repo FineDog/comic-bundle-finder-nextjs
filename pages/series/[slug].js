@@ -7,7 +7,11 @@ import { SERIES, getSeriesConfig } from "../../lib/series-config";
 import { fetchMetronSeriesMeta } from "../../lib/metron-issues";
 import SiteNav from "../../components/SiteNav";
 
-const MAX_AUTO_SKIP = 30; // stop auto-advancing after this many consecutive empty batches
+// How many issues are fetched from eBay in one API call. Kept fixed so the
+// Blob cache key is predictable and a single response covers many display pages.
+const FETCH_SIZE = 50;
+
+const MAX_AUTO_SKIP = 30; // stop auto-advancing after this many consecutive empty pages
 
 function esc(s) { return String(s || ""); }
 
@@ -35,7 +39,6 @@ function groupResults(rows, maxPrice) {
   return s;
 }
 
-// Convert a series display name to a URL slug (matches collection-guides / series-guide logic).
 function nameToSlug(name) {
   return name
     .toLowerCase()
@@ -45,20 +48,30 @@ function nameToSlug(name) {
 }
 
 export default function SeriesPage({ slug, displayName, subtitle, totalIssues, seoBlurb, seoTitle, groupSlug }) {
-  const [startIdx, setStartIdx] = useState(0);
-  const [batchSize, setBatchSize] = useState(50);
-  const [maxPrice, setMaxPrice] = useState("10");
+  // startIdx  – absolute 0-based index of the first displayed issue in the series
+  // batchSize – how many issues to show per display page (default 10, adjustable)
+  // fetchStart (derived) – start of the 50-issue eBay fetch block that covers startIdx.
+  //   The API is only re-called when fetchStart changes (i.e. when the user crosses a
+  //   50-issue boundary), not on every display-page navigation.
+  const [startIdx, setStartIdx]   = useState(0);
+  const [batchSize, setBatchSize] = useState(10);
+  const [maxPrice, setMaxPrice]   = useState("10");
   const [showSlider, setShowSlider] = useState(false);
-  const [data, setData] = useState(null);
+  const [data, setData]     = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError]   = useState(null);
   const [jumpInput, setJumpInput] = useState("");
-  const [scanning, setScanning] = useState(false);
-  const [wrapMsg, setWrapMsg] = useState(null);
+  const [scanning, setScanning]   = useState(false);
+  const [wrapMsg, setWrapMsg]     = useState(null);
   const abortRef = useRef(null);
   const autoSkipCount = useRef(0);
-  const didWrapRef = useRef(false);
+  const didWrapRef    = useRef(false);
 
+  // Derived: start of the 50-issue fetch window that covers startIdx.
+  const fetchStart = Math.floor(startIdx / FETCH_SIZE) * FETCH_SIZE;
+
+  // Re-fetch only when the fetch block (or the series slug) changes.
+  // Navigating within the same 50-issue block just re-renders with filtered data.
   useEffect(() => {
     if (abortRef.current) abortRef.current.abort();
     const controller = new AbortController();
@@ -66,8 +79,9 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
 
     setLoading(true);
     setError(null);
+    setData(null); // clear stale data so auto-advance doesn't fire on old results
 
-    fetch(`/api/series/${slug}/results?start=${startIdx}&count=${batchSize}`, {
+    fetch(`/api/series/${slug}/results?start=${fetchStart}&count=${FETCH_SIZE}`, {
       signal: controller.signal,
     })
       .then((r) => r.json())
@@ -84,19 +98,73 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
       });
 
     return () => controller.abort();
-  }, [startIdx, batchSize, slug]);
+  }, [fetchStart, slug]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Auto-advance past empty ranges when navigating forward.
-  const maxPriceNum = parseFloat(maxPrice) || 10;
-  const sellers = data ? groupResults(data.results, maxPriceNum) : {};
-  const sellerCount = Object.keys(sellers).length;
+  // ─── Client-side window into the fetched block ───────────────────────────
+  // The API returns all FETCH_SIZE issues' listings; we slice to the current page.
+  const offsetInBlock  = startIdx - fetchStart;
+  const issuesInWindow = data?.issues?.slice(offsetInBlock, offsetInBlock + batchSize) ?? [];
+  const issueNamesInWindow = new Set(issuesInWindow.map((i) => i.issueName));
+  const windowResults  = data?.results?.filter((r) => issueNamesInWindow.has(r.issue)) ?? [];
+
+  const maxPriceNum  = parseFloat(maxPrice) || 10;
+  const sellers      = groupResults(windowResults, maxPriceNum);
+  const sellerCount  = Object.keys(sellers).length;
+  const totalSellers = new Set(windowResults.map((r) => r.seller)).size;
+
+  const displayStart = startIdx + 1;                                 // 1-indexed
+  const displayEnd   = data                                          // 1-indexed inclusive
+    ? startIdx + issuesInWindow.length
+    : Math.min(startIdx + batchSize, totalIssues);
+  const hasPrev = startIdx > 0;
   const hasNext = startIdx + batchSize < totalIssues;
 
+  // ─── Navigation ──────────────────────────────────────────────────────────
+  function goNext() {
+    if (!hasNext) return;
+    autoSkipCount.current = 0;
+    didWrapRef.current    = false;
+    setWrapMsg(null);
+    const next     = startIdx + batchSize;
+    const blockEnd = fetchStart + FETCH_SIZE;
+    // Snap to the fetch-block boundary so we never skip issues when batchSize
+    // doesn't divide evenly into FETCH_SIZE (e.g. batchSize=30, FETCH_SIZE=50).
+    setStartIdx(Math.min(next, blockEnd));
+  }
+
+  function goPrev() {
+    if (!hasPrev) return;
+    autoSkipCount.current = 0;
+    didWrapRef.current    = false;
+    setScanning(false);
+    setWrapMsg(null);
+    setStartIdx(Math.max(0, startIdx - batchSize));
+  }
+
+  function handleJump(e) {
+    e.preventDefault();
+    const num = parseInt(jumpInput, 10);
+    if (isNaN(num) || num < 1) return;
+    autoSkipCount.current = 0;
+    didWrapRef.current    = false;
+    setScanning(false);
+    setWrapMsg(null);
+    setStartIdx(Math.max(0, Math.min(num - 1, totalIssues - 1)));
+    setJumpInput("");
+  }
+
+  // ─── Auto-advance past empty display pages ────────────────────────────────
+  // Fires when loading finishes OR when startIdx changes within the same fetch block.
   useEffect(() => {
     if (loading || !data) return;
+
+    // Guard: ignore stale data from a previous fetch block.
+    // (data.startIdx is the fetchStart used for the last completed fetch)
+    if (data.startIdx !== fetchStart) return;
+
     if (sellerCount > 0) {
       autoSkipCount.current = 0;
-      didWrapRef.current = false;
+      didWrapRef.current    = false;
       setScanning(false);
       return;
     }
@@ -122,44 +190,16 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
     }
     autoSkipCount.current += 1;
     setScanning(true);
-    setStartIdx((prev) => prev + batchSize);
-  }, [loading, data]); // eslint-disable-line react-hooks/exhaustive-deps
+    // Advance to next display page (goNext logic, but without resetting autoSkipCount)
+    const next     = startIdx + batchSize;
+    const blockEnd = fetchStart + FETCH_SIZE;
+    setStartIdx(Math.min(next, blockEnd));
+  }, [loading, data, startIdx]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const totalSellers = data ? new Set(data.results.map((r) => r.seller)).size : 0;
-  const displayStart = startIdx + 1;
-  const displayEnd = data ? startIdx + data.issueCount : startIdx + batchSize;
-  const hasPrev = startIdx > 0;
-
-  // Sort sellers by bundle_count descending so the price filter can't reorder them.
+  // ─── Sorted sellers ───────────────────────────────────────────────────────
   const sortedSellers = Object.entries(sellers).sort(
     (a, b) => b[1].bundle_count - a[1].bundle_count || a[0].localeCompare(b[0])
   );
-
-  function goNext() {
-    autoSkipCount.current = 0;
-    didWrapRef.current = false;
-    setWrapMsg(null);
-    const next = startIdx + batchSize;
-    if (next < totalIssues) setStartIdx(next);
-  }
-  function goPrev() {
-    autoSkipCount.current = 0;
-    didWrapRef.current = false;
-    setScanning(false);
-    setWrapMsg(null);
-    setStartIdx(Math.max(0, startIdx - batchSize));
-  }
-  function handleJump(e) {
-    e.preventDefault();
-    const num = parseInt(jumpInput, 10);
-    if (isNaN(num) || num < 1) return;
-    autoSkipCount.current = 0;
-    didWrapRef.current = false;
-    setScanning(false);
-    setWrapMsg(null);
-    setStartIdx(Math.max(0, Math.min(num - 1, totalIssues - 1)));
-    setJumpInput("");
-  }
 
   const metaDescription = `Find the best eBay bundle deals for ${displayName} (${subtitle}). Browse all ${totalIssues} issues and find sellers carrying multiple issues you need — save big on combined shipping.`;
 
@@ -207,12 +247,10 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
 
         .panel{background:#fffdf4;border:3px solid #1a1a1a;box-shadow:6px 6px 0 #1a1a1a;padding:1.5rem 1.75rem;margin-bottom:1.75rem}
         .panel-slim{background:#fffdf4;border:3px solid #1a1a1a;box-shadow:4px 4px 0 #1a1a1a;padding:0.6rem 1.25rem;margin-bottom:1.75rem;display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap}
-        .panel-nav{background:#fffdf4;border:3px solid #1a1a1a;box-shadow:4px 4px 0 #1a1a1a;padding:0.6rem 1.25rem;margin-bottom:1.75rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem}
-        .series-sub{color:#ffe066;font-size:0.85rem;letter-spacing:2px;text-transform:uppercase;margin-top:0.4rem;font-weight:400}
+        .series-sub{color:#555;font-size:0.85rem;letter-spacing:2px;text-transform:uppercase;margin-top:0.4rem;font-weight:400}
         .back-link{font-size:0.78rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#003399;text-decoration:none}
         .back-link:hover{text-decoration:underline}
         .breadcrumb-sep{font-size:0.78rem;color:#aaa;font-weight:400}
-        .caption{display:inline-block;background:#ffe066;border:2px solid #1a1a1a;padding:0.3rem 0.7rem;font-size:0.8rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:1rem}
         .updated-badge{display:inline-block;background:#003399;color:#fffdf4;border:2px solid #1a1a1a;padding:0.25rem 0.7rem;font-size:0.72rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-left:0.75rem;vertical-align:middle}
         .controls-row{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1.25rem}
         .range-label{font-family:'Bangers',cursive;font-size:1.5rem;letter-spacing:2px;color:#1a1a1a;flex:1;min-width:200px}
@@ -271,7 +309,7 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
       <div className="page-wrap">
         <SiteNav />
 
-        {/* Breadcrumb navigation */}
+        {/* Breadcrumb */}
         <div className="panel-slim">
           <Link href="/collection-guides" className="back-link">&larr; Collection Guides</Link>
           {groupSlug && (
@@ -289,7 +327,7 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
           <div style={{ width: 8, flexShrink: 0, background: "#cc1f00" }} />
           <div style={{ padding: "1rem 1.5rem" }}>
             <h2 style={{ fontFamily: "'Bangers', cursive", fontSize: "clamp(1.75rem,5vw,2.8rem)", letterSpacing: "3px", color: "#1a1a1a", lineHeight: 1, margin: 0 }}>{displayName}</h2>
-            <div className="series-sub" style={{ color: "#555", marginTop: "0.4rem" }}>{subtitle} &middot; {totalIssues} issues &middot; eBay Bundle Deals</div>
+            <div className="series-sub">{subtitle} &middot; {totalIssues} issues &middot; eBay Bundle Deals</div>
           </div>
         </div>
 
@@ -301,6 +339,7 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
           </p>
         </div>
 
+        {/* Controls */}
         <div className="panel">
           <div className="controls-row">
             <div className="range-label">
@@ -338,7 +377,7 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
             {showSlider && (
               <input
                 className="batch-slider"
-                type="range" min="1" max="50" value={batchSize}
+                type="range" min="5" max="50" step="5" value={batchSize}
                 onChange={(e) => setBatchSize(parseInt(e.target.value, 10))}
               />
             )}
@@ -359,6 +398,7 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
           </div>
         </div>
 
+        {/* Results */}
         <div className="panel">
           {(loading || scanning) && (
             <div className="loading-state">
@@ -393,7 +433,7 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
                 <>
                   <div className="stats-row">
                     <div className="stat-box">
-                      <div className="stat-number">{data.issueCount}</div>
+                      <div className="stat-number">{issuesInWindow.length}</div>
                       <div className="stat-label">Issues Searched</div>
                     </div>
                     <div className="stat-box">
