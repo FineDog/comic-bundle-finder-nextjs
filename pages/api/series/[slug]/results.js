@@ -9,16 +9,37 @@
 // For dynamic series (slug = "metron-{id}"):
 //   Fetches the issue list from Metron via getMetronIssuesCached (7-day Blob TTL),
 //   then fetches eBay results live with a 1-hour Blob cache keyed by start+count.
+//
+// IMPORTANT — Blob operation budget:
+//   All cache reads use plain fetch() to the public CDN URL (bandwidth only, not an
+//   Advanced Operation).  Only put() is called on a cache miss (Simple Operation).
+//   list() and head() are never used here.
 
 import fs from "fs";
 import path from "path";
-import { list, put } from "@vercel/blob";
+import { put } from "@vercel/blob";
 import { getEbayToken, searchEbay, aggregateRows } from "../../../../lib/ebay";
 import { getSeriesConfig } from "../../../../lib/series-config";
-import { getMetronIssuesCached } from "../../../../lib/metron-issues";
+import { getMetronIssuesCached, getBlobBaseUrl } from "../../../../lib/metron-issues";
 
 const CONCURRENCY = 8;
 const EBAY_CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
+
+// Try to read a blob eBay cache entry by pathname.
+// Returns { rows, cachedAt } on a fresh hit, or null on miss/stale/error.
+async function readEbayCache(pathname) {
+  const base = getBlobBaseUrl();
+  if (!base) return null;
+  try {
+    const r = await fetch(`${base}/${pathname}`, { cache: "no-store" });
+    if (!r.ok) return null;
+    const data = await r.json();
+    if (!data.cachedAt || Date.now() - data.cachedAt > EBAY_CACHE_TTL_MS) return null;
+    return data;
+  } catch {
+    return null;
+  }
+}
 
 export default async function handler(req, res) {
   if (req.method !== "GET") return res.status(405).json({ error: "Method not allowed." });
@@ -32,7 +53,7 @@ export default async function handler(req, res) {
   if (metronMatch) {
     const metronId = parseInt(metronMatch[1], 10);
 
-    // Fetch issue list (7-day Blob cache via getMetronIssuesCached)
+    // Fetch issue list (7-day Blob cache, CDN read only)
     let allIssues;
     try {
       allIssues = await getMetronIssuesCached(metronId);
@@ -43,33 +64,21 @@ export default async function handler(req, res) {
     const batchIssues = allIssues.slice(startIdx, startIdx + count);
     if (!batchIssues.length) return res.status(400).json({ error: "No issues in that range." });
 
-    // Try 1-hour Blob eBay cache
-    const ebayBlobKey = `dynamic-series/metron-${metronId}/ebay/${startIdx}-${count}.json`;
-    try {
-      const { blobs } = await list({ prefix: `dynamic-series/metron-${metronId}/ebay/${startIdx}-${count}.json` });
-      if (blobs.length > 0) {
-        const blob = blobs[0];
-        const age = Date.now() - new Date(blob.uploadedAt).getTime();
-        if (age < EBAY_CACHE_TTL_MS) {
-          const r = await fetch(blob.url, { cache: "no-store" });
-          if (r.ok) {
-            const cached = await r.json();
-            return res.status(200).json({
-              results: cached.rows,
-              issueCount: batchIssues.length,
-              startIdx,
-              endIdx: startIdx + batchIssues.length - 1,
-              totalIssues: allIssues.length,
-              cachedAt: cached.cachedAt,
-            });
-          }
-        }
-      }
-    } catch {
-      // Cache miss — fall through to live fetch
+    // Try 1-hour Blob eBay cache (CDN read — no Advanced Operations)
+    const ebayBlobPathname = `dynamic-series/metron-${metronId}/ebay/${startIdx}-${count}.json`;
+    const ebayHit = await readEbayCache(ebayBlobPathname);
+    if (ebayHit) {
+      return res.status(200).json({
+        results: ebayHit.rows,
+        issueCount: batchIssues.length,
+        startIdx,
+        endIdx: startIdx + batchIssues.length - 1,
+        totalIssues: allIssues.length,
+        cachedAt: ebayHit.cachedAt,
+      });
     }
 
-    // Live eBay fetch
+    // Cache miss — live eBay fetch
     const token = await getEbayToken();
     const issueListings = [];
     for (let i = 0; i < batchIssues.length; i += CONCURRENCY) {
@@ -85,9 +94,9 @@ export default async function handler(req, res) {
     const rows = aggregateRows(issueListings);
     const cachedAt = Date.now();
 
-    // Write to Blob cache (non-blocking on failure)
+    // Write to Blob cache (Simple Operation — only fires on miss)
     try {
-      await put(ebayBlobKey, JSON.stringify({ rows, cachedAt }), {
+      await put(ebayBlobPathname, JSON.stringify({ rows, cachedAt }), {
         access: "public",
         addRandomSuffix: false,
         contentType: "application/json",
