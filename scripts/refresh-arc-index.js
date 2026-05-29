@@ -6,8 +6,16 @@
 //
 // Output format:
 //   [{ "id": 123, "name": "Brand New Day", "slug": "123-brand-new-day", "issueCount": 12 }, ...]
+//
+// Issue counts are NOT in the arc list endpoint — a separate call to
+// /api/arc/{id}/issue_list/?page_size=1 is needed for each arc.
+//
+// To avoid rate limits we run sequentially with a 2-second delay between
+// requests, and we PRESERVE existing counts from the committed arc-index.json
+// so only new/uncounted arcs need to be fetched on each run.
+// First run: ~74 min (2214 arcs × 2s). Subsequent runs: seconds.
 
-import { writeFileSync, mkdirSync } from "fs";
+import { writeFileSync, readFileSync, mkdirSync } from "fs";
 import { join } from "path";
 
 const USERNAME = process.env.METRON_USERNAME;
@@ -36,11 +44,43 @@ function sleep(ms) {
   return new Promise((r) => setTimeout(r, ms));
 }
 
+// Fetch the issue count for a single arc via the issue_list endpoint.
+// Returns 0 on any error (non-fatal — badge just won't show).
+async function fetchIssueCount(arcId) {
+  try {
+    const res = await fetch(
+      `https://metron.cloud/api/arc/${arcId}/issue_list/?page_size=1`,
+      { headers: HEADERS }
+    );
+    if (!res.ok) return 0;
+    const data = await res.json();
+    return data.count || 0;
+  } catch {
+    return 0;
+  }
+}
+
+const outDir = join(process.cwd(), "public", "data");
+const outPath = join(outDir, "arc-index.json");
+
+// ── Load existing issue counts so we don't re-fetch them ─────────────────────
+const existingCounts = {};
+try {
+  const existing = JSON.parse(readFileSync(outPath, "utf-8"));
+  for (const arc of existing) {
+    if (arc.issueCount > 0) existingCounts[arc.id] = arc.issueCount;
+  }
+  console.log(`Loaded ${Object.keys(existingCounts).length} existing issue counts from arc-index.json`);
+} catch {
+  console.log("No existing arc-index.json — starting fresh.");
+}
+
+// ── Phase 1: fetch arc list ───────────────────────────────────────────────────
 const arcs = [];
 let nextUrl = "https://metron.cloud/api/arc/?page_size=100";
 let page = 1;
 
-console.log("Fetching story arcs from Metron...");
+console.log("\nPhase 1 — Fetching story arcs from Metron...");
 
 while (nextUrl) {
   process.stdout.write(`  Page ${page}... `);
@@ -68,7 +108,7 @@ while (nextUrl) {
       id: arc.id,
       name: arc.name,
       slug: `${arc.id}-${toSlug(arc.name)}`,
-      issueCount: arc.issue_count || 0,
+      issueCount: existingCounts[arc.id] || 0,
     });
   }
 
@@ -77,16 +117,28 @@ while (nextUrl) {
   nextUrl = data.next || null;
   page++;
 
-  // Polite delay between pages
   if (nextUrl) await sleep(1000);
 }
 
+// ── Phase 2: fetch issue counts for arcs we don't have yet ───────────────────
+const uncounted = arcs.filter((a) => !a.issueCount);
+
+if (uncounted.length === 0) {
+  console.log("\nPhase 2 — All issue counts already known. Skipping.");
+} else {
+  console.log(`\nPhase 2 — Fetching issue counts for ${uncounted.length} arcs (sequential, 2s delay)...`);
+  for (let i = 0; i < uncounted.length; i++) {
+    uncounted[i].issueCount = await fetchIssueCount(uncounted[i].id);
+    process.stdout.write(`\r  ${i + 1} / ${uncounted.length}  `);
+    if (i + 1 < uncounted.length) await sleep(2000);
+  }
+  console.log("\n  done.");
+}
+
+// ── Write output ──────────────────────────────────────────────────────────────
 arcs.sort((a, b) => a.name.localeCompare(b.name));
 
-const outDir = join(process.cwd(), "public", "data");
 mkdirSync(outDir, { recursive: true });
-
-const outPath = join(outDir, "arc-index.json");
 writeFileSync(outPath, JSON.stringify(arcs));
 
 console.log(`\nWrote ${arcs.length} arcs to public/data/arc-index.json`);

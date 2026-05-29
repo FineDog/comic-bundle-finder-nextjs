@@ -343,35 +343,36 @@ export async function getStaticProps({ params }) {
   if (!arcRes.ok) return { notFound: true };
   const arc = await arcRes.json();
 
-  // 2. Fetch all issues for this arc via the issues endpoint (paginated)
-  // Uses arc_id filter on /api/issue/ — same pattern as series_id for series pages.
-  // The issue_list sub-endpoint (/api/arc/{id}/issue_list/) is unreliable:
-  // it may return a flat array or a 404 depending on the Metron API version.
+  // 2. Fetch all issues for this arc from the issue_list sub-endpoint.
+  // Returns { count, next, previous, results: [...] } with full issue objects.
+  // NOTE: /api/issue/?arc_id=X does NOT filter by arc — it ignores the param
+  // and returns all 170k+ issues. Use the sub-endpoint exclusively.
   const allIssues = [];
-  let page = 1;
-  while (true) {
+  let nextUrl = `https://metron.cloud/api/arc/${arcId}/issue_list/?page_size=100`;
+
+  while (nextUrl) {
     let issueRes;
     try {
-      issueRes = await fetch(
-        `https://metron.cloud/api/issue/?arc_id=${arcId}&page_size=100&page=${page}`,
-        { headers }
-      );
+      issueRes = await fetch(nextUrl, { headers });
     } catch {
       break;
     }
     if (!issueRes.ok) break;
-    const issueData = await issueRes.json();
+    let issueData;
+    try {
+      issueData = await issueRes.json();
+    } catch {
+      break;
+    }
     allIssues.push(...(issueData.results || []));
-    if (!issueData.next) break;
-    page++;
+    nextUrl = issueData.next || null;
   }
 
-  // Format issues as "Series Name #Number" for eBay search.
-  // Metron always returns a pre-formatted `issue` field (e.g. "Batman #492") —
-  // use that first, fall back to reconstructing from series.name + number.
+  // Format as "Series #Number" for eBay search.
+  // Metron's issue.series.name + issue.number gives the cleanest query
+  // (e.g. "Batman #492" without the year that sellers don't include).
   const issues = allIssues
     .map((issue) => {
-      if (issue.issue && typeof issue.issue === "string") return issue.issue;
       const series = issue.series?.name || "";
       const num = issue.number || "";
       if (!series || !num) return "";
