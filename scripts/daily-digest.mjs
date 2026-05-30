@@ -201,6 +201,13 @@ function buildDigestEmail(rows, issueCount, resultsUrl) {
     const shownIssues = allIssues.slice(0, PREVIEW_ISSUES);
     const remainingIssues = allIssues.length - shownIssues.length;
 
+    const colHeader = `
+        <tr style="background:#1a1a1a">
+          <td style="padding:5px 12px;font-size:0.68rem;font-weight:700;color:#fffdf4;text-transform:uppercase;letter-spacing:1px">Issue You Need</td>
+          <td style="padding:5px 12px;font-size:0.68rem;font-weight:700;color:#fffdf4;text-transform:uppercase;letter-spacing:1px;width:58px">Price</td>
+          <td style="padding:5px 12px;font-size:0.68rem;font-weight:700;color:#fffdf4;text-transform:uppercase;letter-spacing:1px;width:100px">Shipping</td>
+        </tr>`;
+
     const listingRows = shownIssues.map(([issue, listings]) => {
       const best = listings.sort((a, b) => parseFloat(a.price) - parseFloat(b.price))[0];
       const price = `$${parseFloat(best.price).toFixed(2)}`;
@@ -210,7 +217,7 @@ function buildDigestEmail(rows, issueCount, resultsUrl) {
       return `
         <tr>
           <td style="padding:6px 12px;border-bottom:1px solid #e8e0cc;font-size:0.82rem;line-height:1.4">
-            <div style="color:#555;font-size:0.75rem;font-weight:600;margin-bottom:2px;text-transform:uppercase;letter-spacing:0.3px">${issue}</div>
+            <div style="color:#555;font-size:0.75rem;font-weight:700;margin-bottom:2px;text-transform:uppercase;letter-spacing:0.3px">${issue}</div>
             <a href="${best.url}" style="color:#003399;text-decoration:none">${best.title}</a>
           </td>
           <td style="padding:6px 12px;border-bottom:1px solid #e8e0cc;font-size:0.82rem;font-weight:700;color:#1a1a1a;white-space:nowrap;vertical-align:top;width:58px">${price}</td>
@@ -227,7 +234,7 @@ function buildDigestEmail(rows, issueCount, resultsUrl) {
 
     return `
       <div style="margin-bottom:14px;border:2px solid #1a1a1a">
-        <table style="width:100%;border-collapse:collapse;background:#1a1a1a">
+        <table style="width:100%;border-collapse:collapse;background:#003399">
           <tr>
             <td style="padding:8px 12px">
               <span style="color:#fffdf4;font-family:'Arial Black',sans-serif;font-size:0.88rem;letter-spacing:0.5px">${name}</span>
@@ -236,6 +243,7 @@ function buildDigestEmail(rows, issueCount, resultsUrl) {
           </tr>
         </table>
         <table style="width:100%;border-collapse:collapse;background:#fffdf4;table-layout:fixed">
+          <thead>${colHeader}</thead>
           <tbody>${listingRows}${moreIssuesRow}</tbody>
         </table>
       </div>`;
@@ -266,10 +274,12 @@ function buildDigestEmail(rows, issueCount, resultsUrl) {
 
     <div style="background:#fffdf4;border:3px solid #1a1a1a;border-top:none;padding:24px;box-shadow:5px 5px 0 #1a1a1a">
       <h2 style="margin:0 0 4px;font-family:'Arial Black',Gadget,sans-serif;font-size:1.3rem;letter-spacing:1px;color:#003399">YOUR DAILY BUNDLE DIGEST</h2>
-      <p style="margin:0 0 20px;color:#555;font-size:0.92rem;line-height:1.6">
+      <p style="margin:0 0 14px;color:#555;font-size:0.92rem;line-height:1.6">
         Searched <strong>${issueCount} issue${issueCount === 1 ? "" : "s"}</strong> from your wish list and found
         <strong>${sellers.length} seller${sellers.length === 1 ? "" : "s"}</strong> with bundle opportunities today.
       </p>
+      ${viewFullBtn}
+      <div style="margin-bottom:20px"></div>
       ${sellerHtml}
       ${truncationNote}
       ${viewFullBtn}
