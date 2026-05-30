@@ -1,0 +1,38 @@
+# Runs the daily bundle digest for opted-in users.
+# For each user with saved lists, searches eBay for bundle opportunities
+# and emails results via Resend.
+#
+# Required GitHub secrets:
+#   DATABASE_URL      — Neon Postgres connection string
+#   EBAY_APP_ID       — eBay OAuth client ID
+#   EBAY_SECRET       — eBay OAuth client secret
+#   RESEND_API_KEY    — Resend API key
+# Optional:
+#   EBAY_CAMPAIGN_ID  — eBay Partner Network campaign ID (affiliate links)
+
+name: Daily Bundle Digest
+
+on:
+  schedule:
+    - cron: "0 12 * * *"   # 12:00 UTC daily (8 AM Eastern)
+  workflow_dispatch:         # allow manual trigger from GitHub UI
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "20"
+          cache: "npm"
+      - name: Install dependencies
+        run: npm ci
+      - name: Run daily digest
+        env:
+          DATABASE_URL:     ${{ secrets.DATABASE_URL }}
+          EBAY_APP_ID:      ${{ secrets.EBAY_APP_ID }}
+          EBAY_SECRET:      ${{ secrets.EBAY_SECRET }}
+          RESEND_API_KEY:   ${{ secrets.RESEND_API_KEY }}
+          EBAY_CAMPAIGN_ID: ${{ secrets.EBAY_CAMPAIGN_ID }}
+        run: node scripts/daily-digest.mjs
