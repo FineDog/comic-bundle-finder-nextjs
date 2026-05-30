@@ -43,6 +43,15 @@ async function parseLOCGFile(file) {
   return { issues, count: issues.length };
 }
 
+function cleanSeriesName(name) {
+  return name
+    .replace(/\s*\(Vol\.\s*\d+\)/gi, "")
+    .replace(/,?\s*Vol\.\s*\d+/gi, "")
+    .replace(/\s*\(\d{4}\s*[-–]\s*(?:\d{4}|[Pp]resent)\)/g, "")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+}
+
 // CLZ CSV export (with Collection Status column added via Manage Columns)
 async function parseCLZFile(file) {
   const text = await file.text();
@@ -62,7 +71,7 @@ async function parseCLZFile(file) {
       const status = (c[ci] || "").toLowerCase();
       if (!status.includes("wish")) continue;
     }
-    const s = c[si]?.trim() || "";
+    const s = cleanSeriesName(c[si]?.trim() || "");
     const num = c[ii]?.trim() || "";
     const y = di >= 0 ? yearFromDateString(c[di]?.trim() || "") : "";
     const parsed = String(num).match(/^(\d+)/);
