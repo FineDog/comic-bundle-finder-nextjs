@@ -96,6 +96,12 @@ async function parsePlainFile(file) {
   return { issues, count: issues.length };
 }
 
+function formatDate(iso) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  return d.toLocaleDateString("en-US", { month: "numeric", day: "numeric", year: "numeric" });
+}
+
 // ── Drop zone hook ────────────────────────────────────────────────────────────
 
 function useDropZone(onFile) {
@@ -108,24 +114,33 @@ function useDropZone(onFile) {
   return { isDragging, ref, onDrop, onDragOver, onDragLeave, onFileSelected };
 }
 
-// ── Shared result panel ───────────────────────────────────────────────────────
+// ── Saved summary ─────────────────────────────────────────────────────────────
 
-function ResultPanel({ items, msg }) {
-  if (!msg && !items.length) return null;
+function SavedSummary({ saved, label, onUpdate, drop, accept, uploadingMsg }) {
+  const [showDrop, setShowDrop] = useState(false);
+  if (!saved?.items?.length && !uploadingMsg) return null;
+  if (uploadingMsg) return <div className="upload-msg">{uploadingMsg}</div>;
   return (
     <div>
-      {msg && <div className="upload-msg">{msg}</div>}
-      {items.length > 0 && (
-        <div className="wishlist-preview">
-          <div className="wishlist-preview-header">
-            <span style={{fontSize:"0.82rem",fontWeight:600,letterSpacing:"0.5px"}}>{items.length} items ready</span>
+      <div className="saved-summary">
+        <span>✓ {saved.items.length} {label} item{saved.items.length === 1 ? "" : "s"} saved · Last updated {formatDate(saved.updatedAt)}</span>
+        <button className="btn-edit" onClick={() => setShowDrop(v => !v)}>Update</button>
+      </div>
+      {showDrop && (
+        <div>
+          <div
+            className={`drop-zone${drop.isDragging ? " dragging" : ""}`}
+            onDragOver={drop.onDragOver} onDragLeave={drop.onDragLeave} onDrop={e => { drop.onDrop(e); setShowDrop(false); }}
+            onClick={() => drop.ref.current?.click()}
+          >
+            <div className="drop-zone-label">Drop new file here, or click to browse</div>
+            <input ref={drop.ref} type="file" accept={accept} style={{display:"none"}} onChange={e => { drop.onFileSelected(e); setShowDrop(false); }} />
           </div>
-          <textarea readOnly value={items.join("\n")} />
-          <Link href={`/?wishlist=${encodeURIComponent(items.join("\n"))}`} className="btn-search">
-            Search eBay for Bundles →
-          </Link>
         </div>
       )}
+      <Link href={`/?wishlist=${encodeURIComponent(saved.items.join("\n"))}`} className="btn-search">
+        Search eBay for Bundles →
+      </Link>
     </div>
   );
 }
@@ -135,75 +150,81 @@ function ResultPanel({ items, msg }) {
 export default function Account() {
   const { data: session } = useSession();
 
-  // LOCG state
+  // LOCG state — { items, updatedAt, username } or null
+  const [locgSaved, setLocgSaved] = useState(null);
   const [locgUsername, setLocgUsername] = useState("");
   const [savedUsername, setSavedUsername] = useState("");
   const [editingUsername, setEditingUsername] = useState(false);
-  const [locgMsg, setLocgMsg] = useState("");
-  const [locgItems, setLocgItems] = useState([]);
+  const [locgUploading, setLocgUploading] = useState("");
 
-  // CLZ state
-  const [clzMsg, setClzMsg] = useState("");
-  const [clzItems, setClzItems] = useState([]);
+  // CLZ state — { items, updatedAt } or null
+  const [clzSaved, setClzSaved] = useState(null);
+  const [clzUploading, setClzUploading] = useState("");
 
-  // Plain upload state
-  const [plainMsg, setPlainMsg] = useState("");
-  const [plainItems, setPlainItems] = useState([]);
+  // Plain upload state — { items, updatedAt } or null
+  const [plainSaved, setPlainSaved] = useState(null);
+  const [plainUploading, setPlainUploading] = useState("");
 
   // Load saved lists on mount
   useEffect(() => {
     fetch("/api/user/lists")
       .then(r => r.json())
       .then(data => {
-        if (data.locg?.length)   { setLocgItems(data.locg);   setLocgMsg(`✓ ${data.locg.length} saved wish list item${data.locg.length === 1 ? "" : "s"} from League of Comic Geeks.`); }
-        if (data.clz?.length)    { setClzItems(data.clz);     setClzMsg(`✓ ${data.clz.length} saved wish list item${data.clz.length === 1 ? "" : "s"} from CLZ.`); }
-        if (data.manual?.length) { setPlainItems(data.manual); setPlainMsg(`✓ ${data.manual.length} saved item${data.manual.length === 1 ? "" : "s"}.`); }
+        if (data.locg?.items?.length) {
+          setLocgSaved(data.locg);
+          if (data.locg.username) setSavedUsername(data.locg.username);
+        }
+        if (data.clz?.items?.length)    setClzSaved(data.clz);
+        if (data.manual?.items?.length) setPlainSaved(data.manual);
       })
       .catch(() => {});
   }, []);
 
-  async function saveList(source, items) {
+  async function saveList(source, items, extra = {}) {
     try {
       await fetch("/api/user/lists", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ source, items }),
+        body: JSON.stringify({ source, items, ...extra }),
       });
     } catch {}
   }
 
   async function handleLOCGFile(file) {
-    setLocgMsg("Reading file…"); setLocgItems([]);
+    setLocgUploading("Reading file…");
     try {
       const r = await parseLOCGFile(file);
-      if (!r.count) { setLocgMsg("No wish list items found. Make sure this is your LOCG export."); return; }
-      setLocgItems(r.issues);
-      setLocgMsg(`✓ Loaded ${r.count} wish list item${r.count === 1 ? "" : "s"}.`);
-      saveList("locg", r.issues);
-    } catch { setLocgMsg("Could not read that file."); }
+      if (!r.count) { setLocgUploading("No wish list items found. Make sure this is your LOCG export."); return; }
+      const updatedAt = new Date().toISOString();
+      setLocgSaved({ items: r.issues, updatedAt, username: savedUsername });
+      setLocgUploading("");
+      saveList("locg", r.issues, { username: savedUsername });
+    } catch { setLocgUploading("Could not read that file."); }
   }
 
   async function handleCLZFile(file) {
-    setClzMsg("Reading file…"); setClzItems([]);
+    setClzUploading("Reading file…");
     try {
       const r = await parseCLZFile(file);
-      if (r.error) { setClzMsg(r.error); return; }
-      if (!r.count) { setClzMsg("No wish list items found. Make sure you added the Collection Status column (Step 3 above)."); return; }
-      setClzItems(r.issues);
-      setClzMsg(`✓ Loaded ${r.count} wish list item${r.count === 1 ? "" : "s"}.`);
+      if (r.error) { setClzUploading(r.error); return; }
+      if (!r.count) { setClzUploading("No wish list items found. Make sure you added the Collection Status column (Step 3 above)."); return; }
+      const updatedAt = new Date().toISOString();
+      setClzSaved({ items: r.issues, updatedAt });
+      setClzUploading("");
       saveList("clz", r.issues);
-    } catch { setClzMsg("Could not read that file."); }
+    } catch { setClzUploading("Could not read that file."); }
   }
 
   async function handlePlainFile(file) {
-    setPlainMsg("Reading file…"); setPlainItems([]);
+    setPlainUploading("Reading file…");
     try {
       const r = await parsePlainFile(file);
-      if (!r.count) { setPlainMsg("No items found in that file."); return; }
-      setPlainItems(r.issues);
-      setPlainMsg(`✓ Loaded ${r.count} item${r.count === 1 ? "" : "s"}.`);
+      if (!r.count) { setPlainUploading("No items found in that file."); return; }
+      const updatedAt = new Date().toISOString();
+      setPlainSaved({ items: r.issues, updatedAt });
+      setPlainUploading("");
       saveList("manual", r.issues);
-    } catch { setPlainMsg("Could not read that file."); }
+    } catch { setPlainUploading("Could not read that file."); }
   }
 
   const locgDrop = useDropZone(handleLOCGFile);
@@ -261,6 +282,7 @@ export default function Account() {
         .btn-search:hover{background:#e02200}
         .plain-hint{font-size:0.82rem;color:#888;margin-bottom:0.75rem;line-height:1.6}
         code{background:#f0e6c4;border:1px solid #c8b98a;padding:0.1rem 0.35rem;font-size:0.8rem}
+        .saved-summary{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:0.85rem;font-size:0.88rem;font-weight:600;color:#1a1a1a}
       `}</style>
 
       <div className="container">
@@ -303,7 +325,9 @@ export default function Account() {
         <div className="panel">
           <div className="caption">League of Comic Geeks</div>
 
-          {!savedUsername && !editingUsername ? (
+          {locgSaved?.items?.length ? (
+            <SavedSummary saved={locgSaved} label="wish list" onUpdate={() => {}} drop={locgDrop} accept=".xlsx,.xls,.csv" uploadingMsg={locgUploading} />
+          ) : !savedUsername && !editingUsername ? (
             <>
               <p className="placeholder-msg" style={{marginBottom:"0.85rem"}}>Enter your LOCG username to quickly import your wish list into the bundle search.</p>
               <button className="btn-save" onClick={() => setEditingUsername(true)}>Connect Account</button>
@@ -322,14 +346,11 @@ export default function Account() {
               {savedUsername && <button className="btn-edit" onClick={() => setEditingUsername(false)}>Cancel</button>}
             </div>
           ) : (
-            <div style={{display:"flex",alignItems:"center",gap:"0.75rem",marginBottom:"1rem",flexWrap:"wrap"}}>
-              <span className="username-display">@{savedUsername}</span>
-              <button className="btn-edit" onClick={() => { setLocgUsername(savedUsername); setEditingUsername(true); }}>Edit</button>
-            </div>
-          )}
-
-          {savedUsername && !editingUsername && (
             <>
+              <div style={{display:"flex",alignItems:"center",gap:"0.75rem",marginBottom:"1rem",flexWrap:"wrap"}}>
+                <span className="username-display">@{savedUsername}</span>
+                <button className="btn-edit" onClick={() => { setLocgUsername(savedUsername); setEditingUsername(true); }}>Edit</button>
+              </div>
               <ul className="steps">
                 <li>
                   <span className="step-num">1</span>
@@ -339,14 +360,8 @@ export default function Account() {
                     </a>
                   </span>
                 </li>
-                <li>
-                  <span className="step-num">2</span>
-                  <span>Click <strong>Export</strong> and download the file.</span>
-                </li>
-                <li>
-                  <span className="step-num">3</span>
-                  <span>Drop the file below.</span>
-                </li>
+                <li><span className="step-num">2</span><span>Click <strong>Export</strong> and download the file.</span></li>
+                <li><span className="step-num">3</span><span>Drop the file below.</span></li>
               </ul>
               <div
                 className={`drop-zone${locgDrop.isDragging ? " dragging" : ""}`}
@@ -356,7 +371,7 @@ export default function Account() {
                 <div className="drop-zone-label">Drop your LOCG export here, or click to browse</div>
                 <input ref={locgDrop.ref} type="file" accept=".xlsx,.xls,.csv" style={{display:"none"}} onChange={locgDrop.onFileSelected} />
               </div>
-              <ResultPanel items={locgItems} msg={locgMsg} />
+              {locgUploading && <div className="upload-msg">{locgUploading}</div>}
             </>
           )}
         </div>
@@ -364,62 +379,58 @@ export default function Account() {
         {/* ── CLZ ── */}
         <div className="panel">
           <div className="caption">CLZ Comics</div>
-          <ul className="steps">
-            <li>
-              <span className="step-num">1</span>
-              <span>
-                <a className="btn-external" href="https://app.clz.com/comics/login" target="_blank" rel="noopener noreferrer">Log in to CLZ ↗</a>
-              </span>
-            </li>
-            <li>
-              <span className="step-num">2</span>
-              <span>
-                <a className="btn-external" href="https://app.clz.com/comics/export" target="_blank" rel="noopener noreferrer">Go to Export ↗</a>
-              </span>
-            </li>
-            <li>
-              <span className="step-num">3</span>
-              <span>
-                Under <strong>Visible Columns</strong>, click <strong>Manage</strong> → <strong>Edit</strong> on the default "My List View columns" option. Scroll down, check <strong>Collection Status</strong> under the Personal section, then click Save.
-                <span className="step-note">⚠ This step is required so we can tell which items are on your wish list.</span>
-              </span>
-            </li>
-            <li>
-              <span className="step-num">4</span>
-              <span>Click <strong>Generate</strong> and download the file.</span>
-            </li>
-            <li>
-              <span className="step-num">5</span>
-              <span>Drop the file below.</span>
-            </li>
-          </ul>
-          <div
-            className={`drop-zone${clzDrop.isDragging ? " dragging" : ""}`}
-            onDragOver={clzDrop.onDragOver} onDragLeave={clzDrop.onDragLeave} onDrop={clzDrop.onDrop}
-            onClick={() => clzDrop.ref.current?.click()}
-          >
-            <div className="drop-zone-label">Drop your CLZ export here, or click to browse</div>
-            <input ref={clzDrop.ref} type="file" accept=".csv" style={{display:"none"}} onChange={clzDrop.onFileSelected} />
-          </div>
-          <ResultPanel items={clzItems} msg={clzMsg} />
+          {clzSaved?.items?.length ? (
+            <SavedSummary saved={clzSaved} label="wish list" drop={clzDrop} accept=".csv" uploadingMsg={clzUploading} />
+          ) : (
+            <>
+              <ul className="steps">
+                <li><span className="step-num">1</span><span><a className="btn-external" href="https://app.clz.com/comics/login" target="_blank" rel="noopener noreferrer">Log in to CLZ ↗</a></span></li>
+                <li><span className="step-num">2</span><span><a className="btn-external" href="https://app.clz.com/comics/export" target="_blank" rel="noopener noreferrer">Go to Export ↗</a></span></li>
+                <li>
+                  <span className="step-num">3</span>
+                  <span>
+                    Under <strong>Visible Columns</strong>, click <strong>Manage</strong> → <strong>Edit</strong> on the default "My List View columns" option. Scroll down, check <strong>Collection Status</strong> under the Personal section, then click Save.
+                    <span className="step-note">⚠ This step is required so we can tell which items are on your wish list.</span>
+                  </span>
+                </li>
+                <li><span className="step-num">4</span><span>Click <strong>Generate</strong> and download the file.</span></li>
+                <li><span className="step-num">5</span><span>Drop the file below.</span></li>
+              </ul>
+              <div
+                className={`drop-zone${clzDrop.isDragging ? " dragging" : ""}`}
+                onDragOver={clzDrop.onDragOver} onDragLeave={clzDrop.onDragLeave} onDrop={clzDrop.onDrop}
+                onClick={() => clzDrop.ref.current?.click()}
+              >
+                <div className="drop-zone-label">Drop your CLZ export here, or click to browse</div>
+                <input ref={clzDrop.ref} type="file" accept=".csv" style={{display:"none"}} onChange={clzDrop.onFileSelected} />
+              </div>
+              {clzUploading && <div className="upload-msg">{clzUploading}</div>}
+            </>
+          )}
         </div>
 
         {/* ── Plain file upload ── */}
         <div className="panel">
           <div className="caption">Upload a List</div>
-          <p className="plain-hint">
-            Upload any <code>.xlsx</code>, <code>.csv</code>, or <code>.txt</code> file with one issue per line.<br />
-            Expected format: <code>Amazing Spider-Man #1 (1963)</code>
-          </p>
-          <div
-            className={`drop-zone${plainDrop.isDragging ? " dragging" : ""}`}
-            onDragOver={plainDrop.onDragOver} onDragLeave={plainDrop.onDragLeave} onDrop={plainDrop.onDrop}
-            onClick={() => plainDrop.ref.current?.click()}
-          >
-            <div className="drop-zone-label">Drop your file here, or click to browse</div>
-            <input ref={plainDrop.ref} type="file" accept=".xlsx,.xls,.csv,.txt" style={{display:"none"}} onChange={plainDrop.onFileSelected} />
-          </div>
-          <ResultPanel items={plainItems} msg={plainMsg} />
+          {plainSaved?.items?.length ? (
+            <SavedSummary saved={plainSaved} label="" drop={plainDrop} accept=".xlsx,.xls,.csv,.txt" uploadingMsg={plainUploading} />
+          ) : (
+            <>
+              <p className="plain-hint">
+                Upload any <code>.xlsx</code>, <code>.csv</code>, or <code>.txt</code> file with one issue per line.<br />
+                Expected format: <code>Amazing Spider-Man #1 (1963)</code>
+              </p>
+              <div
+                className={`drop-zone${plainDrop.isDragging ? " dragging" : ""}`}
+                onDragOver={plainDrop.onDragOver} onDragLeave={plainDrop.onDragLeave} onDrop={plainDrop.onDrop}
+                onClick={() => plainDrop.ref.current?.click()}
+              >
+                <div className="drop-zone-label">Drop your file here, or click to browse</div>
+                <input ref={plainDrop.ref} type="file" accept=".xlsx,.xls,.csv,.txt" style={{display:"none"}} onChange={plainDrop.onFileSelected} />
+              </div>
+              {plainUploading && <div className="upload-msg">{plainUploading}</div>}
+            </>
+          )}
         </div>
 
       </div>

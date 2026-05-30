@@ -16,14 +16,14 @@ export default async function handler(req, res) {
     );
     if (!rows.length) return res.status(404).json({ error: "User not found." });
     return res.json({
-      locg:   rows[0].locg_list   ?? [],
-      clz:    rows[0].clz_list    ?? [],
-      manual: rows[0].manual_list ?? [],
+      locg:   rows[0].locg_list   ?? null,
+      clz:    rows[0].clz_list    ?? null,
+      manual: rows[0].manual_list ?? null,
     });
   }
 
   if (req.method === "PATCH") {
-    const { source, items } = req.body;
+    const { source, items, username } = req.body;
     if (!["locg", "clz", "manual"].includes(source)) {
       return res.status(400).json({ error: "Invalid source." });
     }
@@ -31,9 +31,10 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "items must be an array." });
     }
     const col = source === "locg" ? "locg_list" : source === "clz" ? "clz_list" : "manual_list";
+    const payload = { items, updatedAt: new Date().toISOString(), ...(username ? { username } : {}) };
     await pool.query(
       `UPDATE users SET "${col}" = $1 WHERE id = $2`,
-      [JSON.stringify(items), userId]
+      [JSON.stringify(payload), userId]
     );
     return res.json({ ok: true });
   }
