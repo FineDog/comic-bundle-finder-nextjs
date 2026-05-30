@@ -175,7 +175,8 @@ async function saveResultsBlob(rows, issueCount) {
 
 // ── Email ─────────────────────────────────────────────────────────────────────
 
-const PREVIEW_SELLERS = 15; // max sellers shown inline; rest linked via "view full results"
+const PREVIEW_SELLERS = 10;  // max sellers shown inline
+const PREVIEW_ISSUES  = 5;   // max issues shown per seller
 
 function buildDigestEmail(rows, issueCount, resultsUrl) {
   // Group by seller, bundle sellers only
@@ -196,22 +197,33 @@ function buildDigestEmail(rows, issueCount, resultsUrl) {
   const remaining = sellers.length - shown.length;
 
   const sellerHtml = shown.map(([name, data]) => {
-    const listingRows = Object.entries(data.byIssue).map(([issue, listings]) => {
+    const allIssues = Object.entries(data.byIssue);
+    const shownIssues = allIssues.slice(0, PREVIEW_ISSUES);
+    const remainingIssues = allIssues.length - shownIssues.length;
+
+    const listingRows = shownIssues.map(([issue, listings]) => {
       const best = listings.sort((a, b) => parseFloat(a.price) - parseFloat(b.price))[0];
       const price = `$${parseFloat(best.price).toFixed(2)}`;
       const shipping = best.shipping === "0.00" ? "Free shipping"
         : best.shipping === "unknown" ? "Shipping TBD"
-        : `+$${parseFloat(best.shipping).toFixed(2)} ship`;
+        : `+$${parseFloat(best.shipping).toFixed(2)} shipping`;
       return `
         <tr>
-          <td style="padding:6px 12px 6px 12px;border-bottom:1px solid #e8e0cc;font-size:0.82rem;line-height:1.4">
-            <div style="color:#999;font-size:0.72rem;margin-bottom:2px">${issue}</div>
-            <a href="${best.url}" style="color:#003399;text-decoration:none;font-weight:600">${best.title}</a>
+          <td style="padding:6px 12px;border-bottom:1px solid #e8e0cc;font-size:0.82rem;line-height:1.4">
+            <div style="color:#555;font-size:0.75rem;font-weight:600;margin-bottom:2px;text-transform:uppercase;letter-spacing:0.3px">${issue}</div>
+            <a href="${best.url}" style="color:#003399;text-decoration:none">${best.title}</a>
           </td>
           <td style="padding:6px 12px;border-bottom:1px solid #e8e0cc;font-size:0.82rem;font-weight:700;color:#1a1a1a;white-space:nowrap;vertical-align:top;width:58px">${price}</td>
-          <td style="padding:6px 12px;border-bottom:1px solid #e8e0cc;font-size:0.75rem;color:#666;white-space:nowrap;vertical-align:top;width:90px">${shipping}</td>
+          <td style="padding:6px 12px;border-bottom:1px solid #e8e0cc;font-size:0.75rem;color:#666;white-space:nowrap;vertical-align:top;width:100px">${shipping}</td>
         </tr>`;
     }).join("");
+
+    const moreIssuesRow = remainingIssues > 0 ? `
+        <tr>
+          <td colspan="3" style="padding:6px 12px;font-size:0.78rem;color:#888;font-style:italic">
+            +${remainingIssues} more issue${remainingIssues === 1 ? "" : "s"} from this seller — see full results
+          </td>
+        </tr>` : "";
 
     return `
       <div style="margin-bottom:14px;border:2px solid #1a1a1a">
@@ -224,14 +236,14 @@ function buildDigestEmail(rows, issueCount, resultsUrl) {
           </tr>
         </table>
         <table style="width:100%;border-collapse:collapse;background:#fffdf4;table-layout:fixed">
-          <tbody>${listingRows}</tbody>
+          <tbody>${listingRows}${moreIssuesRow}</tbody>
         </table>
       </div>`;
   }).join("");
 
   const truncationNote = remaining > 0 ? `
     <p style="text-align:center;color:#666;font-size:0.85rem;margin:4px 0 20px">
-      …and <strong>${remaining}</strong> more seller${remaining === 1 ? "" : "s"} not shown below.
+      …and <strong>${remaining}</strong> more seller${remaining === 1 ? "" : "s"} in the full results.
     </p>` : "";
 
   const viewFullBtn = `
