@@ -1,6 +1,6 @@
 import { getServerSideProps as authProps } from "@/lib/auth-guard";
 import { signOut, useSession } from "next-auth/react";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Head from "next/head";
 import Link from "next/link";
 import * as XLSX from "xlsx";
@@ -150,6 +150,28 @@ export default function Account() {
   const [plainMsg, setPlainMsg] = useState("");
   const [plainItems, setPlainItems] = useState([]);
 
+  // Load saved lists on mount
+  useEffect(() => {
+    fetch("/api/user/lists")
+      .then(r => r.json())
+      .then(data => {
+        if (data.locg?.length)   { setLocgItems(data.locg);   setLocgMsg(`✓ ${data.locg.length} saved wish list item${data.locg.length === 1 ? "" : "s"} from League of Comic Geeks.`); }
+        if (data.clz?.length)    { setClzItems(data.clz);     setClzMsg(`✓ ${data.clz.length} saved wish list item${data.clz.length === 1 ? "" : "s"} from CLZ.`); }
+        if (data.manual?.length) { setPlainItems(data.manual); setPlainMsg(`✓ ${data.manual.length} saved item${data.manual.length === 1 ? "" : "s"}.`); }
+      })
+      .catch(() => {});
+  }, []);
+
+  async function saveList(source, items) {
+    try {
+      await fetch("/api/user/lists", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ source, items }),
+      });
+    } catch {}
+  }
+
   async function handleLOCGFile(file) {
     setLocgMsg("Reading file…"); setLocgItems([]);
     try {
@@ -157,6 +179,7 @@ export default function Account() {
       if (!r.count) { setLocgMsg("No wish list items found. Make sure this is your LOCG export."); return; }
       setLocgItems(r.issues);
       setLocgMsg(`✓ Loaded ${r.count} wish list item${r.count === 1 ? "" : "s"}.`);
+      saveList("locg", r.issues);
     } catch { setLocgMsg("Could not read that file."); }
   }
 
@@ -168,6 +191,7 @@ export default function Account() {
       if (!r.count) { setClzMsg("No wish list items found. Make sure you added the Collection Status column (Step 3 above)."); return; }
       setClzItems(r.issues);
       setClzMsg(`✓ Loaded ${r.count} wish list item${r.count === 1 ? "" : "s"}.`);
+      saveList("clz", r.issues);
     } catch { setClzMsg("Could not read that file."); }
   }
 
@@ -178,6 +202,7 @@ export default function Account() {
       if (!r.count) { setPlainMsg("No items found in that file."); return; }
       setPlainItems(r.issues);
       setPlainMsg(`✓ Loaded ${r.count} item${r.count === 1 ? "" : "s"}.`);
+      saveList("manual", r.issues);
     } catch { setPlainMsg("Could not read that file."); }
   }
 
