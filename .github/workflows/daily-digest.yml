@@ -25,9 +25,8 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: "20"
-          cache: "npm"
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --no-cache
       - name: Run daily digest
         env:
           DATABASE_URL:     ${{ secrets.DATABASE_URL }}
