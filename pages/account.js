@@ -7,6 +7,8 @@ import * as XLSX from "xlsx";
 
 export { authProps as getServerSideProps };
 
+// ── Parsers ───────────────────────────────────────────────────────────────────
+
 function parseCSVLine(line) {
   const fields = []; let current = ""; let inQuotes = false;
   for (let i = 0; i < line.length; i++) {
@@ -26,64 +28,153 @@ function yearFromDateString(s) {
   const d = new Date(s); return isNaN(d) ? "" : String(d.getFullYear());
 }
 
-async function parseWishlistFile(file) {
+// League of Comic Geeks XLSX export
+async function parseLOCGFile(file) {
+  const ab = await file.arrayBuffer();
+  const wb = XLSX.read(ab, { type: "array" });
+  const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval: "" });
+  if (!rows.length) return { issues: [], count: 0 };
+  const wl = rows.filter(r => Number(r["In Wish List"]) >= 1);
+  const issues = wl.map(r => {
+    const t = String(r["Full Title"] || "").trim();
+    const y = yearFromDateString(String(r["Release Date"] || ""));
+    return y ? `${t} (${y})` : t;
+  }).filter(Boolean);
+  return { issues, count: issues.length };
+}
+
+// CLZ CSV export (with Collection Status column added via Manage Columns)
+async function parseCLZFile(file) {
+  const text = await file.text();
+  const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+  if (lines.length < 2) return { issues: [], count: 0 };
+  const headers = parseCSVLine(lines[0]).map(h => h.toLowerCase().trim());
+  const si = headers.indexOf("series");
+  const ii = headers.indexOf("issue");
+  const di = headers.findIndex(h => h.includes("release date") || h === "date");
+  const ci = headers.findIndex(h => h.includes("collection status") || h === "status");
+  if (si === -1 || ii === -1) return { issues: [], count: 0, error: "Could not find Series or Issue columns." };
+  const issues = [];
+  for (let i = 1; i < lines.length; i++) {
+    const c = parseCSVLine(lines[i]);
+    // If Collection Status column exists, only include Wish List rows
+    if (ci >= 0) {
+      const status = (c[ci] || "").toLowerCase();
+      if (!status.includes("wish")) continue;
+    }
+    const s = c[si]?.trim() || "";
+    const num = c[ii]?.trim() || "";
+    const y = di >= 0 ? yearFromDateString(c[di]?.trim() || "") : "";
+    const parsed = String(num).match(/^(\d+)/);
+    if (s && parsed) issues.push(`${s} #${parsed[1]}${y ? ` (${y})` : ""}`);
+  }
+  return { issues, count: issues.length };
+}
+
+// Plain file: one issue per line, passed through as-is
+async function parsePlainFile(file) {
   const n = file.name.toLowerCase();
+  let text = "";
   if (n.endsWith(".xlsx") || n.endsWith(".xls")) {
     const ab = await file.arrayBuffer();
     const wb = XLSX.read(ab, { type: "array" });
-    const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval: "" });
-    if (!rows.length) return { issues: [], count: 0 };
-    const wl = rows.filter(r => Number(r["In Wish List"]) >= 1);
-    const issues = wl.map(r => {
-      const t = String(r["Full Title"] || "").trim();
-      const y = yearFromDateString(String(r["Release Date"] || ""));
-      return y ? `${t} (${y})` : t;
-    }).filter(Boolean);
-    return { issues, count: issues.length };
+    const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, defval: "" });
+    text = rows.map(r => String(r[0] || "").trim()).filter(Boolean).join("\n");
+  } else {
+    text = await file.text();
   }
-  if (n.endsWith(".csv")) {
-    const text = await file.text();
-    const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-    if (lines.length < 2) return { issues: [], count: 0 };
-    const headers = parseCSVLine(lines[0]).map(h => h.toLowerCase());
-    const si = headers.indexOf("series"), ii = headers.indexOf("issue"), di = headers.indexOf("release date");
-    if (si === -1 || ii === -1) return { issues: [], count: 0 };
-    const issues = [];
-    for (let i = 1; i < lines.length; i++) {
-      const c = parseCSVLine(lines[i]);
-      const s = c[si]?.trim() || ""; const num = c[ii]?.trim() || ""; const y = di >= 0 ? yearFromDateString(c[di]?.trim() || "") : "";
-      const parsed = String(num).match(/^(\d+)/);
-      if (s && parsed) issues.push(`${s} #${parsed[1]}${y ? ` (${y})` : ""}`);
-    }
-    return { issues, count: issues.length };
-  }
-  return { issues: [], count: 0 };
+  const issues = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+  return { issues, count: issues.length };
 }
+
+// ── Drop zone hook ────────────────────────────────────────────────────────────
+
+function useDropZone(onFile) {
+  const [isDragging, setIsDragging] = useState(false);
+  const ref = useRef(null);
+  function onDrop(e) { e.preventDefault(); setIsDragging(false); const f = e.dataTransfer.files?.[0]; if (f) onFile(f); }
+  function onDragOver(e) { e.preventDefault(); setIsDragging(true); }
+  function onDragLeave() { setIsDragging(false); }
+  function onFileSelected(e) { const f = e.target.files?.[0]; if (f) onFile(f); e.target.value = ""; }
+  return { isDragging, ref, onDrop, onDragOver, onDragLeave, onFileSelected };
+}
+
+// ── Shared result panel ───────────────────────────────────────────────────────
+
+function ResultPanel({ items, msg }) {
+  if (!msg && !items.length) return null;
+  return (
+    <div>
+      {msg && <div className="upload-msg">{msg}</div>}
+      {items.length > 0 && (
+        <div className="wishlist-preview">
+          <div className="wishlist-preview-header">
+            <span style={{fontSize:"0.82rem",fontWeight:600,letterSpacing:"0.5px"}}>{items.length} items ready</span>
+          </div>
+          <textarea readOnly value={items.join("\n")} />
+          <Link href={`/?wishlist=${encodeURIComponent(items.join("\n"))}`} className="btn-search">
+            Search eBay for Bundles →
+          </Link>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Component ─────────────────────────────────────────────────────────────────
 
 export default function Account() {
   const { data: session } = useSession();
+
+  // LOCG state
   const [locgUsername, setLocgUsername] = useState("");
   const [savedUsername, setSavedUsername] = useState("");
   const [editingUsername, setEditingUsername] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
-  const [uploadMsg, setUploadMsg] = useState("");
-  const [wishlistItems, setWishlistItems] = useState([]);
-  const fileInputRef = useRef(null);
+  const [locgMsg, setLocgMsg] = useState("");
+  const [locgItems, setLocgItems] = useState([]);
 
-  async function handleFile(file) {
-    setUploadMsg("Reading file…");
+  // CLZ state
+  const [clzMsg, setClzMsg] = useState("");
+  const [clzItems, setClzItems] = useState([]);
+
+  // Plain upload state
+  const [plainMsg, setPlainMsg] = useState("");
+  const [plainItems, setPlainItems] = useState([]);
+
+  async function handleLOCGFile(file) {
+    setLocgMsg("Reading file…"); setLocgItems([]);
     try {
-      const result = await parseWishlistFile(file);
-      if (!result.count) { setUploadMsg("No wish list items found in that file."); return; }
-      setWishlistItems(result.issues);
-      setUploadMsg(`✓ Loaded ${result.count} wish list item${result.count === 1 ? "" : "s"}.`);
-    } catch { setUploadMsg("Could not read that file."); }
+      const r = await parseLOCGFile(file);
+      if (!r.count) { setLocgMsg("No wish list items found. Make sure this is your LOCG export."); return; }
+      setLocgItems(r.issues);
+      setLocgMsg(`✓ Loaded ${r.count} wish list item${r.count === 1 ? "" : "s"}.`);
+    } catch { setLocgMsg("Could not read that file."); }
   }
 
-  function onDrop(e) { e.preventDefault(); setIsDragging(false); const f = e.dataTransfer.files?.[0]; if (f) handleFile(f); }
-  function onDragOver(e) { e.preventDefault(); setIsDragging(true); }
-  function onDragLeave() { setIsDragging(false); }
-  function onFileSelected(e) { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ""; }
+  async function handleCLZFile(file) {
+    setClzMsg("Reading file…"); setClzItems([]);
+    try {
+      const r = await parseCLZFile(file);
+      if (r.error) { setClzMsg(r.error); return; }
+      if (!r.count) { setClzMsg("No wish list items found. Make sure you added the Collection Status column (Step 3 above)."); return; }
+      setClzItems(r.issues);
+      setClzMsg(`✓ Loaded ${r.count} wish list item${r.count === 1 ? "" : "s"}.`);
+    } catch { setClzMsg("Could not read that file."); }
+  }
+
+  async function handlePlainFile(file) {
+    setPlainMsg("Reading file…"); setPlainItems([]);
+    try {
+      const r = await parsePlainFile(file);
+      if (!r.count) { setPlainMsg("No items found in that file."); return; }
+      setPlainItems(r.issues);
+      setPlainMsg(`✓ Loaded ${r.count} item${r.count === 1 ? "" : "s"}.`);
+    } catch { setPlainMsg("Could not read that file."); }
+  }
+
+  const locgDrop = useDropZone(handleLOCGFile);
+  const clzDrop = useDropZone(handleCLZFile);
+  const plainDrop = useDropZone(handlePlainFile);
 
   return (
     <>
@@ -111,19 +202,20 @@ export default function Account() {
         .back{display:inline-block;color:#003399;text-decoration:none;font-size:0.85rem;font-weight:600;margin-bottom:1.5rem}
         .back:hover{text-decoration:underline}
         .placeholder-msg{color:#888;font-size:0.88rem;font-weight:400;line-height:1.7}
-        .locg-username{display:flex;align-items:center;gap:0.6rem;margin-bottom:1rem;flex-wrap:wrap}
-        .locg-username input{border:2px solid #1a1a1a;background:#fffdf4;font-family:'Oswald',sans-serif;font-size:0.95rem;padding:0.45rem 0.65rem;color:#1a1a1a;flex:1;min-width:0}
-        .locg-username input:focus{outline:none;border-color:#003399;box-shadow:2px 2px 0 #003399}
+        .input-row{display:flex;align-items:center;gap:0.6rem;margin-bottom:1rem;flex-wrap:wrap}
+        .input-row input{border:2px solid #1a1a1a;background:#fffdf4;font-family:'Oswald',sans-serif;font-size:0.95rem;padding:0.45rem 0.65rem;color:#1a1a1a;flex:1;min-width:0}
+        .input-row input:focus{outline:none;border-color:#003399;box-shadow:2px 2px 0 #003399}
         .btn-save{background:#003399;color:#fffdf4;border:2px solid #1a1a1a;box-shadow:2px 2px 0 #1a1a1a;font-family:'Oswald',sans-serif;font-size:0.82rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:0.45rem 0.9rem;cursor:pointer;white-space:nowrap}
         .btn-save:hover{background:#0044cc}
         .btn-edit{background:#fffdf4;color:#1a1a1a;border:2px solid #1a1a1a;box-shadow:2px 2px 0 #1a1a1a;font-family:'Oswald',sans-serif;font-size:0.78rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:0.3rem 0.7rem;cursor:pointer}
         .btn-edit:hover{background:#ffe066}
         .username-display{font-size:1rem;font-weight:600;letter-spacing:0.5px}
-        .locg-steps{margin:1rem 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:0.6rem}
-        .locg-steps li{display:flex;align-items:flex-start;gap:0.6rem;font-size:0.88rem;line-height:1.5}
+        .steps{margin:1rem 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:0.75rem}
+        .steps li{display:flex;align-items:flex-start;gap:0.65rem;font-size:0.88rem;line-height:1.55}
         .step-num{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;background:#1a1a1a;color:#ffe066;font-family:'Bangers',cursive;font-size:0.95rem;letter-spacing:1px;flex-shrink:0;margin-top:1px}
-        .btn-locg{display:inline-block;background:#ffe066;color:#1a1a1a;border:2px solid #1a1a1a;box-shadow:3px 3px 0 #1a1a1a;font-family:'Oswald',sans-serif;font-size:0.82rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:0.35rem 0.85rem;text-decoration:none;cursor:pointer}
-        .btn-locg:hover{background:#ffd700}
+        .step-note{display:block;margin-top:0.3rem;background:#fffbe6;border:1px solid #e0c840;padding:0.35rem 0.6rem;font-size:0.8rem;color:#555;line-height:1.5}
+        .btn-external{display:inline-block;background:#ffe066;color:#1a1a1a;border:2px solid #1a1a1a;box-shadow:3px 3px 0 #1a1a1a;font-family:'Oswald',sans-serif;font-size:0.82rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:0.35rem 0.85rem;text-decoration:none;cursor:pointer}
+        .btn-external:hover{background:#ffd700}
         .drop-zone{border:2px dashed #1a1a1a;padding:1.25rem;text-align:center;cursor:pointer;transition:background 0.15s;margin-top:0.75rem;background:#fffdf4}
         .drop-zone.dragging,.drop-zone:hover{background:#f0f4ff;border-color:#003399}
         .drop-zone-label{font-size:0.85rem;color:#555;font-weight:400}
@@ -133,7 +225,10 @@ export default function Account() {
         .wishlist-preview textarea{width:100%;height:140px;border:2px solid #1a1a1a;background:#fffdf4;font-family:'Oswald',sans-serif;font-size:0.82rem;padding:0.5rem;resize:vertical;color:#1a1a1a}
         .btn-search{display:inline-block;background:#cc1f00;color:#fffdf4;border:2px solid #1a1a1a;box-shadow:3px 3px 0 #1a1a1a;font-family:'Bangers',cursive;font-size:1.2rem;letter-spacing:2px;padding:0.4rem 1.2rem 0.5rem;text-decoration:none;margin-top:0.6rem}
         .btn-search:hover{background:#e02200}
+        .plain-hint{font-size:0.82rem;color:#888;margin-bottom:0.75rem;line-height:1.6}
+        code{background:#f0e6c4;border:1px solid #c8b98a;padding:0.1rem 0.35rem;font-size:0.8rem}
       `}</style>
+
       <div className="container">
         <Link href="/" className="back">← Back to Comic Bundle Finder</Link>
 
@@ -142,6 +237,7 @@ export default function Account() {
           <div className="tagline">Manage your profile &amp; saved data</div>
         </div>
 
+        {/* ── Profile ── */}
         <div className="panel">
           <div className="caption">Profile</div>
           <div className="user-info">
@@ -160,16 +256,16 @@ export default function Account() {
               {session?.user?.name && <div className="user-email">{session?.user?.email}</div>}
             </div>
           </div>
-          <button className="btn-signout" onClick={() => signOut({ callbackUrl: "/" })}>
-            Sign Out
-          </button>
+          <button className="btn-signout" onClick={() => signOut({ callbackUrl: "/" })}>Sign Out</button>
         </div>
 
+        {/* ── Saved Searches ── */}
         <div className="panel">
           <div className="caption">Saved Searches</div>
           <p className="placeholder-msg">Your saved searches will appear here. Coming soon.</p>
         </div>
 
+        {/* ── League of Comic Geeks ── */}
         <div className="panel">
           <div className="caption">League of Comic Geeks</div>
 
@@ -179,7 +275,7 @@ export default function Account() {
               <button className="btn-save" onClick={() => setEditingUsername(true)}>Connect Account</button>
             </>
           ) : editingUsername ? (
-            <div className="locg-username">
+            <div className="input-row">
               <input
                 type="text"
                 placeholder="LOCG username"
@@ -200,16 +296,11 @@ export default function Account() {
 
           {savedUsername && !editingUsername && (
             <>
-              <ul className="locg-steps">
+              <ul className="steps">
                 <li>
                   <span className="step-num">1</span>
                   <span>
-                    <a
-                      className="btn-locg"
-                      href={`https://leagueofcomicgeeks.com/profile/${savedUsername}/import-comics`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
+                    <a className="btn-external" href={`https://leagueofcomicgeeks.com/profile/${savedUsername}/import-comics`} target="_blank" rel="noopener noreferrer">
                       Open my LOCG Wish List ↗
                     </a>
                   </span>
@@ -220,40 +311,83 @@ export default function Account() {
                 </li>
                 <li>
                   <span className="step-num">3</span>
-                  <span>Drop the file below — we'll convert it to a search list instantly.</span>
+                  <span>Drop the file below.</span>
                 </li>
               </ul>
-
               <div
-                className={`drop-zone${isDragging ? " dragging" : ""}`}
-                onDragOver={onDragOver}
-                onDragLeave={onDragLeave}
-                onDrop={onDrop}
-                onClick={() => fileInputRef.current?.click()}
+                className={`drop-zone${locgDrop.isDragging ? " dragging" : ""}`}
+                onDragOver={locgDrop.onDragOver} onDragLeave={locgDrop.onDragLeave} onDrop={locgDrop.onDrop}
+                onClick={() => locgDrop.ref.current?.click()}
               >
                 <div className="drop-zone-label">Drop your LOCG export here, or click to browse</div>
-                <input ref={fileInputRef} type="file" accept=".xlsx,.xls,.csv" style={{display:"none"}} onChange={onFileSelected} />
+                <input ref={locgDrop.ref} type="file" accept=".xlsx,.xls,.csv" style={{display:"none"}} onChange={locgDrop.onFileSelected} />
               </div>
-
-              {uploadMsg && <div className="upload-msg">{uploadMsg}</div>}
-
-              {wishlistItems.length > 0 && (
-                <div className="wishlist-preview">
-                  <div className="wishlist-preview-header">
-                    <span style={{fontSize:"0.82rem",fontWeight:600,letterSpacing:"0.5px"}}>{wishlistItems.length} items ready</span>
-                  </div>
-                  <textarea readOnly value={wishlistItems.join("\n")} />
-                  <Link
-                    href={`/?wishlist=${encodeURIComponent(wishlistItems.join("\n"))}`}
-                    className="btn-search"
-                  >
-                    Search eBay for Bundles →
-                  </Link>
-                </div>
-              )}
+              <ResultPanel items={locgItems} msg={locgMsg} />
             </>
           )}
         </div>
+
+        {/* ── CLZ ── */}
+        <div className="panel">
+          <div className="caption">CLZ Comics</div>
+          <ul className="steps">
+            <li>
+              <span className="step-num">1</span>
+              <span>
+                <a className="btn-external" href="https://app.clz.com/comics/login" target="_blank" rel="noopener noreferrer">Log in to CLZ ↗</a>
+              </span>
+            </li>
+            <li>
+              <span className="step-num">2</span>
+              <span>
+                <a className="btn-external" href="https://app.clz.com/comics/export" target="_blank" rel="noopener noreferrer">Go to Export ↗</a>
+              </span>
+            </li>
+            <li>
+              <span className="step-num">3</span>
+              <span>
+                Under <strong>Visible Columns</strong>, click <strong>Manage</strong> → <strong>Edit</strong> on the default "My List View columns" option. Scroll down, check <strong>Collection Status</strong> under the Personal section, then click Save.
+                <span className="step-note">⚠ This step is required so we can tell which items are on your wish list.</span>
+              </span>
+            </li>
+            <li>
+              <span className="step-num">4</span>
+              <span>Click <strong>Generate</strong> and download the file.</span>
+            </li>
+            <li>
+              <span className="step-num">5</span>
+              <span>Drop the file below.</span>
+            </li>
+          </ul>
+          <div
+            className={`drop-zone${clzDrop.isDragging ? " dragging" : ""}`}
+            onDragOver={clzDrop.onDragOver} onDragLeave={clzDrop.onDragLeave} onDrop={clzDrop.onDrop}
+            onClick={() => clzDrop.ref.current?.click()}
+          >
+            <div className="drop-zone-label">Drop your CLZ export here, or click to browse</div>
+            <input ref={clzDrop.ref} type="file" accept=".csv" style={{display:"none"}} onChange={clzDrop.onFileSelected} />
+          </div>
+          <ResultPanel items={clzItems} msg={clzMsg} />
+        </div>
+
+        {/* ── Plain file upload ── */}
+        <div className="panel">
+          <div className="caption">Upload a List</div>
+          <p className="plain-hint">
+            Upload any <code>.xlsx</code>, <code>.csv</code>, or <code>.txt</code> file with one issue per line.<br />
+            Expected format: <code>Amazing Spider-Man #1 (1963)</code>
+          </p>
+          <div
+            className={`drop-zone${plainDrop.isDragging ? " dragging" : ""}`}
+            onDragOver={plainDrop.onDragOver} onDragLeave={plainDrop.onDragLeave} onDrop={plainDrop.onDrop}
+            onClick={() => plainDrop.ref.current?.click()}
+          >
+            <div className="drop-zone-label">Drop your file here, or click to browse</div>
+            <input ref={plainDrop.ref} type="file" accept=".xlsx,.xls,.csv,.txt" style={{display:"none"}} onChange={plainDrop.onFileSelected} />
+          </div>
+          <ResultPanel items={plainItems} msg={plainMsg} />
+        </div>
+
       </div>
     </>
   );
