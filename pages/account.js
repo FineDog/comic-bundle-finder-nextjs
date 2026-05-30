@@ -81,6 +81,9 @@ async function parseCLZFile(file) {
 }
 
 // Plain file: one issue per line, passed through as-is
+// Lines that are clearly column headers, not issue names
+const HEADER_ROW = /^(issue\s*name|issue|title|series\s*name|series|name|comic\s*title|comic)$/i;
+
 async function parsePlainFile(file) {
   const n = file.name.toLowerCase();
   let text = "";
@@ -92,7 +95,7 @@ async function parsePlainFile(file) {
   } else {
     text = await file.text();
   }
-  const issues = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+  const issues = text.split(/\r?\n/).map(l => l.trim()).filter(l => l && !HEADER_ROW.test(l));
   return { issues, count: issues.length };
 }
 
