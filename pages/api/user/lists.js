@@ -11,14 +11,16 @@ export default async function handler(req, res) {
 
   if (req.method === "GET") {
     const { rows } = await pool.query(
-      "SELECT locg_list, clz_list, manual_list FROM users WHERE id = $1",
+      "SELECT locg_list, clz_list, manual_list, digest_enabled, digest_last_sent FROM users WHERE id = $1",
       [userId]
     );
     if (!rows.length) return res.status(404).json({ error: "User not found." });
     return res.json({
-      locg:   rows[0].locg_list   ?? null,
-      clz:    rows[0].clz_list    ?? null,
-      manual: rows[0].manual_list ?? null,
+      locg:             rows[0].locg_list       ?? null,
+      clz:              rows[0].clz_list         ?? null,
+      manual:           rows[0].manual_list      ?? null,
+      digest_enabled:   rows[0].digest_enabled   ?? false,
+      digest_last_sent: rows[0].digest_last_sent ?? null,
     });
   }
 

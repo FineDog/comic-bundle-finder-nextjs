@@ -150,6 +150,10 @@ function SavedSummary({ saved, label, onUpdate, drop, accept, uploadingMsg }) {
 export default function Account() {
   const { data: session } = useSession();
 
+  // Digest preferences
+  const [digestEnabled, setDigestEnabled] = useState(false);
+  const [digestLastSent, setDigestLastSent] = useState(null);
+
   // LOCG state — { items, updatedAt, username } or null
   const [locgSaved, setLocgSaved] = useState(null);
   const [locgUsername, setLocgUsername] = useState("");
@@ -176,9 +180,22 @@ export default function Account() {
         }
         if (data.clz?.items?.length)    setClzSaved(data.clz);
         if (data.manual?.items?.length) setPlainSaved(data.manual);
+        setDigestEnabled(data.digest_enabled ?? false);
+        setDigestLastSent(data.digest_last_sent ?? null);
       })
       .catch(() => {});
   }, []);
+
+  async function toggleDigest(enabled) {
+    setDigestEnabled(enabled);
+    try {
+      await fetch("/api/user/preferences", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ digest_enabled: enabled }),
+      });
+    } catch {}
+  }
 
   async function saveList(source, items, extra = {}) {
     try {
@@ -283,6 +300,15 @@ export default function Account() {
         .plain-hint{font-size:0.82rem;color:#888;margin-bottom:0.75rem;line-height:1.6}
         code{background:#f0e6c4;border:1px solid #c8b98a;padding:0.1rem 0.35rem;font-size:0.8rem}
         .saved-summary{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:0.85rem;font-size:0.88rem;font-weight:600;color:#1a1a1a}
+        .digest-row{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-top:1.1rem;padding-top:1.1rem;border-top:1px solid #e0d8c0}
+        .digest-label{font-size:0.88rem;font-weight:600;letter-spacing:0.3px}
+        .digest-meta{font-size:0.78rem;color:#888;font-weight:400;margin-top:0.15rem}
+        .toggle{position:relative;display:inline-block;width:42px;height:24px;flex-shrink:0}
+        .toggle input{opacity:0;width:0;height:0}
+        .toggle-slider{position:absolute;inset:0;background:#ccc;border:2px solid #1a1a1a;cursor:pointer;transition:background 0.2s}
+        .toggle-slider::before{content:'';position:absolute;width:14px;height:14px;left:3px;top:3px;background:#fffdf4;border:1px solid #1a1a1a;transition:transform 0.2s}
+        .toggle input:checked + .toggle-slider{background:#003399}
+        .toggle input:checked + .toggle-slider::before{transform:translateX(18px)}
       `}</style>
 
       <div className="container">
@@ -313,6 +339,23 @@ export default function Account() {
             </div>
           </div>
           <button className="btn-signout" onClick={() => signOut({ callbackUrl: "/" })}>Sign Out</button>
+
+          <div className="digest-row">
+            <div>
+              <div className="digest-label">Daily bundle digest emails</div>
+              <div className="digest-meta">
+                {digestEnabled
+                  ? digestLastSent
+                    ? `Last sent ${formatDate(digestLastSent)}`
+                    : "Will send tomorrow morning"
+                  : "Get a daily email with eBay bundle opportunities from your saved lists"}
+              </div>
+            </div>
+            <label className="toggle">
+              <input type="checkbox" checked={digestEnabled} onChange={e => toggleDigest(e.target.checked)} />
+              <span className="toggle-slider" />
+            </label>
+          </div>
         </div>
 
         {/* ── Saved Searches ── */}
