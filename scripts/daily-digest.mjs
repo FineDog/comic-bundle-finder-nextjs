@@ -4,13 +4,14 @@
  * and emails full results via Resend.
  *
  * Required environment variables (set as GitHub Actions secrets):
- *   DATABASE_URL, EBAY_APP_ID, EBAY_SECRET, RESEND_API_KEY
+ *   DATABASE_URL, EBAY_APP_ID, EBAY_SECRET, RESEND_API_KEY, BLOB_READ_WRITE_TOKEN
  * Optional:
  *   EBAY_CAMPAIGN_ID
  */
 
 import pg from "pg";
 import { Resend } from "resend";
+import { put } from "@vercel/blob";
 import { titleMatchesQuery } from "../lib/parse-title.js";
 
 const { Pool } = pg;
@@ -155,9 +156,28 @@ function dedupeIssues(...lists) {
   return result;
 }
 
+// ── Blob ──────────────────────────────────────────────────────────────────────
+
+const CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
+function generateId() {
+  return Array.from({ length: 8 }, () => CHARS[Math.floor(Math.random() * CHARS.length)]).join("");
+}
+
+async function saveResultsBlob(rows, issueCount) {
+  const id = generateId();
+  await put(`results/${id}.json`, JSON.stringify({ rows, issueCount, savedAt: Date.now() }), {
+    access: "public",
+    addRandomSuffix: false,
+    contentType: "application/json",
+  });
+  return `https://comicbundlefinder.com/results/${id}`;
+}
+
 // ── Email ─────────────────────────────────────────────────────────────────────
 
-function buildDigestEmail(rows, issueCount) {
+const PREVIEW_SELLERS = 15; // max sellers shown inline; rest linked via "view full results"
+
+function buildDigestEmail(rows, issueCount, resultsUrl) {
   // Group by seller, bundle sellers only
   const sellerMap = {};
   for (const r of rows) {
@@ -172,35 +192,54 @@ function buildDigestEmail(rows, issueCount) {
 
   if (!sellers.length) return null;
 
-  const sellerHtml = sellers.map(([name, data]) => {
+  const shown = sellers.slice(0, PREVIEW_SELLERS);
+  const remaining = sellers.length - shown.length;
+
+  const sellerHtml = shown.map(([name, data]) => {
     const listingRows = Object.entries(data.byIssue).map(([issue, listings]) => {
-      // Show cheapest listing per issue
       const best = listings.sort((a, b) => parseFloat(a.price) - parseFloat(b.price))[0];
       const price = `$${parseFloat(best.price).toFixed(2)}`;
       const shipping = best.shipping === "0.00" ? "Free shipping"
         : best.shipping === "unknown" ? "Shipping TBD"
-        : `+$${parseFloat(best.shipping).toFixed(2)} shipping`;
+        : `+$${parseFloat(best.shipping).toFixed(2)} ship`;
       return `
         <tr>
-          <td style="padding:7px 14px;border-bottom:1px solid #e8e0cc;font-size:0.85rem">
-            <a href="${best.url}" style="color:#003399;text-decoration:none">${best.title}</a>
+          <td style="padding:6px 12px 6px 12px;border-bottom:1px solid #e8e0cc;font-size:0.82rem;line-height:1.4">
+            <div style="color:#999;font-size:0.72rem;margin-bottom:2px">${issue}</div>
+            <a href="${best.url}" style="color:#003399;text-decoration:none;font-weight:600">${best.title}</a>
           </td>
-          <td style="padding:7px 14px;border-bottom:1px solid #e8e0cc;font-size:0.85rem;white-space:nowrap;color:#1a1a1a;font-weight:600">${price}</td>
-          <td style="padding:7px 14px;border-bottom:1px solid #e8e0cc;font-size:0.78rem;color:#666;white-space:nowrap">${shipping}</td>
+          <td style="padding:6px 12px;border-bottom:1px solid #e8e0cc;font-size:0.82rem;font-weight:700;color:#1a1a1a;white-space:nowrap;vertical-align:top;width:58px">${price}</td>
+          <td style="padding:6px 12px;border-bottom:1px solid #e8e0cc;font-size:0.75rem;color:#666;white-space:nowrap;vertical-align:top;width:90px">${shipping}</td>
         </tr>`;
     }).join("");
 
     return `
-      <div style="margin-bottom:16px;border:2px solid #1a1a1a">
-        <div style="background:#1a1a1a;padding:8px 14px;display:flex;align-items:center;justify-content:space-between">
-          <span style="color:#fffdf4;font-family:'Arial Black',sans-serif;font-size:0.9rem;letter-spacing:0.5px">${name}</span>
-          <span style="background:#cc1f00;color:#fffdf4;padding:2px 10px;font-family:'Arial Black',sans-serif;font-size:0.75rem;letter-spacing:1px">${data.bundle_count} ISSUES</span>
-        </div>
-        <table style="width:100%;border-collapse:collapse;background:#fffdf4">
+      <div style="margin-bottom:14px;border:2px solid #1a1a1a">
+        <table style="width:100%;border-collapse:collapse;background:#1a1a1a">
+          <tr>
+            <td style="padding:8px 12px">
+              <span style="color:#fffdf4;font-family:'Arial Black',sans-serif;font-size:0.88rem;letter-spacing:0.5px">${name}</span>
+              <span style="display:inline-block;background:#cc1f00;color:#fffdf4;padding:2px 8px;font-family:'Arial Black',sans-serif;font-size:0.72rem;letter-spacing:1px;margin-left:10px">${data.bundle_count} ISSUES</span>
+            </td>
+          </tr>
+        </table>
+        <table style="width:100%;border-collapse:collapse;background:#fffdf4;table-layout:fixed">
           <tbody>${listingRows}</tbody>
         </table>
       </div>`;
   }).join("");
+
+  const truncationNote = remaining > 0 ? `
+    <p style="text-align:center;color:#666;font-size:0.85rem;margin:4px 0 20px">
+      …and <strong>${remaining}</strong> more seller${remaining === 1 ? "" : "s"} not shown below.
+    </p>` : "";
+
+  const viewFullBtn = `
+    <div style="text-align:center;margin:24px 0 8px">
+      <a href="${resultsUrl}" style="display:inline-block;background:#cc1f00;color:#fffdf4;text-decoration:none;padding:12px 32px;border:3px solid #1a1a1a;box-shadow:4px 4px 0 #1a1a1a;font-family:'Arial Black',Gadget,sans-serif;font-size:1rem;letter-spacing:2px">
+        VIEW FULL RESULTS &rarr;
+      </a>
+    </div>`;
 
   const html = `<!DOCTYPE html>
 <html lang="en">
@@ -220,6 +259,8 @@ function buildDigestEmail(rows, issueCount) {
         <strong>${sellers.length} seller${sellers.length === 1 ? "" : "s"}</strong> with bundle opportunities today.
       </p>
       ${sellerHtml}
+      ${truncationNote}
+      ${viewFullBtn}
     </div>
 
     <div style="background:#1a1a1a;border:3px solid #1a1a1a;box-shadow:5px 5px 0 #1a1a1a;padding:16px 24px;text-align:center">
@@ -277,7 +318,11 @@ async function main() {
 
     try {
       const rows = await runSearch(token, issues);
-      const result = buildDigestEmail(rows, issues.length);
+
+      // Save full results to blob for "view full results" link
+      const resultsUrl = await saveResultsBlob(rows, issues.length);
+
+      const result = buildDigestEmail(rows, issues.length, resultsUrl);
 
       if (!result) {
         console.log(`[digest] ${user.email} — no bundle results, skipping`);

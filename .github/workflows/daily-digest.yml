@@ -3,12 +3,13 @@
 # and emails results via Resend.
 #
 # Required GitHub secrets:
-#   DATABASE_URL      — Neon Postgres connection string
-#   EBAY_APP_ID       — eBay OAuth client ID
-#   EBAY_SECRET       — eBay OAuth client secret
-#   RESEND_API_KEY    — Resend API key
+#   DATABASE_URL           — Neon Postgres connection string
+#   EBAY_APP_ID            — eBay OAuth client ID
+#   EBAY_SECRET            — eBay OAuth client secret
+#   RESEND_API_KEY         — Resend API key
+#   BLOB_READ_WRITE_TOKEN  — Vercel Blob token (Storage → your store → .env.local tab)
 # Optional:
-#   EBAY_CAMPAIGN_ID  — eBay Partner Network campaign ID (affiliate links)
+#   EBAY_CAMPAIGN_ID       — eBay Partner Network campaign ID (affiliate links)
 
 name: Daily Bundle Digest
 
@@ -29,9 +30,10 @@ jobs:
         run: npm ci --no-cache
       - name: Run daily digest
         env:
-          DATABASE_URL:     ${{ secrets.DATABASE_URL }}
-          EBAY_APP_ID:      ${{ secrets.EBAY_APP_ID }}
-          EBAY_SECRET:      ${{ secrets.EBAY_SECRET }}
-          RESEND_API_KEY:   ${{ secrets.RESEND_API_KEY }}
-          EBAY_CAMPAIGN_ID: ${{ secrets.EBAY_CAMPAIGN_ID }}
+          DATABASE_URL:          ${{ secrets.DATABASE_URL }}
+          EBAY_APP_ID:           ${{ secrets.EBAY_APP_ID }}
+          EBAY_SECRET:           ${{ secrets.EBAY_SECRET }}
+          RESEND_API_KEY:        ${{ secrets.RESEND_API_KEY }}
+          EBAY_CAMPAIGN_ID:      ${{ secrets.EBAY_CAMPAIGN_ID }}
+          BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
         run: node scripts/daily-digest.mjs
