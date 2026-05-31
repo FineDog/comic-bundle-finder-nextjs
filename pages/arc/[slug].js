@@ -19,7 +19,7 @@ function groupResults(rows, maxPrice) {
   return sellers;
 }
 
-export default function ArcPage({ slug, arcName, arcDesc, issues, configError }) {
+export default function ArcPage({ slug, arcName, arcDesc, issues, configError, issueListDiag }) {
   const [status, setStatus] = useState("loading");
   const [rows, setRows] = useState([]);
   const [maxPrice, setMaxPrice] = useState("15");
@@ -137,6 +137,11 @@ export default function ArcPage({ slug, arcName, arcDesc, issues, configError })
         {configError && (
           <div className="panel" style={{ background: "#fff0f0", borderColor: "#cc1f00", color: "#cc1f00", fontWeight: 600, fontSize: "0.9rem" }}>
             Configuration error: {configError}
+          </div>
+        )}
+        {issueListDiag && (
+          <div className="panel" style={{ background: "#fff8e0", borderColor: "#cc8800", color: "#664400", fontWeight: 600, fontSize: "0.85rem", fontFamily: "monospace" }}>
+            Issue fetch diagnostic: {issueListDiag}
           </div>
         )}
 
@@ -361,19 +366,23 @@ export async function getStaticProps({ params }) {
   // and returns all 170k+ issues. Use the sub-endpoint exclusively.
   const allIssues = [];
   let nextUrl = `https://metron.cloud/api/arc/${arcId}/issue_list/?page_size=100`;
+  let issueListStatus = null;
 
   while (nextUrl) {
     let issueRes;
     try {
       issueRes = await fetch(nextUrl, { headers });
-    } catch {
+    } catch (e) {
+      issueListStatus = `fetch error: ${e.message}`;
       break;
     }
+    issueListStatus = issueRes.status;
     if (!issueRes.ok) break;
     let issueData;
     try {
       issueData = await issueRes.json();
-    } catch {
+    } catch (e) {
+      issueListStatus = `json parse error: ${e.message}`;
       break;
     }
     allIssues.push(...(issueData.results || []));
@@ -398,6 +407,10 @@ export async function getStaticProps({ params }) {
       arcName: arc.name,
       arcDesc: arc.desc || "",
       issues,
+      // Diagnostic: remove once issue-fetching is confirmed working
+      issueListDiag: issues.length === 0
+        ? `issueListStatus=${issueListStatus} allIssuesRaw=${allIssues.length}`
+        : null,
     },
     revalidate: 86400,
   };
