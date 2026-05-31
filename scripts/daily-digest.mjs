@@ -142,7 +142,37 @@ async function runSearch(token, issues) {
   return rows;
 }
 
-// ── Dedup ─────────────────────────────────────────────────────────────────────
+// ── Listing dedup ─────────────────────────────────────────────────────────────
+
+// Extract the eBay item ID from a listing URL (strips affiliate params first)
+function itemIdFromUrl(url) {
+  const m = url.match(/\/itm\/(\d+)/);
+  return m ? m[1] : null;
+}
+
+// Given all search result rows and a Set of previously-seen item IDs,
+// return only rows whose item ID is new. Recalculates bundle_count per
+// seller based only on new listings so the bundle filter stays accurate.
+function filterToNewListings(rows, seenIds) {
+  // First pass: collect new rows
+  const newRows = rows.filter(r => {
+    const id = itemIdFromUrl(r.url);
+    return id && !seenIds.has(id);
+  });
+
+  // Recalculate bundle_count based on new listings only
+  const sellerIssueCounts = {};
+  for (const r of newRows) {
+    if (!sellerIssueCounts[r.seller]) sellerIssueCounts[r.seller] = new Set();
+    sellerIssueCounts[r.seller].add(r.issue);
+  }
+  return newRows.map(r => ({
+    ...r,
+    bundle_count: sellerIssueCounts[r.seller]?.size ?? 1,
+  }));
+}
+
+// ── Issue list dedup ──────────────────────────────────────────────────────────
 
 function dedupeIssues(...lists) {
   const seen = new Set();
@@ -178,7 +208,7 @@ async function saveResultsBlob(rows, issueCount) {
 const PREVIEW_SELLERS = 10;  // max sellers shown inline
 const PREVIEW_ISSUES  = 5;   // max issues shown per seller
 
-function buildDigestEmail(rows, issueCount, resultsUrl) {
+function buildDigestEmail(rows, issueCount, resultsUrl, isFirstDigest = true) {
   // Group by seller, bundle sellers only
   const sellerMap = {};
   for (const r of rows) {
@@ -273,10 +303,12 @@ function buildDigestEmail(rows, issueCount, resultsUrl) {
     </div>
 
     <div style="background:#fffdf4;border:3px solid #1a1a1a;border-top:none;padding:24px;box-shadow:5px 5px 0 #1a1a1a">
-      <h2 style="margin:0 0 4px;font-family:'Arial Black',Gadget,sans-serif;font-size:1.3rem;letter-spacing:1px;color:#003399">YOUR DAILY BUNDLE DIGEST</h2>
+      <h2 style="margin:0 0 4px;font-family:'Arial Black',Gadget,sans-serif;font-size:1.3rem;letter-spacing:1px;color:#003399">${isFirstDigest ? "YOUR DAILY BUNDLE DIGEST" : "NEW BUNDLE LISTINGS"}</h2>
       <p style="margin:0 0 14px;color:#555;font-size:0.92rem;line-height:1.6">
-        Searched <strong>${issueCount} issue${issueCount === 1 ? "" : "s"}</strong> from your wish list and found
-        <strong>${sellers.length} seller${sellers.length === 1 ? "" : "s"}</strong> with bundle opportunities today.
+        ${isFirstDigest
+          ? `Searched <strong>${issueCount} issue${issueCount === 1 ? "" : "s"}</strong> from your wish list and found <strong>${sellers.length} seller${sellers.length === 1 ? "" : "s"}</strong> with bundle opportunities today.`
+          : `Found <strong>${sellers.length} seller${sellers.length === 1 ? "" : "s"}</strong> with new listings matching your wish list since your last digest.`
+        }
       </p>
       ${viewFullBtn}
       <div style="margin-bottom:20px"></div>
@@ -311,7 +343,7 @@ async function main() {
   console.log(`[digest] Starting — ${new Date().toISOString()}`);
 
   const { rows: users } = await pool.query(`
-    SELECT id, email, locg_list, clz_list, manual_list
+    SELECT id, email, locg_list, clz_list, manual_list, digest_seen_ids
     FROM users
     WHERE digest_enabled = true
       AND email IS NOT NULL
@@ -339,15 +371,26 @@ async function main() {
     console.log(`[digest] ${user.email} — searching ${issues.length} issues…`);
 
     try {
-      const rows = await runSearch(token, issues);
+      const allRows = await runSearch(token, issues);
 
-      // Save full results to blob for "view full results" link
-      const resultsUrl = await saveResultsBlob(rows, issues.length);
+      // First digest ever: send everything. Subsequent: only new listings.
+      const previouslySeen = new Set(user.digest_seen_ids ?? []);
+      const isFirstDigest = previouslySeen.size === 0;
+      const rows = isFirstDigest ? allRows : filterToNewListings(allRows, previouslySeen);
 
-      const result = buildDigestEmail(rows, issues.length, resultsUrl);
+      if (!rows.length) {
+        console.log(`[digest] ${user.email} — no new listings, skipping`);
+        skipped++;
+        continue;
+      }
+
+      // Save full results (all rows) to blob for the "view full results" link
+      const resultsUrl = await saveResultsBlob(allRows, issues.length);
+
+      const result = buildDigestEmail(rows, issues.length, resultsUrl, isFirstDigest);
 
       if (!result) {
-        console.log(`[digest] ${user.email} — no bundle results, skipping`);
+        console.log(`[digest] ${user.email} — no new bundle results, skipping`);
         skipped++;
         continue;
       }
@@ -355,13 +398,27 @@ async function main() {
       await resend.emails.send({
         from: "Comic Bundle Finder <digests@comicbundlefinder.com>",
         to: user.email,
-        subject: `Your Daily Comic Bundle Digest — ${issues.length} issue${issues.length === 1 ? "" : "s"} searched`,
+        subject: isFirstDigest
+          ? `Your Daily Comic Bundle Digest — ${issues.length} issue${issues.length === 1 ? "" : "s"} searched`
+          : `New Bundle Listings — ${result.sellerCount} seller${result.sellerCount === 1 ? "" : "s"} with new listings`,
         html: result.html,
       });
 
-      await pool.query("UPDATE users SET digest_last_sent = NOW() WHERE id = $1", [user.id]);
+      // Merge all current item IDs into seen set and persist
+      const newSeenIds = [...previouslySeen];
+      for (const r of allRows) {
+        const id = itemIdFromUrl(r.url);
+        if (id) newSeenIds.push(id);
+      }
+      // Dedupe and cap at 50k IDs to prevent unbounded growth
+      const dedupedIds = [...new Set(newSeenIds)].slice(-50000);
 
-      console.log(`[digest] ${user.email} — sent (${result.sellerCount} seller${result.sellerCount === 1 ? "" : "s"})`);
+      await pool.query(
+        "UPDATE users SET digest_last_sent = NOW(), digest_seen_ids = $1 WHERE id = $2",
+        [JSON.stringify(dedupedIds), user.id]
+      );
+
+      console.log(`[digest] ${user.email} — sent (${result.sellerCount} seller${result.sellerCount === 1 ? "" : "s"}${isFirstDigest ? ", first digest" : ", new only"})`);
       sent++;
     } catch (e) {
       console.error(`[digest] ${user.email} — error:`, e.message);
