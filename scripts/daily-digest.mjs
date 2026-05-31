@@ -414,14 +414,15 @@ async function main() {
       const dedupedIds = [...new Set(newSeenIds)].slice(-50000);
 
       await pool.query(
-        "UPDATE users SET digest_last_sent = NOW(), digest_seen_ids = $1 WHERE id = $2",
+        "UPDATE users SET digest_last_sent = NOW(), digest_seen_ids = $1::jsonb WHERE id = $2",
         [JSON.stringify(dedupedIds), user.id]
       );
+      console.log(`[digest] ${user.email} — stored ${dedupedIds.length} seen IDs`);
 
       console.log(`[digest] ${user.email} — sent (${result.sellerCount} seller${result.sellerCount === 1 ? "" : "s"}${isFirstDigest ? ", first digest" : ", new only"})`);
       sent++;
     } catch (e) {
-      console.error(`[digest] ${user.email} — error:`, e.message);
+      console.error(`[digest] ${user.email} — error:`, e.message, e.stack);
     }
   }
 
