@@ -19,29 +19,43 @@ function groupResults(rows, maxPrice) {
   return sellers;
 }
 
-export default function ArcPage({ slug, arcName, arcDesc, issues, configError }) {
-  const [status, setStatus] = useState("loading");
+export default function ArcPage({ arcId, arcName, arcDesc, configError }) {
+  // "loading-issues" → "loading-ebay" → "done" | "error"
+  const [status, setStatus] = useState("loading-issues");
+  const [issues, setIssues] = useState([]);
   const [rows, setRows] = useState([]);
   const [maxPrice, setMaxPrice] = useState("15");
   const didFire = useRef(false);
 
   useEffect(() => {
-    if (didFire.current) return;
+    if (didFire.current || !arcId) return;
     didFire.current = true;
 
-    fetch("/api/search", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ issues }),
-    })
+    // Step 1: fetch issues from the cached API route (no Metron hit if Blob is warm)
+    fetch(`/api/arc/${arcId}/issues`)
       .then((r) => r.json())
       .then((data) => {
+        if (data.error) throw new Error(data.error);
+        const issueList = data.issues || [];
+        setIssues(issueList);
+        if (issueList.length === 0) { setStatus("done"); return null; }
+
+        // Step 2: eBay search
+        setStatus("loading-ebay");
+        return fetch("/api/search", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ issues: issueList }),
+        }).then((r) => r.json());
+      })
+      .then((data) => {
+        if (!data) return;
         if (data.error) throw new Error(data.error);
         setRows(data.results || []);
         setStatus("done");
       })
       .catch(() => setStatus("error"));
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [arcId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const maxPriceNum = parseFloat(maxPrice) || 15;
   const sellers = groupResults(rows, maxPriceNum);
@@ -50,7 +64,7 @@ export default function ArcPage({ slug, arcName, arcDesc, issues, configError })
   );
   const totalSellers = new Set(rows.map((r) => r.seller)).size;
 
-  const metaDesc = `Find eBay bundle deals for all ${issues.length} issues in the ${arcName} story arc. Sellers ranked by how many issues they carry — save on combined shipping.`;
+  const metaDesc = `Find eBay bundle deals for the ${arcName} story arc. Sellers ranked by how many issues they carry — save on combined shipping.`;
   const pageUrl = `https://www.comicbundlefinder.com/arc/${slug}`;
 
   return (
@@ -144,7 +158,7 @@ export default function ArcPage({ slug, arcName, arcDesc, issues, configError })
           <div className="arc-accent" />
           <div className="arc-header-body">
             <h1 className="arc-title">{arcName}</h1>
-            <div className="arc-sub">{issues.length} issues &middot; Story Arc &middot; eBay Bundle Deals</div>
+            <div className="arc-sub">{issues.length > 0 ? issues.length : "…"} issues &middot; Story Arc &middot; eBay Bundle Deals</div>
             {arcDesc && <p className="arc-desc">{arcDesc}</p>}
           </div>
         </div>
@@ -159,7 +173,14 @@ export default function ArcPage({ slug, arcName, arcDesc, issues, configError })
         </div>
 
         <div className="panel">
-          {status === "loading" && (
+          {status === "loading-issues" && (
+            <div className="loading-state">
+              <div><span className="loading-dots">Loading issues</span></div>
+              <div className="loading-sub">Fetching arc issue list…</div>
+            </div>
+          )}
+
+          {status === "loading-ebay" && (
             <div className="loading-state">
               <div><span className="loading-dots">Searching eBay</span></div>
               <div className="loading-sub">Checking all {issues.length} issues for bundle deals…</div>
@@ -327,9 +348,7 @@ export async function getStaticProps({ params }) {
   const arcId = parseInt(idMatch[1], 10);
 
   if (!process.env.METRON_USERNAME || !process.env.METRON_PASSWORD) {
-    // Credentials not set in this environment — render page with error state
-    // rather than 404 so the problem is diagnosable.
-    return { props: { slug, arcName: "Arc Unavailable", arcDesc: "", issues: [], configError: "METRON credentials not configured." }, revalidate: 60 };
+    return { props: { slug, arcId, arcName: "Arc Unavailable", arcDesc: "", configError: "METRON credentials not configured." }, revalidate: 60 };
   }
 
   const auth = Buffer.from(
@@ -341,64 +360,24 @@ export async function getStaticProps({ params }) {
     "User-Agent": "ComicBundleFinder/1.0",
   };
 
-  // 1. Fetch arc detail directly by ID
+  // Only fetch arc metadata here — one lightweight request suitable for ISR.
+  // Issues are fetched client-side via /api/arc/[id]/issues, which uses a 24h
+  // Vercel Blob cache so Metron is only hit once per arc per day regardless of
+  // how many times the ISR page is regenerated.
   let arcRes;
   try {
     arcRes = await fetch(`https://metron.cloud/api/arc/${arcId}/`, { headers });
   } catch (e) {
-    return { props: { slug, arcName: "Arc Unavailable", arcDesc: "", issues: [], configError: `Network error: ${e.message}` }, revalidate: 60 };
+    return { props: { slug, arcId, arcName: "Arc Unavailable", arcDesc: "", configError: `Network error: ${e.message}` }, revalidate: 60 };
   }
   if (!arcRes.ok) {
-    // Arc genuinely doesn't exist (404) vs auth/server error — only 404 from Metron → our 404
     if (arcRes.status === 404) return { notFound: true };
-    return { props: { slug, arcName: "Arc Unavailable", arcDesc: "", issues: [], configError: `Metron returned ${arcRes.status}` }, revalidate: 60 };
+    return { props: { slug, arcId, arcName: "Arc Unavailable", arcDesc: "", configError: `Metron returned ${arcRes.status}` }, revalidate: 60 };
   }
   const arc = await arcRes.json();
 
-  // 2. Fetch all issues for this arc from the issue_list sub-endpoint.
-  // Returns { count, next, previous, results: [...] } with full issue objects.
-  // NOTE: /api/issue/?arc_id=X does NOT filter by arc — it ignores the param
-  // and returns all 170k+ issues. Use the sub-endpoint exclusively.
-  const allIssues = [];
-  let nextUrl = `https://metron.cloud/api/arc/${arcId}/issue_list/?page_size=100`;
-  while (nextUrl) {
-    let issueRes;
-    try {
-      issueRes = await fetch(nextUrl, { headers });
-    } catch {
-      break;
-    }
-    if (!issueRes.ok) break;
-    let issueData;
-    try {
-      issueData = await issueRes.json();
-    } catch {
-      break;
-    }
-    allIssues.push(...(issueData.results || []));
-    nextUrl = issueData.next || null;
-  }
-
-  // Format as "Series #Number" for eBay search.
-  // Metron's issue.series.name + issue.number gives the cleanest query
-  // (e.g. "Batman #492" without the year that sellers don't include).
-  const issues = allIssues
-    .map((issue) => {
-      const series = issue.series?.name || "";
-      const num = issue.number || "";
-      if (!series || !num) return "";
-      return `${series} #${num}`;
-    })
-    .filter(Boolean);
-
   return {
-    props: {
-      slug,
-      arcName: arc.name,
-      arcDesc: arc.desc || "",
-      issues,
-      // Diagnostic: remove once issue-fetching is confirmed working
-    },
+    props: { slug, arcId, arcName: arc.name, arcDesc: arc.desc || "" },
     revalidate: 86400,
   };
 }
