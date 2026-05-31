@@ -11,22 +11,22 @@
 // invocation uses a different IP address, which Metron flags as a distributed
 // attack and disables the account. See CLAUDE.md for full API rules.
 //
+// Arc issue lists are static (arcs don't change once created), so there is no
+// TTL — entries written by the nightly script are served indefinitely.
 // On cache miss, returns { issues: null, cached: false } — the arc page shows
-// a "not yet indexed" message. Issues will be available after the next nightly run.
+// a "not yet indexed" message. Issues appear after the next nightly run.
 
 import { getBlobBaseUrl } from "../../../../lib/metron-issues";
 
-const CACHE_TTL_MS = 48 * 60 * 60 * 1000; // 48h — nightly script refreshes every 24h
-
+// Arc issue lists are essentially static — once written by the nightly script,
+// they never expire. No TTL check: if the entry exists in Blob, serve it.
 async function readBlobCache(pathname) {
   const base = getBlobBaseUrl();
   if (!base) return null;
   try {
     const r = await fetch(`${base}/${pathname}`, { cache: "no-store" });
     if (!r.ok) return null;
-    const data = await r.json();
-    if (!data.cachedAt || Date.now() - data.cachedAt > CACHE_TTL_MS) return null;
-    return data;
+    return await r.json();
   } catch {
     return null;
   }

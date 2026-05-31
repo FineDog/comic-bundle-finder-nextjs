@@ -157,7 +157,7 @@ if (remaining <= 3) await sleep(65000); // pause a full minute
 
 | Data | Blob key | TTL | Writer |
 |---|---|---|---|
-| Arc issue list | `arc-issues/{arcId}.json` | 48h | `scripts/refresh-arc-index.js` |
+| Arc issue list | `arc-issues/{arcId}.json` | none (static) | `scripts/refresh-arc-index.js` |
 | Series issue list | `dynamic-series/metron-{id}/issues.json` | 7d | `lib/metron-issues.js` (getStaticProps only) |
 | Series eBay results | `dynamic-series/metron-{id}/ebay/{start}-{count}.json` | 1h | `pages/api/series/[slug]/results.js` |
 
