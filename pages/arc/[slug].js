@@ -19,7 +19,7 @@ function groupResults(rows, maxPrice) {
   return sellers;
 }
 
-export default function ArcPage({ slug, arcName, arcDesc, issues }) {
+export default function ArcPage({ slug, arcName, arcDesc, issues, configError }) {
   const [status, setStatus] = useState("loading");
   const [rows, setRows] = useState([]);
   const [maxPrice, setMaxPrice] = useState("15");
@@ -133,6 +133,12 @@ export default function ArcPage({ slug, arcName, arcDesc, issues }) {
         <div className="panel-slim">
           <a href="/collection-guides" className="breadcrumb-link">← Collection Guides</a>
         </div>
+
+        {configError && (
+          <div className="panel" style={{ background: "#fff0f0", borderColor: "#cc1f00", color: "#cc1f00", fontWeight: 600, fontSize: "0.9rem" }}>
+            Configuration error: {configError}
+          </div>
+        )}
 
         <div className="arc-header">
           <div className="arc-accent" />
@@ -321,7 +327,9 @@ export async function getStaticProps({ params }) {
   const arcId = parseInt(idMatch[1], 10);
 
   if (!process.env.METRON_USERNAME || !process.env.METRON_PASSWORD) {
-    return { notFound: true };
+    // Credentials not set in this environment — render page with error state
+    // rather than 404 so the problem is diagnosable.
+    return { props: { slug, arcName: "Arc Unavailable", arcDesc: "", issues: [], configError: "METRON credentials not configured." }, revalidate: 60 };
   }
 
   const auth = Buffer.from(
@@ -337,10 +345,14 @@ export async function getStaticProps({ params }) {
   let arcRes;
   try {
     arcRes = await fetch(`https://metron.cloud/api/arc/${arcId}/`, { headers });
-  } catch {
-    return { notFound: true };
+  } catch (e) {
+    return { props: { slug, arcName: "Arc Unavailable", arcDesc: "", issues: [], configError: `Network error: ${e.message}` }, revalidate: 60 };
   }
-  if (!arcRes.ok) return { notFound: true };
+  if (!arcRes.ok) {
+    // Arc genuinely doesn't exist (404) vs auth/server error — only 404 from Metron → our 404
+    if (arcRes.status === 404) return { notFound: true };
+    return { props: { slug, arcName: "Arc Unavailable", arcDesc: "", issues: [], configError: `Metron returned ${arcRes.status}` }, revalidate: 60 };
+  }
   const arc = await arcRes.json();
 
   // 2. Fetch all issues for this arc from the issue_list sub-endpoint.
