@@ -314,7 +314,11 @@ function getFilteredSellers(rows, issueCount, filters, sortBy) {
   // 4. Compute per-seller metrics
   for (const data of Object.values(sellerMap)) {
     const uniqueIssues = new Set(data.listings.map(l => l.issue));
-    data.bundle_count = issueCount === 1 ? data.listings.length : uniqueIssues.size;
+    // In single-issue mode, count total available copies (sum of quantities) so that
+    // a seller with one listing at qty:3 is treated the same as three separate listings.
+    data.bundle_count = issueCount === 1
+      ? data.listings.reduce((sum, l) => sum + (l.quantity || 1), 0)
+      : uniqueIssues.size;
 
     // Cheapest listing per unique issue
     const cheapestPerIssue = {};
@@ -783,6 +787,7 @@ export default function Preview() {
       .seller-header{background:#003399;color:#fffdf4;padding:0.5rem 0.75rem;display:flex;align-items:center;gap:0.6rem;flex-wrap:wrap;border:2px solid #1a1a1a;border-bottom:none}
       .seller-name{font-family:'Bangers',cursive;font-size:1.35rem;letter-spacing:1px}
       .bundle-badge{background:#cc1f00;color:#fffdf4;font-size:0.68rem;font-weight:600;padding:2px 8px;border:1.5px solid #1a1a1a;letter-spacing:1px;text-transform:uppercase;white-space:nowrap}
+      .qty-badge{display:inline-block;background:#003399;color:#fffdf4;font-size:0.65rem;font-weight:700;padding:1px 5px;margin-left:5px;border:1.5px solid #1a1a1a;letter-spacing:0.5px;vertical-align:middle;white-space:nowrap}
       .subtotal-badge{font-size:0.73rem;font-weight:600;color:#fffdf4;background:#003399;border:1.5px solid #ffe066;padding:2px 8px;letter-spacing:0.5px;white-space:nowrap}
       .badge-est{font-size:0.73rem;font-weight:600;color:#1a1a1a;background:#ffe066;border:1.5px solid #1a1a1a;padding:2px 8px;letter-spacing:0.5px;white-space:nowrap}
       .badge-savings{font-size:0.73rem;font-weight:600;color:#fffdf4;background:#1a1a1a;border:1.5px solid #ffe066;padding:2px 8px;letter-spacing:0.5px;white-space:nowrap}
@@ -1063,7 +1068,7 @@ export default function Preview() {
               <div className="no-results">
                 {totalSellers === 0
                   ? (singleIssueMode
-                      ? "No seller has more than one listing for this issue. Try checking back later."
+                      ? "No seller has multiple copies or listings for this issue. Try checking back later."
                       : "No single seller carries more than one of your issues. You may need to buy these separately, or try broadening your search.")
                   : "No sellers match the current filters. Try adjusting or resetting them above."}
               </div>
@@ -1105,7 +1110,7 @@ export default function Preview() {
                   <div className="seller-group" key={name}>
                     <div className="seller-header">
                       <span className="seller-name">{esc(name)}</span>
-                      <span className="bundle-badge">{singleIssueMode ? `${data.bundle_count} listings` : `${data.bundle_count} issues`} — bundle shipping!</span>
+                      <span className="bundle-badge">{singleIssueMode ? `${data.bundle_count} copies available` : `${data.bundle_count} issues`} — bundle shipping!</span>
                       <span className="subtotal-badge">from ${data.subtotal.toFixed(2)} in items</span>
                       <span className="badge-est">{estPerIssueStr}</span>
                       {savingsStr && <span className="badge-savings">{savingsStr}</span>}
@@ -1131,7 +1136,10 @@ export default function Preview() {
                             shipDisplay = `$${parseFloat(l.shipping).toFixed(2)}`;
                           }
                           return (<tr key={i}>
-                            <td className="col-issue">{esc(l.issue)}</td>
+                            <td className="col-issue">
+                              {esc(l.issue)}
+                              {(l.quantity || 1) > 1 && <span className="qty-badge">×{l.quantity} avail.</span>}
+                            </td>
                             <td className="col-title">{esc(l.title)}</td>
                             <td className="col-price">${parseFloat(l.price).toFixed(2)}</td>
                             <td className="col-ship">{shipDisplay}</td>

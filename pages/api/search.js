@@ -119,8 +119,9 @@ async function searchEbay(token, issueName, offset = 0, zip = null) {
         .map((p) => p.message || "")
         .filter(Boolean)
         .join(" | ");
+      const quantity = item.availableQuantity || 1;
 
-      items.push({ seller, price: priceStr, title, url: itemUrl, shipping, promotions });
+      items.push({ seller, price: priceStr, title, url: itemUrl, shipping, promotions, quantity });
     }
   }
 
@@ -150,6 +151,7 @@ function buildRows(sellerIssues) {
           shipping: listing.shipping,
           promotions: listing.promotions,
           url: listing.url,
+          quantity: listing.quantity || 1,
         });
       }
     }

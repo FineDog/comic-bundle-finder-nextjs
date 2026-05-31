@@ -11,8 +11,9 @@ function groupResults(rows, issueCount) {
   }
   if (issueCount === 1) {
     for (const n of Object.keys(s)) {
-      if (s[n].listings.length < 2) delete s[n];
-      else s[n].bundle_count = s[n].listings.length;
+      const totalQty = s[n].listings.reduce((sum, l) => sum + (l.quantity || 1), 0);
+      if (totalQty < 2) delete s[n];
+      else s[n].bundle_count = totalQty;
     }
   } else {
     for (const n of Object.keys(s)) { if (s[n].bundle_count < 2) delete s[n]; }
@@ -57,6 +58,7 @@ export default function ResultsPage({ data }) {
       .seller-header{background:#003399;color:#fffdf4;padding:0.5rem 0.75rem;display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;border:2px solid #1a1a1a;border-bottom:none}
       .seller-name{font-family:'Bangers',cursive;font-size:1.35rem;letter-spacing:1px}
       .bundle-badge{background:#cc1f00;color:#fffdf4;font-size:0.68rem;font-weight:600;padding:2px 8px;border:1.5px solid #1a1a1a;letter-spacing:1px;text-transform:uppercase;white-space:nowrap}
+      .qty-badge{display:inline-block;background:#003399;color:#fffdf4;font-size:0.65rem;font-weight:700;padding:1px 5px;margin-left:5px;border:1.5px solid #1a1a1a;letter-spacing:0.5px;vertical-align:middle;white-space:nowrap}
       .subtotal-badge{font-size:0.78rem;font-weight:600;color:#fffdf4;background:#003399;border:1.5px solid #ffe066;padding:2px 8px;letter-spacing:0.5px;white-space:nowrap}
       .listings-table{width:100%;border-collapse:collapse;border:2px solid #1a1a1a;font-size:0.82rem;table-layout:fixed}
       .listings-table th{background:#1a1a1a;color:#fffdf4;padding:0.4rem 0.6rem;text-align:left;font-weight:600;letter-spacing:0.8px;text-transform:uppercase;font-size:0.7rem;white-space:nowrap}
@@ -103,7 +105,7 @@ export default function ResultsPage({ data }) {
               <div className="seller-group" key={name}>
                 <div className="seller-header">
                   <span className="seller-name">{esc(name)}</span>
-                  <span className="bundle-badge">{singleIssueMode ? `${data.bundle_count} listings` : `${data.bundle_count} issues`} — bundle shipping!</span>
+                  <span className="bundle-badge">{singleIssueMode ? `${data.bundle_count} copies available` : `${data.bundle_count} issues`} — bundle shipping!</span>
                   <span className="subtotal-badge">from ${subtotal.toFixed(2)} in items</span>
                 </div>
                 <table className="listings-table">
@@ -119,7 +121,10 @@ export default function ResultsPage({ data }) {
                     {data.listings.map((l, i) => {
                       const ship = l.shipping === "0.00" ? "FREE" : l.shipping === "unknown" ? "—" : `$${parseFloat(l.shipping).toFixed(2)}`;
                       return (<tr key={i}>
-                        <td className="col-issue">{esc(l.issue)}</td>
+                        <td className="col-issue">
+                          {esc(l.issue)}
+                          {(l.quantity || 1) > 1 && <span className="qty-badge">×{l.quantity} avail.</span>}
+                        </td>
                         <td className="col-title">{esc(l.title)}</td>
                         <td className="col-price">${parseFloat(l.price).toFixed(2)}</td>
                         <td className="col-ship">{ship}</td>
