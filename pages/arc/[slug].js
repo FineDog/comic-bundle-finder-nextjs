@@ -31,11 +31,12 @@ export default function ArcPage({ arcId, arcName, arcDesc, configError }) {
     if (didFire.current || !arcId) return;
     didFire.current = true;
 
-    // Step 1: fetch issues from the cached API route (no Metron hit if Blob is warm)
+    // Step 1: fetch issues from the Blob-cached API route (never calls Metron directly)
     fetch(`/api/arc/${arcId}/issues`)
       .then((r) => r.json())
       .then((data) => {
         if (data.error) throw new Error(data.error);
+        if (data.issues === null) { setStatus("not-cached"); return null; }
         const issueList = data.issues || [];
         setIssues(issueList);
         if (issueList.length === 0) { setStatus("done"); return null; }
@@ -177,6 +178,13 @@ export default function ArcPage({ arcId, arcName, arcDesc, configError }) {
             <div className="loading-state">
               <div><span className="loading-dots">Loading issues</span></div>
               <div className="loading-sub">Fetching arc issue list…</div>
+            </div>
+          )}
+
+          {status === "not-cached" && (
+            <div className="no-results" style={{ padding: "2rem" }}>
+              <strong>Issues not yet indexed.</strong><br />
+              This arc&rsquo;s issue list is populated by a nightly job. Check back after the next update (daily at 6:30 AM UTC).
             </div>
           )}
 

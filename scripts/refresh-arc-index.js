@@ -1,29 +1,41 @@
-// Fetches all story arcs from the Metron API and writes
-// public/data/arc-index.json for the collection guides search bar.
+// Fetches all story arcs from the Metron API, writes public/data/arc-index.json,
+// and pre-populates the Vercel Blob cache with each arc's issue list.
 //
 // Run nightly via GitHub Actions. Also runnable manually:
-//   METRON_USERNAME=x METRON_PASSWORD=y node scripts/refresh-arc-index.js
+//   METRON_USERNAME=x METRON_PASSWORD=y BLOB_READ_WRITE_TOKEN=z node scripts/refresh-arc-index.js
 //
-// Output format:
+// Output format (arc-index.json):
 //   [{ "id": 123, "name": "Brand New Day", "slug": "123-brand-new-day", "issueCount": 12 }, ...]
 //
-// Issue counts are NOT in the arc list endpoint — a separate call to
-// /api/arc/{id}/issue_list/?page_size=1 is needed for each arc.
+// Blob cache (arc-issues/{id}.json, read by /api/arc/[id]/issues):
+//   { "issues": ["Series #N", ...], "cachedAt": <epoch ms> }
 //
-// To avoid rate limits we run sequentially with a 2-second delay between
-// requests, and we PRESERVE existing counts from the committed arc-index.json
-// so only new/uncounted arcs need to be fetched on each run.
-// First run: ~74 min (2214 arcs × 2s). Subsequent runs: seconds.
+// ─── Metron API rules (DO NOT VIOLATE) ───────────────────────────────────────
+//   Rate limits:  20 requests/minute  ·  5,000 requests/day
+//   Concurrency:  Sequential only — NO parallel requests from this script.
+//   Delay:        REQUEST_DELAY_MS between every Metron request (default 3500ms
+//                 = ~17 req/min, safely under the 20/min burst limit).
+//   Headers:      Check X-RateLimit-Remaining before each request; pause if low.
+//   Retries:      Only on HTTP 429 (honour Retry-After header) or 5xx.
+//                 Never retry 4xx errors other than 429.
+//   Source:       https://metron-project.github.io/blog/api-best-practices
+// ─────────────────────────────────────────────────────────────────────────────
 
 import { writeFileSync, readFileSync, mkdirSync } from "fs";
 import { join } from "path";
+import { put } from "@vercel/blob";
 
 const USERNAME = process.env.METRON_USERNAME;
 const PASSWORD = process.env.METRON_PASSWORD;
+const BLOB_TOKEN = process.env.BLOB_READ_WRITE_TOKEN;
 
 if (!USERNAME || !PASSWORD) {
   console.error("METRON_USERNAME and METRON_PASSWORD must be set.");
   process.exit(1);
+}
+
+if (!BLOB_TOKEN) {
+  console.warn("Warning: BLOB_READ_WRITE_TOKEN not set — Blob cache will not be written.");
 }
 
 const AUTH = Buffer.from(`${USERNAME}:${PASSWORD}`).toString("base64");
@@ -32,6 +44,13 @@ const HEADERS = {
   Accept: "application/json",
   "User-Agent": "ComicBundleFinder/1.0",
 };
+
+// 3.5 seconds between requests ≈ 17 req/min (under the 20/min burst limit)
+const REQUEST_DELAY_MS = 3500;
+// Pause this long if X-RateLimit-Remaining is critically low
+const RATE_LIMIT_PAUSE_MS = 65000;
+// How many remaining requests triggers a precautionary pause
+const RATE_LIMIT_LOW_THRESHOLD = 3;
 
 function toSlug(name) {
   return name
@@ -44,33 +63,69 @@ function sleep(ms) {
   return new Promise((r) => setTimeout(r, ms));
 }
 
-// Fetch the issue count for a single arc via the issue_list endpoint.
-// Returns 0 on any error (non-fatal — badge just won't show).
-async function fetchIssueCount(arcId) {
+// Wraps fetch with:
+//   - 3-retry logic on 429 (honours Retry-After) or 5xx
+//   - Proactive rate-limit header check
+//   - REQUEST_DELAY_MS wait after each successful response
+// Returns the Response, or null on permanent failure.
+async function metronFetch(url) {
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    const res = await fetch(url, { headers: HEADERS });
+
+    if (res.status === 429) {
+      const retryAfter = parseInt(res.headers.get("retry-after") || "60", 10);
+      console.log(`\n  429 rate limited. Waiting ${retryAfter}s (attempt ${attempt}/3)...`);
+      await sleep(retryAfter * 1000 + 1000);
+      continue;
+    }
+
+    if (res.status >= 500) {
+      console.log(`\n  ${res.status} server error. Waiting 10s (attempt ${attempt}/3)...`);
+      await sleep(10000);
+      continue;
+    }
+
+    // Check remaining quota proactively — pause if critically low
+    const remaining = parseInt(res.headers.get("X-RateLimit-Remaining") ?? "999", 10);
+    if (remaining <= RATE_LIMIT_LOW_THRESHOLD) {
+      console.log(`\n  Rate limit low (${remaining} remaining). Pausing ${RATE_LIMIT_PAUSE_MS / 1000}s...`);
+      await sleep(RATE_LIMIT_PAUSE_MS);
+    }
+
+    // Polite delay after every successful Metron response
+    await sleep(REQUEST_DELAY_MS);
+    return res;
+  }
+  return null; // exhausted retries
+}
+
+// Write a single arc's issue list to Vercel Blob.
+// Blob key: arc-issues/{arcId}.json
+// Format:   { issues: ["Batman #492", ...], cachedAt: <epoch ms> }
+async function writeBlobCache(arcId, issues) {
+  if (!BLOB_TOKEN) return; // no-op if token not available
   try {
-    const res = await fetch(
-      `https://metron.cloud/api/arc/${arcId}/issue_list/?page_size=1`,
-      { headers: HEADERS }
+    await put(
+      `arc-issues/${arcId}.json`,
+      JSON.stringify({ issues, cachedAt: Date.now() }),
+      { access: "public", addRandomSuffix: false, contentType: "application/json" }
     );
-    if (!res.ok) return 0;
-    const data = await res.json();
-    return data.count || 0;
-  } catch {
-    return 0;
+  } catch (e) {
+    console.warn(`\n  Blob write failed for arc ${arcId}: ${e.message}`);
   }
 }
 
+// ── Load existing data ────────────────────────────────────────────────────────
 const outDir = join(process.cwd(), "public", "data");
 const outPath = join(outDir, "arc-index.json");
 
-// ── Load existing issue counts so we don't re-fetch them ─────────────────────
-const existingCounts = {};
+/** @type {Map<number, { issueCount: number, modified: string }>} */
+const existing = new Map();
 try {
-  const existing = JSON.parse(readFileSync(outPath, "utf-8"));
-  for (const arc of existing) {
-    if (arc.issueCount > 0) existingCounts[arc.id] = arc.issueCount;
+  for (const arc of JSON.parse(readFileSync(outPath, "utf-8"))) {
+    existing.set(arc.id, { issueCount: arc.issueCount || 0, modified: arc.modified || "" });
   }
-  console.log(`Loaded ${Object.keys(existingCounts).length} existing issue counts from arc-index.json`);
+  console.log(`Loaded ${existing.size} existing arcs from arc-index.json`);
 } catch {
   console.log("No existing arc-index.json — starting fresh.");
 }
@@ -80,24 +135,14 @@ const arcs = [];
 let nextUrl = "https://metron.cloud/api/arc/?page_size=100";
 let page = 1;
 
-console.log("\nPhase 1 — Fetching story arcs from Metron...");
+console.log("\nPhase 1 — Fetching arc list from Metron...");
 
 while (nextUrl) {
   process.stdout.write(`  Page ${page}... `);
 
-  let res;
-  // Retry up to 3 times on 429 with exponential backoff
-  for (let attempt = 1; attempt <= 3; attempt++) {
-    res = await fetch(nextUrl, { headers: HEADERS });
-    if (res.status !== 429) break;
-    const retryAfter = parseInt(res.headers.get("retry-after") || "60", 10);
-    const wait = retryAfter * 1000;
-    console.log(`\n  Rate limited (429). Waiting ${retryAfter}s before retry ${attempt}/3...`);
-    await sleep(wait);
-  }
-
-  if (!res.ok) {
-    console.error(`\nMetron returned ${res.status} on page ${page}. Aborting.`);
+  const res = await metronFetch(nextUrl);
+  if (!res || !res.ok) {
+    console.error(`\nFailed to fetch arc list page ${page} (status ${res?.status}). Aborting.`);
     process.exit(1);
   }
 
@@ -108,37 +153,83 @@ while (nextUrl) {
       id: arc.id,
       name: arc.name,
       slug: `${arc.id}-${toSlug(arc.name)}`,
-      issueCount: existingCounts[arc.id] || 0,
+      modified: arc.modified || "",
+      issueCount: existing.get(arc.id)?.issueCount || 0, // will be updated in Phase 2
     });
   }
 
   console.log(`${data.results?.length ?? 0} arcs (${arcs.length} total)`);
-
   nextUrl = data.next || null;
   page++;
-
-  if (nextUrl) await sleep(1000);
 }
 
-// ── Phase 2: fetch issue counts for arcs we don't have yet ───────────────────
-const uncounted = arcs.filter((a) => !a.issueCount);
+// ── Phase 2: fetch issue lists, write Blob cache, extract counts ──────────────
+// Only re-fetches arcs whose `modified` timestamp has changed since last run.
+// On first run (no existing data) all arcs are processed.
+const toProcess = arcs.filter((arc) => {
+  const prev = existing.get(arc.id);
+  return !prev || prev.modified !== arc.modified || prev.issueCount === 0;
+});
 
-if (uncounted.length === 0) {
-  console.log("\nPhase 2 — All issue counts already known. Skipping.");
-} else {
-  console.log(`\nPhase 2 — Fetching issue counts for ${uncounted.length} arcs (sequential, 2s delay)...`);
-  for (let i = 0; i < uncounted.length; i++) {
-    uncounted[i].issueCount = await fetchIssueCount(uncounted[i].id);
-    process.stdout.write(`\r  ${i + 1} / ${uncounted.length}  `);
-    if (i + 1 < uncounted.length) await sleep(2000);
+console.log(
+  `\nPhase 2 — Fetching issue lists for ${toProcess.length} arcs` +
+  ` (${arcs.length - toProcess.length} unchanged, skipped).`
+);
+console.log(`  Sequential requests at ${REQUEST_DELAY_MS}ms delay (~${Math.round(60000 / REQUEST_DELAY_MS)} req/min).\n`);
+
+for (let i = 0; i < toProcess.length; i++) {
+  const arc = toProcess[i];
+  process.stdout.write(`\r  [${i + 1}/${toProcess.length}] arc ${arc.id} — ${arc.name.slice(0, 40).padEnd(40)}`);
+
+  const allIssues = [];
+  let issueUrl = `https://metron.cloud/api/arc/${arc.id}/issue_list/?page_size=100`;
+  let count = 0;
+
+  while (issueUrl) {
+    const issueRes = await metronFetch(issueUrl);
+    if (!issueRes || !issueRes.ok) break;
+
+    let issueData;
+    try { issueData = await issueRes.json(); } catch { break; }
+
+    count = issueData.count ?? count;
+    allIssues.push(...(issueData.results || []));
+    issueUrl = issueData.next || null;
   }
-  console.log("\n  done.");
+
+  const issues = allIssues
+    .map((issue) => {
+      const series = issue.series?.name || "";
+      const num = issue.number || "";
+      if (!series || !num) return "";
+      return `${series} #${num}`;
+    })
+    .filter(Boolean);
+
+  // Update the arc entry in our array
+  arc.issueCount = count;
+
+  // Write issue list to Blob (read by /api/arc/[id]/issues — cache-only)
+  if (issues.length > 0) {
+    await writeBlobCache(arc.id, issues);
+  }
 }
 
-// ── Write output ──────────────────────────────────────────────────────────────
-arcs.sort((a, b) => a.name.localeCompare(b.name));
+console.log("\n  done.");
+
+// ── Write arc-index.json ──────────────────────────────────────────────────────
+// Strip internal `modified` field — not needed by the frontend
+const output = arcs.map(({ id, name, slug, issueCount }) => ({ id, name, slug, issueCount }));
+output.sort((a, b) => a.name.localeCompare(b.name));
 
 mkdirSync(outDir, { recursive: true });
-writeFileSync(outPath, JSON.stringify(arcs));
+writeFileSync(outPath, JSON.stringify(output));
 
-console.log(`\nWrote ${arcs.length} arcs to public/data/arc-index.json`);
+const processed = toProcess.length;
+const skipped = arcs.length - processed;
+console.log(`\nWrote ${arcs.length} arcs to arc-index.json (${processed} updated, ${skipped} unchanged).`);
+if (BLOB_TOKEN) {
+  console.log(`Blob cache updated for arcs with issues.`);
+} else {
+  console.log(`Blob cache NOT updated (BLOB_READ_WRITE_TOKEN missing).`);
+}

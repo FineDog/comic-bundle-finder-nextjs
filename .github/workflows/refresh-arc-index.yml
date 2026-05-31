@@ -2,8 +2,9 @@
 # The commit triggers a Vercel redeploy so the search index stays current.
 #
 # Required GitHub secrets:
-#   METRON_USERNAME — Metron account username
-#   METRON_PASSWORD — Metron account password
+#   METRON_USERNAME       — Metron account username
+#   METRON_PASSWORD       — Metron account password
+#   BLOB_READ_WRITE_TOKEN — Vercel Blob token (same value as in Vercel env vars)
 
 name: Refresh Arc Index
 
@@ -30,6 +31,7 @@ jobs:
         env:
           METRON_USERNAME: ${{ secrets.METRON_USERNAME }}
           METRON_PASSWORD: ${{ secrets.METRON_PASSWORD }}
+          BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
         run: node scripts/refresh-arc-index.js
       - name: Commit and push arc index
         run: |
