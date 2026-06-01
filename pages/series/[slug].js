@@ -293,16 +293,12 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
         <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Oswald:wght@400;600&display=swap" rel="stylesheet" />
       </Head>
       <style>{`
-        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-        body{background-color:#f0e6c4;background-image:radial-gradient(circle,#c8b98a 1px,transparent 1px);background-size:10px 10px;font-family:'Oswald',sans-serif;color:#1a1a1a;min-height:100vh;padding:2rem 1rem 4rem}
-
-        .panel{background:#fffdf4;border:3px solid #1a1a1a;box-shadow:6px 6px 0 #1a1a1a;padding:1.5rem 1.75rem;margin-bottom:1.75rem}
-        .panel-slim{background:#fffdf4;border:3px solid #1a1a1a;box-shadow:4px 4px 0 #1a1a1a;padding:0.6rem 1.25rem;margin-bottom:1.75rem;display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap}
+        /* ── Page-specific: series header accent card ───────────────── */
         .series-sub{color:#555;font-size:0.85rem;letter-spacing:2px;text-transform:uppercase;margin-top:0.4rem;font-weight:400}
-        .back-link{font-size:0.78rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#003399;text-decoration:none}
-        .back-link:hover{text-decoration:underline}
-        .breadcrumb-sep{font-size:0.78rem;color:#aaa;font-weight:400}
         .updated-badge{display:inline-block;background:#003399;color:#fffdf4;border:2px solid #1a1a1a;padding:0.25rem 0.7rem;font-size:0.72rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-left:0.75rem;vertical-align:middle}
+
+        /* ── Page-specific: controls panel ─────────────────────────── */
+        .panel-slim{display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap}
         .controls-row{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1.25rem}
         .range-label{font-family:'Bangers',cursive;font-size:1.5rem;letter-spacing:2px;color:#1a1a1a;flex:1;min-width:200px}
         .nav-buttons{display:flex;gap:0.5rem;align-items:center}
@@ -320,44 +316,7 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
         .slider-label{font-size:0.82rem;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;white-space:nowrap}
         .btn-toggle{background:none;border:none;color:#003399;font-family:'Oswald',sans-serif;font-size:0.78rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;cursor:pointer;text-decoration:underline;padding:0}
         .batch-slider{flex:1;min-width:140px;max-width:260px;accent-color:#cc1f00}
-        .price-row{display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap}
         label{display:block;font-weight:600;font-size:0.9rem;letter-spacing:1px;text-transform:uppercase;margin-bottom:0.5rem}
-        .price-row label{margin:0;font-size:0.82rem;white-space:nowrap}
-        .price-input{width:90px;border:2px solid #1a1a1a;background:#fffdf4;font-family:'Oswald',sans-serif;font-size:0.95rem;font-weight:600;padding:0.3rem 0.5rem;color:#1a1a1a;text-align:center}
-        .price-input:focus{outline:none;border-color:#003399;box-shadow:2px 2px 0 #003399}
-        .hint{font-size:0.78rem;color:#666;font-weight:400}
-        .loading-state{text-align:center;padding:3rem 1rem;color:#003399;font-family:'Bangers',cursive;font-size:1.8rem;letter-spacing:3px}
-        .loading-sub{font-family:'Oswald',sans-serif;font-size:0.82rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#666;margin-top:0.75rem}
-        .loading-dots::after{content:'…';animation:dots 1.2s steps(3,end) infinite}
-        @keyframes dots{0%,100%{content:'.'}33%{content:'..'}66%{content:'...'}}
-        .wave2-banner{display:inline-flex;align-items:center;gap:0.5rem;background:#ffe066;border:2px solid #1a1a1a;font-size:0.75rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:0.3rem 0.85rem;margin-bottom:1.25rem}
-        .wave2-spinner{width:10px;height:10px;border:2px solid #1a1a1a;border-top-color:transparent;border-radius:50%;animation:spin 0.6s linear infinite;display:inline-block;flex-shrink:0}
-        @keyframes spin{to{transform:rotate(360deg)}}
-        .error-state{text-align:center;padding:2rem;color:#cc1f00;font-weight:600}
-        .no-results{text-align:center;padding:2rem;color:#666;font-size:0.95rem;font-weight:400}
-        .wrap-msg{background:#ffe066;border:2px solid #1a1a1a;padding:0.6rem 1rem;font-size:0.85rem;font-weight:600;letter-spacing:0.5px;margin-bottom:1.25rem}
-        .stats-row{display:flex;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap}
-        .stat-box{flex:1;min-width:110px;background:#ffe066;border:2px solid #1a1a1a;padding:0.6rem 1rem;text-align:center}
-        .stat-number{font-family:'Bangers',cursive;font-size:2.2rem;color:#cc1f00;line-height:1}
-        .stat-label{font-size:0.68rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#1a1a1a;margin-top:2px}
-        .results-title{font-family:'Bangers',cursive;font-size:2rem;letter-spacing:2px;color:#cc1f00;margin-bottom:1.25rem}
-        .seller-group{margin-bottom:1.75rem}
-        .seller-header{background:#003399;color:#fffdf4;padding:0.5rem 0.75rem;display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;border:2px solid #1a1a1a;border-bottom:none}
-        .seller-name{font-family:'Bangers',cursive;font-size:1.35rem;letter-spacing:1px}
-        .bundle-badge{background:#cc1f00;color:#fffdf4;font-size:0.68rem;font-weight:600;padding:2px 8px;border:1.5px solid #1a1a1a;letter-spacing:1px;text-transform:uppercase;white-space:nowrap}
-        .subtotal-badge{font-size:0.78rem;font-weight:600;color:#fffdf4;background:#003399;border:1.5px solid #ffe066;padding:2px 8px;letter-spacing:0.5px;white-space:nowrap}
-        .listings-table{width:100%;border-collapse:collapse;border:2px solid #1a1a1a;font-size:0.82rem;table-layout:fixed}
-        .listings-table th{background:#1a1a1a;color:#fffdf4;padding:0.4rem 0.6rem;text-align:left;font-weight:600;letter-spacing:0.8px;text-transform:uppercase;font-size:0.7rem;white-space:nowrap}
-        .listings-table td{padding:0.45rem 0.6rem;border-bottom:1px solid #d4c9a8;vertical-align:top;font-weight:400;overflow:hidden;text-overflow:ellipsis;word-break:break-word}
-        .listings-table tr:last-child td{border-bottom:none}
-        .listings-table tr:nth-child(even) td{background:#f8f3e3}
-        .col-issue{width:22%}.col-title{width:49%}.col-price{width:9%;text-align:right}.col-ship{width:11%;text-align:right}.col-link{width:9%;text-align:center}
-        .listing-link{color:#cc1f00;font-weight:600;text-decoration:none;white-space:nowrap;font-size:0.8rem}
-        .listing-link:hover{text-decoration:underline}
-        .disclosure{font-size:0.72rem;color:#888;text-align:center;font-weight:400;margin-top:1.25rem;line-height:1.5;border-top:1px solid #d4c9a8;padding-top:0.75rem}
-        .seo-blurb{font-size:0.88rem;font-weight:400;line-height:1.8;color:#333}
-        .seo-blurb strong{font-weight:600}
-        @media(max-width:600px){.col-title{display:none}.col-issue{width:40%}}
       `}</style>
 
       <div className="page-wrap">
@@ -365,11 +324,11 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
 
         {/* Breadcrumb */}
         <div className="panel-slim">
-          <Link href="/collection-guides" className="back-link">&larr; Collection Guides</Link>
+          <Link href="/collection-guides" className="breadcrumb-link">&larr; Collection Guides</Link>
           {groupSlug && (
             <>
               <span className="breadcrumb-sep">&rsaquo;</span>
-              <Link href={`/series-guide/${groupSlug}`} className="back-link">
+              <Link href={`/series-guide/${groupSlug}`} className="breadcrumb-link">
                 {displayName} Volumes
               </Link>
             </>
@@ -377,9 +336,9 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
         </div>
 
         {/* Series header card */}
-        <div style={{ background: "#fffdf4", border: "3px solid #1a1a1a", boxShadow: "6px 6px 0 #1a1a1a", marginBottom: "1.75rem", display: "flex", overflow: "hidden" }}>
-          <div style={{ width: 8, flexShrink: 0, background: "#cc1f00" }} />
-          <div style={{ padding: "1rem 1.5rem" }}>
+        <div className="panel-accent">
+          <div className="panel-accent-stripe" />
+          <div className="panel-accent-body">
             <h2 style={{ fontFamily: "'Bangers', cursive", fontSize: "clamp(1.75rem,5vw,2.8rem)", letterSpacing: "3px", color: "#1a1a1a", lineHeight: 1, margin: 0 }}>{displayName}</h2>
             <div className="series-sub">{subtitle} &middot; {totalIssues} issues &middot; eBay Bundle Deals</div>
           </div>
@@ -478,7 +437,7 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
                   Loading additional results…
                 </div>
               )}
-              <div className="results-title">
+              <div className="section-title">
                 {sellerCount === 0
                   ? "No Bundle Opportunities Found"
                   : "Bundle Deals — Sellers Ranked by Issues Carried"}

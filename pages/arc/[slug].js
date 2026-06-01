@@ -94,66 +94,21 @@ export default function ArcPage({ slug, arcId, arcName, arcDesc, configError }) 
         />
       </Head>
       <style>{`
-        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-        body{background-color:#f0e6c4;background-image:radial-gradient(circle,#c8b98a 1px,transparent 1px);background-size:10px 10px;font-family:'Oswald',sans-serif;color:#1a1a1a;min-height:100vh;padding:2rem 1rem 4rem}
-
-        .panel{background:#fffdf4;border:3px solid #1a1a1a;box-shadow:6px 6px 0 #1a1a1a;padding:1.5rem 1.75rem;margin-bottom:1.75rem}
-        .caption{display:inline-block;background:#ffe066;border:2px solid #1a1a1a;padding:0.3rem 0.7rem;font-size:0.8rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:1rem}
-
-        .arc-header{background:#fffdf4;border:3px solid #1a1a1a;box-shadow:6px 6px 0 #1a1a1a;margin-bottom:1.75rem;display:flex;overflow:hidden}
-        .arc-accent{width:8px;flex-shrink:0;background:#cc1f00}
-        .arc-header-body{padding:1.25rem 1.5rem;flex:1;min-width:0}
+        /* ── Page-specific: arc header card ────────────────────────── */
         .arc-title{font-family:'Bangers',cursive;font-size:clamp(2rem,6vw,3.5rem);letter-spacing:3px;color:#1a1a1a;line-height:1;margin-bottom:0.4rem}
         .arc-sub{font-size:0.72rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:#888;margin-bottom:0.6rem}
         .arc-desc{font-size:0.88rem;font-weight:400;line-height:1.7;color:#444}
 
+        /* ── Page-specific: issue grid ─────────────────────────────── */
         .issue-grid{list-style:none;display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:0.35rem;margin-top:0.25rem}
         .issue-item{background:#f8f3e3;border:1px solid #d4c9a8;padding:0.3rem 0.6rem;font-size:0.82rem;font-weight:400}
-
-        .price-row{display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;margin-bottom:1.5rem}
-        .price-row label{font-size:0.82rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;white-space:nowrap}
-        .price-input{width:90px;border:2px solid #1a1a1a;background:#fffdf4;font-family:'Oswald',sans-serif;font-size:0.95rem;font-weight:600;padding:0.3rem 0.5rem;color:#1a1a1a;text-align:center}
-        .price-input:focus{outline:none;border-color:#003399;box-shadow:2px 2px 0 #003399}
-
-        .loading-state{text-align:center;padding:3rem 1rem;color:#003399;font-family:'Bangers',cursive;font-size:1.8rem;letter-spacing:3px}
-        .loading-sub{font-family:'Oswald',sans-serif;font-size:0.82rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#666;margin-top:0.75rem}
-        .loading-dots::after{content:'…';animation:dots 1.2s steps(3,end) infinite}
-        @keyframes dots{0%,100%{content:'.'}33%{content:'..'}66%{content:'...'}}
-        @keyframes spin{to{transform:rotate(360deg)}}
-        .error-state{text-align:center;padding:2rem;color:#cc1f00;font-weight:600}
-        .no-results{text-align:center;padding:2rem;color:#666;font-size:0.95rem;font-weight:400}
-
-        .stats-row{display:flex;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap}
-        .stat-box{flex:1;min-width:110px;background:#ffe066;border:2px solid #1a1a1a;padding:0.6rem 1rem;text-align:center}
-        .stat-number{font-family:'Bangers',cursive;font-size:2.2rem;color:#cc1f00;line-height:1}
-        .stat-label{font-size:0.68rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#1a1a1a;margin-top:2px}
-        .results-title{font-family:'Bangers',cursive;font-size:2rem;letter-spacing:2px;color:#cc1f00;margin-bottom:1.25rem}
-
-        .seller-group{margin-bottom:1.75rem}
-        .seller-header{background:#003399;color:#fffdf4;padding:0.5rem 0.75rem;display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;border:2px solid #1a1a1a;border-bottom:none}
-        .seller-name{font-family:'Bangers',cursive;font-size:1.35rem;letter-spacing:1px}
-        .bundle-badge{background:#cc1f00;color:#fffdf4;font-size:0.68rem;font-weight:600;padding:2px 8px;border:1.5px solid #1a1a1a;letter-spacing:1px;text-transform:uppercase;white-space:nowrap}
-        .subtotal-badge{font-size:0.78rem;font-weight:600;color:#fffdf4;background:#003399;border:1.5px solid #ffe066;padding:2px 8px;letter-spacing:0.5px;white-space:nowrap}
-
-        .listings-table{width:100%;border-collapse:collapse;border:2px solid #1a1a1a;font-size:0.82rem;table-layout:fixed}
-        .listings-table th{background:#1a1a1a;color:#fffdf4;padding:0.4rem 0.6rem;text-align:left;font-weight:600;letter-spacing:0.8px;text-transform:uppercase;font-size:0.7rem;white-space:nowrap}
-        .listings-table td{padding:0.45rem 0.6rem;border-bottom:1px solid #d4c9a8;vertical-align:top;font-weight:400;overflow:hidden;text-overflow:ellipsis;word-break:break-word}
-        .listings-table tr:last-child td{border-bottom:none}
-        .listings-table tr:nth-child(even) td{background:#f8f3e3}
-        .col-issue{width:22%}.col-title{width:49%}.col-price{width:9%;text-align:right}.col-ship{width:11%;text-align:right}.col-link{width:9%;text-align:center}
-        .listing-link{color:#cc1f00;font-weight:600;text-decoration:none;white-space:nowrap;font-size:0.8rem}
-        .listing-link:hover{text-decoration:underline}
-        .disclosure{font-size:0.72rem;color:#888;text-align:center;font-weight:400;margin-top:1.25rem;line-height:1.5;border-top:1px solid #d4c9a8;padding-top:0.75rem}
-        .panel-slim{background:#fffdf4;border:3px solid #1a1a1a;box-shadow:6px 6px 0 #1a1a1a;padding:0.6rem 1.25rem;margin-bottom:1.75rem;font-size:0.8rem;font-weight:600}
-        .breadcrumb-link{color:#003399;text-decoration:none;font-weight:600}.breadcrumb-link:hover{text-decoration:underline}
-        @media(max-width:600px){.col-title{display:none}.col-issue{width:40%}}
       `}</style>
 
       <div className="page-wrap">
         <SiteNav />
 
         <div className="panel-slim">
-          <a href="/collection-guides" className="breadcrumb-link">← Collection Guides</a>
+          <a href="/collection-guides" className="breadcrumb-link">&larr; Collection Guides</a>
         </div>
 
         {configError && (
@@ -162,9 +117,9 @@ export default function ArcPage({ slug, arcId, arcName, arcDesc, configError }) 
           </div>
         )}
 
-        <div className="arc-header">
-          <div className="arc-accent" />
-          <div className="arc-header-body">
+        <div className="panel-accent">
+          <div className="panel-accent-stripe" />
+          <div className="panel-accent-body">
             <h1 className="arc-title">{arcName}</h1>
             <div className="arc-sub">{issues.length > 0 ? issues.length : "…"} issues &middot; Story Arc &middot; eBay Bundle Deals</div>
             {arcDesc && <p className="arc-desc">{arcDesc}</p>}
@@ -203,8 +158,8 @@ export default function ArcPage({ slug, arcId, arcName, arcDesc, configError }) 
           )}
 
           {status === "done" && wave2Loading && (
-            <div style={{display:"inline-flex",alignItems:"center",gap:"0.5rem",background:"#ffe066",border:"2px solid #1a1a1a",fontSize:"0.75rem",fontWeight:600,letterSpacing:"1px",textTransform:"uppercase",padding:"0.3rem 0.85rem",marginBottom:"1.25rem"}}>
-              <span style={{width:10,height:10,border:"2px solid #1a1a1a",borderTopColor:"transparent",borderRadius:"50%",animation:"spin 0.6s linear infinite",display:"inline-block",flexShrink:0}} />
+            <div className="wave2-banner">
+              <span className="wave2-spinner" />
               Loading additional results…
             </div>
           )}
@@ -234,7 +189,7 @@ export default function ArcPage({ slug, arcId, arcName, arcDesc, configError }) 
 
               {sortedSellers.length === 0 ? (
                 <>
-                  <div className="results-title">No Bundle Opportunities Found</div>
+                  <div className="section-title">No Bundle Opportunities Found</div>
                   <div className="no-results">
                     No single seller carries 2 or more issues from this arc at or under $
                     {maxPriceNum.toFixed(2)}. Try raising your max price.
@@ -257,7 +212,7 @@ export default function ArcPage({ slug, arcId, arcName, arcDesc, configError }) 
                     </div>
                   </div>
 
-                  <div className="results-title">Bundle Deals — Sellers Ranked by Issues Carried</div>
+                  <div className="section-title">Bundle Deals — Sellers Ranked by Issues Carried</div>
 
                   {sortedSellers.map(([name, sellerData]) => {
                     const cpi = {};

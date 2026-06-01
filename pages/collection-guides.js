@@ -117,15 +117,10 @@ export default function CollectionGuides({ arcs }) {
         />
       </Head>
       <style>{`
-        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-        body{background-color:#f0e6c4;background-image:radial-gradient(circle,#c8b98a 1px,transparent 1px);background-size:10px 10px;font-family:'Oswald',sans-serif;color:#1a1a1a;min-height:100vh;padding:2rem 1rem 4rem}
+        /* Subsection title slightly smaller than the 2rem canonical */
+        .section-title{font-size:1.8rem}
 
-        .panel{background:#fffdf4;border:3px solid #1a1a1a;box-shadow:6px 6px 0 #1a1a1a;padding:1.5rem 1.75rem;margin-bottom:1.75rem}
-        .caption{display:inline-block;background:#ffe066;border:2px solid #1a1a1a;padding:0.3rem 0.7rem;font-size:0.8rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:1.25rem}
-        .intro{font-size:0.88rem;font-weight:400;line-height:1.8;color:#333}
-        .section-title{font-family:'Bangers',cursive;font-size:1.8rem;letter-spacing:2px;color:#cc1f00;margin-bottom:1.25rem}
-
-        /* Search inputs and result cards */
+        /* ── Page-specific: arc & series search ────────────────────── */
         .arc-search-wrap{position:relative;margin-bottom:1rem}
         .arc-search-input{width:100%;border:3px solid #1a1a1a;background:#fffdf4;font-family:'Oswald',sans-serif;font-size:1rem;font-weight:400;padding:0.6rem 0.85rem;color:#1a1a1a;box-shadow:3px 3px 0 #1a1a1a}
         .arc-search-input:focus{outline:none;border-color:#003399;box-shadow:3px 3px 0 #003399}
@@ -139,9 +134,7 @@ export default function CollectionGuides({ arcs }) {
         .arc-no-results{font-size:0.88rem;font-weight:400;color:#666;padding:0.5rem 0}
         .arc-hint{font-size:0.78rem;font-weight:400;color:#888;margin-top:0.5rem}
         .arc-coming-soon{font-size:0.88rem;font-weight:400;color:#888;font-style:italic}
-
         @media(max-width:540px){.arc-result-card{flex-direction:column;align-items:flex-start}}
-
         .series-stat-badge{display:inline-block;background:#ffe066;border:1.5px solid #1a1a1a;padding:0.1rem 0.45rem;font-size:0.7rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-left:0.4rem;vertical-align:middle}
         .search-btn{background:#cc1f00;color:#fffdf4;border:3px solid #1a1a1a;box-shadow:3px 3px 0 #1a1a1a;font-family:'Bangers',cursive;font-size:1rem;letter-spacing:1.5px;padding:0.35rem 1rem 0.4rem;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:transform 0.08s,box-shadow 0.08s}
         .search-btn:hover{background:#a81800}
@@ -320,7 +313,7 @@ export default function CollectionGuides({ arcs }) {
                 textDecoration: "none",
               }}
             >
-              Support me on Ko-fi
+              ☕ Support me on Ko-fi
             </a>
           </div>
         </div>

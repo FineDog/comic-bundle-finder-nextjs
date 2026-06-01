@@ -1,0 +1,377 @@
+/* =======================================================================
+   Comic Bundle Finder — Canonical Design System
+   -----------------------------------------------------------------------
+   All shared, reusable styles live here. Imported globally via globals.css.
+   Pages should only contain styles for truly page-specific components.
+
+   Color tokens
+   ─────────────
+   Background / newsprint:  #f0e6c4
+   Dot grid:                #c8b98a
+   Panel fill (cream):      #fffdf4
+   Panel fill (alt):        #f8f3e3   table stripes, filter bg
+   Divider / soft border:   #d4c9a8
+   Primary text / border:   #1a1a1a
+   Red accent:              #cc1f00   headers, error, listing links
+   Blue accent:             #003399   seller headers, primary buttons, links
+   Blue hover:              #0044cc
+   Yellow highlight:        #ffe066   captions, stat boxes, wave2 banner
+
+   Typography
+   ──────────
+   Display:  Bangers (Google Fonts) — titles, section headings, large buttons
+   Body:     Oswald (Google Fonts)  — labels, UI text, small buttons
+   Mono:     'Courier New'          — textarea, code samples
+   ======================================================================= */
+
+/* ── Reset ──────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ── Body & Background ──────────────────────────────────────────────── */
+body {
+  background-color: #f0e6c4;
+  background-image: radial-gradient(circle, #c8b98a 1px, transparent 1px);
+  background-size: 10px 10px;
+  font-family: 'Oswald', sans-serif;
+  color: #1a1a1a;
+  min-height: 100vh;
+  padding: 2rem 1rem 4rem;
+}
+
+/* ── Layout ─────────────────────────────────────────────────────────── */
+/* Defined here for reference; SiteNav injects .page-wrap into every page.
+   account.js intentionally uses .container at 720px (narrower form layout)
+   and does not render SiteNav. */
+.page-wrap { max-width: 960px; margin: 0 auto; }
+
+/* ── Panels ─────────────────────────────────────────────────────────── */
+
+/* Standard content panel */
+.panel {
+  background: #fffdf4;
+  border: 3px solid #1a1a1a;
+  box-shadow: 6px 6px 0 #1a1a1a;
+  padding: 1.5rem 1.75rem;
+  margin-bottom: 1.75rem;
+}
+
+/* Slim panel — breadcrumbs, secondary framing. Smaller shadow to recede visually. */
+.panel-slim {
+  background: #fffdf4;
+  border: 3px solid #1a1a1a;
+  box-shadow: 4px 4px 0 #1a1a1a;
+  padding: 0.6rem 1.25rem;
+  margin-bottom: 1.75rem;
+}
+
+/* Accent panel — left red stripe header card (arc pages, series pages) */
+.panel-accent {
+  background: #fffdf4;
+  border: 3px solid #1a1a1a;
+  box-shadow: 6px 6px 0 #1a1a1a;
+  margin-bottom: 1.75rem;
+  display: flex;
+  overflow: hidden;
+}
+.panel-accent-stripe {
+  width: 8px;
+  flex-shrink: 0;
+  background: #cc1f00;
+}
+.panel-accent-body {
+  padding: 1.25rem 1.5rem;
+  flex: 1;
+  min-width: 0;
+}
+
+/* ── Caption Tags ───────────────────────────────────────────────────── */
+/* Yellow label at the top of a section within a panel */
+.caption {
+  display: inline-block;
+  background: #ffe066;
+  border: 2px solid #1a1a1a;
+  padding: 0.3rem 0.7rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+}
+
+/* ── Typography ─────────────────────────────────────────────────────── */
+
+/* Large red results/section heading — 2rem */
+.section-title {
+  font-family: 'Bangers', cursive;
+  font-size: 2rem;
+  letter-spacing: 2px;
+  color: #cc1f00;
+  margin-bottom: 1.25rem;
+}
+
+/* Body intro / SEO blurb text */
+.intro {
+  font-size: 0.88rem;
+  font-weight: 400;
+  line-height: 1.8;
+  color: #333;
+}
+.intro strong { font-weight: 600; }
+
+/* Small hint / helper text below inputs */
+.hint {
+  font-size: 0.78rem;
+  color: #666;
+  font-weight: 400;
+  line-height: 1.5;
+  margin-top: 0.4rem;
+}
+
+/* ── Stat Boxes ─────────────────────────────────────────────────────── */
+.stats-row { display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+.stat-box {
+  flex: 1;
+  min-width: 110px;
+  background: #ffe066;
+  border: 2px solid #1a1a1a;
+  padding: 0.6rem 1rem;
+  text-align: center;
+}
+.stat-number {
+  font-family: 'Bangers', cursive;
+  font-size: 2.2rem;
+  color: #cc1f00;
+  line-height: 1;
+}
+.stat-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #1a1a1a;
+  margin-top: 2px;
+}
+
+/* ── Seller Cards ───────────────────────────────────────────────────── */
+.seller-group { margin-bottom: 1.75rem; }
+
+.seller-header {
+  background: #003399;
+  color: #fffdf4;
+  padding: 0.5rem 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  border: 2px solid #1a1a1a;
+  border-bottom: none;
+}
+.seller-name {
+  font-family: 'Bangers', cursive;
+  font-size: 1.35rem;
+  letter-spacing: 1px;
+}
+
+/* Red pill: issue/listing count */
+.bundle-badge {
+  background: #cc1f00;
+  color: #fffdf4;
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border: 1.5px solid #1a1a1a;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* Blue-on-blue pill: item subtotal */
+.subtotal-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #fffdf4;
+  background: #003399;
+  border: 1.5px solid #ffe066;
+  padding: 2px 8px;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+/* ── Listings Table ─────────────────────────────────────────────────── */
+.listings-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 2px solid #1a1a1a;
+  font-size: 0.82rem;
+  table-layout: fixed;
+}
+.listings-table th {
+  background: #1a1a1a;
+  color: #fffdf4;
+  padding: 0.4rem 0.6rem;
+  text-align: left;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  white-space: nowrap;
+}
+.listings-table td {
+  padding: 0.45rem 0.6rem;
+  border-bottom: 1px solid #d4c9a8;
+  vertical-align: top;
+  font-weight: 400;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-word;
+}
+.listings-table tr:last-child td { border-bottom: none; }
+.listings-table tr:nth-child(even) td { background: #f8f3e3; }
+
+/* Column widths — 22/49/9/11/9 gives generous space to listing title */
+.col-issue { width: 22%; }
+.col-title  { width: 49%; }
+.col-price  { width: 9%;  text-align: right; }
+.col-ship   { width: 11%; text-align: right; }
+.col-link   { width: 9%;  text-align: center; }
+
+.listing-link {
+  color: #cc1f00;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  font-size: 0.8rem;
+}
+.listing-link:hover { text-decoration: underline; }
+
+@media (max-width: 600px) {
+  .col-title { display: none; }
+  .col-issue { width: 40%; }
+}
+
+/* ── Wave 2 Banner ──────────────────────────────────────────────────── */
+/* Shown while additional eBay results are fetching in the background */
+.wave2-banner {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #ffe066;
+  border: 2px solid #1a1a1a;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 0.3rem 0.85rem;
+  margin-bottom: 1.25rem;
+}
+.wave2-spinner {
+  width: 10px;
+  height: 10px;
+  border: 2px solid #1a1a1a;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+/* ── Loading & Error States ─────────────────────────────────────────── */
+.loading-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #003399;
+  font-family: 'Bangers', cursive;
+  font-size: 1.8rem;
+  letter-spacing: 3px;
+}
+.loading-sub {
+  font-family: 'Oswald', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #666;
+  margin-top: 0.75rem;
+}
+.loading-dots::after {
+  content: '…';
+  animation: dots 1.2s steps(3, end) infinite;
+}
+.error-state { text-align: center; padding: 2rem; color: #cc1f00; font-weight: 600; }
+.no-results  { text-align: center; padding: 2rem; color: #666; font-size: 0.95rem; font-weight: 400; }
+
+/* Auto-advance wrap-around message on series page */
+.wrap-msg {
+  background: #ffe066;
+  border: 2px solid #1a1a1a;
+  padding: 0.6rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  margin-bottom: 1.25rem;
+}
+
+/* ── Breadcrumb ─────────────────────────────────────────────────────── */
+.breadcrumb-link {
+  color: #003399;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.78rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.breadcrumb-link:hover { text-decoration: underline; }
+.breadcrumb-sep { font-size: 0.78rem; color: #aaa; font-weight: 400; }
+
+/* ── Price Filter Row ───────────────────────────────────────────────── */
+/* Shared between arc and series pages */
+.price-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+.price-row label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  margin: 0;
+}
+.price-input {
+  width: 90px;
+  border: 2px solid #1a1a1a;
+  background: #fffdf4;
+  font-family: 'Oswald', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 0.3rem 0.5rem;
+  color: #1a1a1a;
+  text-align: center;
+}
+.price-input:focus { outline: none; border-color: #003399; box-shadow: 2px 2px 0 #003399; }
+
+/* ── Disclosure ─────────────────────────────────────────────────────── */
+/* eBay affiliate disclosure shown at the bottom of result sets */
+.disclosure {
+  font-size: 0.72rem;
+  color: #888;
+  text-align: center;
+  font-weight: 400;
+  margin-top: 1.25rem;
+  line-height: 1.5;
+  border-top: 1px solid #d4c9a8;
+  padding-top: 0.75rem;
+}
+
+/* ── Animations ─────────────────────────────────────────────────────── */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes dots {
+  0%, 100% { content: '.'; }
+  33%       { content: '..'; }
+  66%       { content: '...'; }
+}

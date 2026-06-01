@@ -437,13 +437,10 @@ export default function Preview() {
       <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Oswald:wght@400;600&display=swap" rel="stylesheet" />
     </Head>
     <style>{`
-      *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-      body{background-color:#f0e6c4;background-image:radial-gradient(circle,#c8b98a 1px,transparent 1px);background-size:10px 10px;font-family:'Oswald',sans-serif;color:#1a1a1a;min-height:100vh;padding:2rem 1rem 4rem}
-
-      .panel{background:#fffdf4;border:3px solid #1a1a1a;box-shadow:6px 6px 0 #1a1a1a;padding:1.5rem 1.75rem;margin-bottom:1.75rem}
-      .caption{display:inline-block;background:#ffe066;border:2px solid #1a1a1a;padding:0.3rem 0.7rem;font-size:0.8rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:1rem}
+      /* ── Page-specific: input form ─────────────────────────────────── */
+      label{display:block;font-weight:600;font-size:0.9rem;letter-spacing:1px;text-transform:uppercase;margin-bottom:0.5rem}
       .label-row{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:0.5rem;flex-wrap:wrap}
-      .label-row label{font-weight:600;font-size:0.9rem;letter-spacing:1px;text-transform:uppercase;margin:0}
+      .label-row label{margin:0}
       .btn-upload{background:#fffdf4;color:#1a1a1a;border:2px solid #1a1a1a;box-shadow:2px 2px 0 #1a1a1a;font-family:'Oswald',sans-serif;font-size:0.78rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:0.25rem 0.75rem;cursor:pointer;white-space:nowrap}
       .btn-upload:hover{background:#ffe066}
       .drop-zone{position:relative}
@@ -452,28 +449,23 @@ export default function Preview() {
       .drop-zone.dragging .drag-overlay{display:flex}
       textarea{width:100%;height:150px;border:2px solid #1a1a1a;background:#fffdf4;font-family:'Courier New',monospace;font-size:0.9rem;padding:0.75rem;resize:vertical;color:#1a1a1a}
       textarea:focus{outline:none;border-color:#003399;box-shadow:2px 2px 0 #003399}
-      .hint{font-size:0.78rem;color:#666;margin-top:0.4rem;font-weight:400;line-height:1.5}
       .upload-msg{font-size:0.8rem;font-weight:600;color:#003399;margin-top:0.5rem;letter-spacing:0.5px}
-      label{display:block;font-weight:600;font-size:0.9rem;letter-spacing:1px;text-transform:uppercase;margin-bottom:0.5rem}
-      .btn-search{display:inline-block;background:#003399;color:#fffdf4;border:3px solid #1a1a1a;box-shadow:4px 4px 0 #1a1a1a;font-family:'Bangers',cursive;font-size:1.6rem;letter-spacing:2px;padding:0.3rem 2.5rem 0.4rem;cursor:pointer;margin-top:1.25rem;transition:transform 0.08s,box-shadow 0.08s}
+      .search-action-row{display:flex;align-items:center;gap:1rem;margin-top:1.25rem;flex-wrap:wrap}
+      .btn-search{display:inline-block;background:#003399;color:#fffdf4;border:3px solid #1a1a1a;box-shadow:4px 4px 0 #1a1a1a;font-family:'Bangers',cursive;font-size:1.6rem;letter-spacing:2px;padding:0.3rem 2.5rem 0.4rem;cursor:pointer;transition:transform 0.08s,box-shadow 0.08s}
       .btn-search:hover{background:#0044cc}
       .btn-search:active{transform:translate(3px,3px);box-shadow:1px 1px 0 #1a1a1a}
       .btn-search:disabled{background:#888;cursor:not-allowed;transform:none;box-shadow:4px 4px 0 #1a1a1a}
       .s-error{color:#cc1f00;font-weight:600;font-size:0.88rem;margin-top:0.9rem}
       .s-loading{color:#003399;font-size:0.88rem;margin-top:0.9rem}
+
+      /* ── Page-specific: progress bar ───────────────────────────────── */
       .progress-wrap{margin-top:1.25rem}
       .progress-msg{font-size:0.82rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:0.5rem;color:#003399}
       .progress-track{border:2px solid #1a1a1a;background:#f0e6c4;height:24px;position:relative;overflow:hidden}
       .progress-fill{height:100%;background:#cc1f00;transition:width 0.7s ease}
       .progress-pct{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;font-family:'Bangers',cursive;font-size:0.85rem;letter-spacing:1px;color:#fffdf4;text-shadow:1px 1px 0 #1a1a1a}
-      .stats-row{display:flex;gap:1rem;margin-bottom:1.25rem;flex-wrap:wrap}
-      .stat-box{flex:1;min-width:110px;background:#ffe066;border:2px solid #1a1a1a;padding:0.6rem 1rem;text-align:center}
-      .stat-number{font-family:'Bangers',cursive;font-size:2.2rem;color:#cc1f00;line-height:1}
-      .stat-label{font-size:0.68rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#1a1a1a;margin-top:2px}
-      .results-title{font-family:'Bangers',cursive;font-size:2rem;letter-spacing:2px;color:#cc1f00;margin-bottom:1.25rem}
-      .wave2-banner{display:inline-flex;align-items:center;gap:0.5rem;background:#ffe066;border:2px solid #1a1a1a;font-size:0.75rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:0.3rem 0.85rem;margin-bottom:1.25rem}
-      .wave2-spinner{width:10px;height:10px;border:2px solid #1a1a1a;border-top-color:transparent;border-radius:50%;animation:spin 0.6s linear infinite;display:inline-block;flex-shrink:0}
-      @keyframes spin{to{transform:rotate(360deg)}}
+
+      /* ── Page-specific: filter panel ───────────────────────────────── */
       .filter-toggle-row{display:flex;align-items:center;gap:0.75rem;margin-bottom:1.25rem;flex-wrap:wrap}
       .btn-filter-toggle{background:#ffe066;color:#1a1a1a;border:2px solid #1a1a1a;box-shadow:2px 2px 0 #1a1a1a;font-family:'Oswald',sans-serif;font-size:0.78rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:0.3rem 0.9rem;cursor:pointer;white-space:nowrap}
       .btn-filter-toggle:hover{background:#ffd700}
@@ -495,23 +487,12 @@ export default function Preview() {
       .filter-checkboxes{display:flex;flex-wrap:wrap;gap:0.4rem;max-height:120px;overflow-y:auto}
       .filter-checkbox-label{display:flex;align-items:center;gap:0.3rem;font-size:0.75rem;font-weight:400;cursor:pointer;background:#fffdf4;border:1.5px solid #1a1a1a;padding:2px 7px;white-space:nowrap;user-select:none}
       .filter-checkbox-label.checked{background:#003399;color:#fffdf4;border-color:#003399}
-      .seller-group{margin-bottom:1.75rem}
-      .seller-header{background:#003399;color:#fffdf4;padding:0.5rem 0.75rem;display:flex;align-items:center;gap:0.6rem;flex-wrap:wrap;border:2px solid #1a1a1a;border-bottom:none}
-      .seller-name{font-family:'Bangers',cursive;font-size:1.35rem;letter-spacing:1px}
-      .bundle-badge{background:#cc1f00;color:#fffdf4;font-size:0.68rem;font-weight:600;padding:2px 8px;border:1.5px solid #1a1a1a;letter-spacing:1px;text-transform:uppercase;white-space:nowrap}
-      .subtotal-badge{font-size:0.73rem;font-weight:600;color:#fffdf4;background:#003399;border:1.5px solid #ffe066;padding:2px 8px;letter-spacing:0.5px;white-space:nowrap}
-      .badge-est{font-size:0.73rem;font-weight:600;color:#1a1a1a;background:#ffe066;border:1.5px solid #1a1a1a;padding:2px 8px;letter-spacing:0.5px;white-space:nowrap}
-      .badge-savings{font-size:0.73rem;font-weight:600;color:#fffdf4;background:#1a1a1a;border:1.5px solid #ffe066;padding:2px 8px;letter-spacing:0.5px;white-space:nowrap}
-      .listings-table{width:100%;border-collapse:collapse;border:2px solid #1a1a1a;font-size:0.82rem;table-layout:fixed}
-      .listings-table th{background:#1a1a1a;color:#fffdf4;padding:0.4rem 0.6rem;text-align:left;font-weight:600;letter-spacing:0.8px;text-transform:uppercase;font-size:0.7rem;white-space:nowrap}
-      .listings-table td{padding:0.45rem 0.6rem;border-bottom:1px solid #d4c9a8;vertical-align:top;font-weight:400;overflow:hidden;text-overflow:ellipsis;word-break:break-word}
-      .listings-table tr:last-child td{border-bottom:none}
-      .listings-table tr:nth-child(even) td{background:#f8f3e3}
-      .col-issue{width:24%}.col-title{width:42%}.col-price{width:10%;text-align:right}.col-ship{width:14%;text-align:right}.col-link{width:10%;text-align:center}
-      .listing-link{color:#cc1f00;font-weight:600;text-decoration:none;white-space:nowrap;font-size:0.8rem}
-      .listing-link:hover{text-decoration:underline}
-      .no-results{text-align:center;padding:2rem;color:#666;font-size:0.95rem;font-weight:400}
-      .disclosure{font-size:0.72rem;color:#888;text-align:center;font-weight:400;margin-top:1.25rem;line-height:1.5;border-top:1px solid #d4c9a8;padding-top:0.75rem}
+
+      /* ── Page-specific: extra seller header badges ──────────────────── */
+      .badge-est{font-size:0.75rem;font-weight:600;color:#1a1a1a;background:#ffe066;border:1.5px solid #1a1a1a;padding:2px 8px;letter-spacing:0.5px;white-space:nowrap}
+      .badge-savings{font-size:0.75rem;font-weight:600;color:#fffdf4;background:#1a1a1a;border:1.5px solid #ffe066;padding:2px 8px;letter-spacing:0.5px;white-space:nowrap}
+
+      /* ── Page-specific: share / email panel ────────────────────────── */
       .share-panel{border-bottom:2px solid #d4c9a8;margin-bottom:1.5rem;padding-bottom:1.25rem}
       .share-title{font-family:'Bangers',cursive;font-size:1.4rem;letter-spacing:2px;color:#1a1a1a;margin-bottom:0.75rem}
       .share-buttons{display:flex;gap:0.75rem;flex-wrap:wrap;margin-bottom:0.75rem}
@@ -533,9 +514,9 @@ export default function Preview() {
       .btn-email-send{background:#cc1f00;color:#fffdf4;border:3px solid #1a1a1a;box-shadow:3px 3px 0 #1a1a1a;font-family:'Bangers',cursive;font-size:1.2rem;letter-spacing:2px;padding:0.2rem 1.1rem 0.3rem;cursor:pointer;white-space:nowrap}
       .btn-email-send:hover{background:#a81900}
       .btn-email-send:disabled{opacity:0.6;cursor:default}
-      .search-action-row{display:flex;align-items:center;gap:1rem;margin-top:1.25rem;flex-wrap:wrap}
+
+      /* ── Page-specific: misc ───────────────────────────────────────── */
       .ship-fallback{color:#888;font-size:0.75rem}
-      @media(max-width:600px){.col-title{display:none}.col-issue{width:40%}.filter-grid{grid-template-columns:1fr}}
     `}</style>
     <div className="page-wrap">
       <SiteNav />
@@ -585,7 +566,7 @@ export default function Preview() {
 
         {results && (
           <div className="panel">
-            <div className="results-title">
+            <div className="section-title">
               {totalSellers === 0
                 ? "No Bundle Opportunities Found"
                 : sellerCount === 0

@@ -71,19 +71,12 @@ export default function SeriesGuidePage({ groupName, groupSlug, volumes }) {
         />
       </Head>
       <style>{`
-        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-        body{background-color:#f0e6c4;background-image:radial-gradient(circle,#c8b98a 1px,transparent 1px);background-size:10px 10px;font-family:'Oswald',sans-serif;color:#1a1a1a;min-height:100vh;padding:2rem 1rem 4rem}
-
-        .panel{background:#fffdf4;border:3px solid #1a1a1a;box-shadow:6px 6px 0 #1a1a1a;padding:1.5rem 1.75rem;margin-bottom:1.75rem}
-        .panel-slim{background:#fffdf4;border:3px solid #1a1a1a;box-shadow:4px 4px 0 #1a1a1a;padding:0.6rem 1.25rem;margin-bottom:1.75rem}
-        .caption{display:inline-block;background:#ffe066;border:2px solid #1a1a1a;padding:0.3rem 0.7rem;font-size:0.8rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:1.25rem}
-        .back-link{font-size:0.78rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#003399;text-decoration:none}
-        .back-link:hover{text-decoration:underline}
-
+        /* ── Page-specific: red series title header ─────────────────── */
         .series-header{background:#cc1f00;border:3px solid #1a1a1a;box-shadow:6px 6px 0 #1a1a1a;padding:1.25rem 1.75rem 1rem;margin-bottom:1.75rem;text-align:center}
         .series-header h1{font-family:'Bangers',cursive;font-size:clamp(2rem,7vw,3.5rem);color:#fffdf4;letter-spacing:4px;text-shadow:3px 3px 0 #1a1a1a;line-height:1;margin-bottom:0.35rem}
         .series-sub{color:#ffe066;font-size:0.82rem;letter-spacing:2px;text-transform:uppercase;font-weight:400}
 
+        /* ── Page-specific: volume cards ────────────────────────────── */
         .volume-card{background:#fffdf4;border:3px solid #1a1a1a;box-shadow:5px 5px 0 #1a1a1a;display:flex;overflow:hidden;margin-bottom:1.25rem}
         .volume-card:last-child{margin-bottom:0}
         .volume-card-accent{width:8px;flex-shrink:0;background:#003399}
@@ -101,7 +94,7 @@ export default function SeriesGuidePage({ groupName, groupSlug, volumes }) {
         <SiteNav />
 
         <div className="panel-slim">
-          <Link href="/collection-guides" className="back-link">
+          <Link href="/collection-guides" className="breadcrumb-link">
             &larr; Collection Guides
           </Link>
         </div>
@@ -179,7 +172,7 @@ export default function SeriesGuidePage({ groupName, groupSlug, volumes }) {
                 textDecoration: "none",
               }}
             >
-              Support me on Ko-fi
+              ☕ Support me on Ko-fi
             </a>
           </div>
         </div>
