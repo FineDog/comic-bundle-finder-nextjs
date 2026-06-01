@@ -17,9 +17,9 @@ function hashIp(req) {
 }
 
 async function logSearch(queries, ipHash) {
-  const pool = getPool();
-  if (!pool) return;
   try {
+    const pool = getPool();
+    if (!pool) return;
     await pool.query(
       "INSERT INTO search_logs (queries, query_count, ip_hash) VALUES ($1, $2, $3)",
       [JSON.stringify(queries), queries.length, ipHash]
@@ -91,7 +91,7 @@ export default async function handler(req, res) {
   if (!issues?.length) return res.status(400).json({ error: "No issues provided." });
   const deduped = [...new Set(issues.map((i) => i.trim()).filter(Boolean))];
 
-  logSearch(deduped, hashIp(req));
+  logSearch(deduped, hashIp(req)).catch(() => {});
 
   const sellerIssues = {};
   const totals = {};
