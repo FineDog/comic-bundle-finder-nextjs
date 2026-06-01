@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import Head from "next/head";
 import SiteNav from "../../components/SiteNav";
+import { runEbaySearch } from "../../lib/ebay-search";
 
 function esc(s) { return String(s || ""); }
 
@@ -19,13 +20,23 @@ function groupResults(rows, maxPrice) {
   return sellers;
 }
 
-export default function ArcPage({ arcId, arcName, arcDesc, configError }) {
+export default function ArcPage({ slug, arcId, arcName, arcDesc, configError }) {
   // "loading-issues" → "loading-ebay" → "done" | "error"
   const [status, setStatus] = useState("loading-issues");
   const [issues, setIssues] = useState([]);
   const [rows, setRows] = useState([]);
+  const [wave2Loading, setWave2Loading] = useState(false);
   const [maxPrice, setMaxPrice] = useState("15");
+  const [userZip, setUserZip] = useState(null);
   const didFire = useRef(false);
+
+  // Geolocate on mount for shipping estimates
+  useEffect(() => {
+    fetch("/api/geolocate")
+      .then(r => r.json())
+      .then(({ zip }) => setUserZip(zip || null))
+      .catch(() => setUserZip(null));
+  }, []);
 
   useEffect(() => {
     if (didFire.current || !arcId) return;
@@ -34,26 +45,21 @@ export default function ArcPage({ arcId, arcName, arcDesc, configError }) {
     // Step 1: fetch issues from the Blob-cached API route (never calls Metron directly)
     fetch(`/api/arc/${arcId}/issues`)
       .then((r) => r.json())
-      .then((data) => {
+      .then(async (data) => {
         if (data.error) throw new Error(data.error);
-        if (data.issues === null) { setStatus("not-cached"); return null; }
+        if (data.issues === null) { setStatus("not-cached"); return; }
         const issueList = data.issues || [];
         setIssues(issueList);
-        if (issueList.length === 0) { setStatus("done"); return null; }
+        if (!issueList.length) { setStatus("done"); return; }
 
-        // Step 2: eBay search
+        // Step 2: two-wave eBay search
         setStatus("loading-ebay");
-        return fetch("/api/search", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ issues: issueList }),
-        }).then((r) => r.json());
-      })
-      .then((data) => {
-        if (!data) return;
-        if (data.error) throw new Error(data.error);
-        setRows(data.results || []);
-        setStatus("done");
+        await runEbaySearch(issueList, userZip, {
+          onWave1(wave1Rows) { setRows(wave1Rows); setStatus("done"); },
+          onWave2Start()    { setWave2Loading(true); },
+          onWave2(merged)   { setRows(merged); },
+          onWave2End()      { setWave2Loading(false); },
+        });
       })
       .catch(() => setStatus("error"));
   }, [arcId]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -66,7 +72,7 @@ export default function ArcPage({ arcId, arcName, arcDesc, configError }) {
   const totalSellers = new Set(rows.map((r) => r.seller)).size;
 
   const metaDesc = `Find eBay bundle deals for the ${arcName} story arc. Sellers ranked by how many issues they carry — save on combined shipping.`;
-  const pageUrl = `https://www.comicbundlefinder.com/arc/${slug}`;
+  const pageUrl = `https://www.comicbundlefinder.com/arc/${slug || ""}`;
 
   return (
     <>
@@ -113,6 +119,7 @@ export default function ArcPage({ arcId, arcName, arcDesc, configError }) {
         .loading-sub{font-family:'Oswald',sans-serif;font-size:0.82rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#666;margin-top:0.75rem}
         .loading-dots::after{content:'…';animation:dots 1.2s steps(3,end) infinite}
         @keyframes dots{0%,100%{content:'.'}33%{content:'..'}66%{content:'...'}}
+        @keyframes spin{to{transform:rotate(360deg)}}
         .error-state{text-align:center;padding:2rem;color:#cc1f00;font-weight:600}
         .no-results{text-align:center;padding:2rem;color:#666;font-size:0.95rem;font-weight:400}
 
@@ -192,6 +199,13 @@ export default function ArcPage({ arcId, arcName, arcDesc, configError }) {
             <div className="loading-state">
               <div><span className="loading-dots">Searching eBay</span></div>
               <div className="loading-sub">Checking all {issues.length} issues for bundle deals…</div>
+            </div>
+          )}
+
+          {status === "done" && wave2Loading && (
+            <div style={{display:"inline-flex",alignItems:"center",gap:"0.5rem",background:"#ffe066",border:"2px solid #1a1a1a",fontSize:"0.75rem",fontWeight:600,letterSpacing:"1px",textTransform:"uppercase",padding:"0.3rem 0.85rem",marginBottom:"1.25rem"}}>
+              <span style={{width:10,height:10,border:"2px solid #1a1a1a",borderTopColor:"transparent",borderRadius:"50%",animation:"spin 0.6s linear infinite",display:"inline-block",flexShrink:0}} />
+              Loading additional results…
             </div>
           )}
 
@@ -388,4 +402,5 @@ export async function getStaticProps({ params }) {
     props: { slug, arcId, arcName: arc.name, arcDesc: arc.desc || "" },
     revalidate: 86400,
   };
+
 }

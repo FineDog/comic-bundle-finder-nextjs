@@ -42,11 +42,33 @@ async function readEbayCache(pathname) {
 }
 
 export default async function handler(req, res) {
+  const { slug } = req.query;
+
+  // POST: client uploads merged Wave 1+2 results to Blob cache (metron-* series only).
+  if (req.method === "POST") {
+    const metronMatch = /^metron-(\d+)$/.exec(slug);
+    if (!metronMatch) return res.status(405).json({ error: "Cache write not supported for this series type." });
+    const metronId = parseInt(metronMatch[1], 10);
+    const { rows, startIdx, count } = req.body;
+    if (!rows || startIdx == null || !count) return res.status(400).json({ error: "Missing rows, startIdx, or count." });
+    const ebayBlobPathname = `dynamic-series/metron-${metronId}/ebay/${startIdx}-${count}.json`;
+    try {
+      await put(ebayBlobPathname, JSON.stringify({ rows, cachedAt: Date.now() }), {
+        access: "public",
+        addRandomSuffix: false,
+        contentType: "application/json",
+      });
+      return res.status(200).json({ ok: true });
+    } catch (e) {
+      return res.status(500).json({ error: e.message });
+    }
+  }
+
   if (req.method !== "GET") return res.status(405).json({ error: "Method not allowed." });
 
-  const { slug } = req.query;
   const startIdx = Math.max(0, parseInt(req.query.start || "0", 10));
   const count = Math.min(50, Math.max(1, parseInt(req.query.count || "50", 10)));
+  const zip = req.query.zip || null;
 
   // ─── Dynamic series: metron-{id} ───────────────────────────────────────────
   const metronMatch = /^metron-(\d+)$/.exec(slug);
@@ -78,41 +100,33 @@ export default async function handler(req, res) {
       });
     }
 
-    // Cache miss — live eBay fetch
+    // Cache miss — live eBay fetch (Wave 1 only; client handles Wave 2 and will POST results back)
     const token = await getEbayToken();
     const issueListings = [];
+    const totals = {};
     for (let i = 0; i < batchIssues.length; i += CONCURRENCY) {
       const batch = batchIssues.slice(i, i + CONCURRENCY);
       const batchResults = await Promise.all(
-        batch.map((issue) => searchEbay(token, issue.issueName))
+        batch.map((issue) => searchEbay(token, issue.issueName, 0, zip))
       );
       for (let j = 0; j < batch.length; j++) {
-        issueListings.push({ issue: batch[j], listings: batchResults[j] });
+        issueListings.push({ issue: batch[j], listings: batchResults[j].items });
+        totals[batch[j].issueName] = batchResults[j].total;
       }
     }
 
     const rows = aggregateRows(issueListings);
     const cachedAt = Date.now();
 
-    // Write to Blob cache (Simple Operation — only fires on miss)
-    try {
-      await put(ebayBlobPathname, JSON.stringify({ rows, cachedAt }), {
-        access: "public",
-        addRandomSuffix: false,
-        contentType: "application/json",
-      });
-    } catch {
-      // Cache write failure is non-fatal
-    }
-
+    // Do not write to Blob yet — client will POST back the complete (Wave 1 + Wave 2) results.
     return res.status(200).json({
       results: rows,
+      totals,
       issues: batchIssues,
       issueCount: batchIssues.length,
       startIdx,
       endIdx: startIdx + batchIssues.length - 1,
       totalIssues: allIssues.length,
-      cachedAt,
     });
   }
 
@@ -152,15 +166,17 @@ export default async function handler(req, res) {
 
   // Fetch any missing issues live from eBay.
   const ebayResults = [];
+  const totals = {};
   if (staleIssues.length) {
     const token = await getEbayToken();
     for (let i = 0; i < staleIssues.length; i += CONCURRENCY) {
       const batch = staleIssues.slice(i, i + CONCURRENCY);
       const batchListings = await Promise.all(
-        batch.map((issue) => searchEbay(token, issue.issueName))
+        batch.map((issue) => searchEbay(token, issue.issueName, 0, zip))
       );
       for (let j = 0; j < batch.length; j++) {
-        ebayResults.push({ issue: batch[j], listings: batchListings[j], cachedAt: Date.now() });
+        ebayResults.push({ issue: batch[j], listings: batchListings[j].items, cachedAt: Date.now() });
+        totals[batch[j].issueName] = batchListings[j].total;
       }
     }
   }
@@ -171,6 +187,7 @@ export default async function handler(req, res) {
 
   return res.status(200).json({
     results: rows,
+    totals: Object.keys(totals).length ? totals : undefined,
     issues: batchIssues,
     issueCount: batchIssues.length,
     startIdx,

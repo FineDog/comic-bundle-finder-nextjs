@@ -6,6 +6,7 @@ import Link from "next/link";
 import { SERIES, getSeriesConfig } from "../../lib/series-config";
 import { fetchMetronSeriesMeta } from "../../lib/metron-issues";
 import SiteNav from "../../components/SiteNav";
+import { mergeAndRecount, EBAY_PAGE_SIZE } from "../../lib/ebay-search";
 
 // How many issues are fetched from eBay in one API call. Kept fixed so the
 // Blob cache key is predictable and a single response covers many display pages.
@@ -59,13 +60,23 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
   const [showSlider, setShowSlider] = useState(false);
   const [data, setData]     = useState(null);
   const [loading, setLoading] = useState(true);
+  const [wave2Loading, setWave2Loading] = useState(false);
   const [error, setError]   = useState(null);
   const [jumpInput, setJumpInput] = useState("");
   const [scanning, setScanning]   = useState(false);
   const [wrapMsg, setWrapMsg]     = useState(null);
+  const [userZip, setUserZip]     = useState(null);
   const abortRef = useRef(null);
   const autoSkipCount = useRef(0);
   const didWrapRef    = useRef(false);
+
+  // Geolocate on mount for shipping estimates
+  useEffect(() => {
+    fetch("/api/geolocate")
+      .then(r => r.json())
+      .then(({ zip }) => setUserZip(zip || null))
+      .catch(() => setUserZip(null));
+  }, []);
 
   // Derived: start of the 50-issue fetch window that covers startIdx.
   const fetchStart = Math.floor(startIdx / FETCH_SIZE) * FETCH_SIZE;
@@ -76,19 +87,58 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
     if (abortRef.current) abortRef.current.abort();
     const controller = new AbortController();
     abortRef.current = controller;
+    let cancelled = false;
 
     setLoading(true);
     setError(null);
     setData(null); // clear stale data so auto-advance doesn't fire on old results
+    setWave2Loading(false);
 
-    fetch(`/api/series/${slug}/results?start=${fetchStart}&count=${FETCH_SIZE}`, {
+    const zipParam = userZip ? `&zip=${encodeURIComponent(userZip)}` : "";
+
+    fetch(`/api/series/${slug}/results?start=${fetchStart}&count=${FETCH_SIZE}${zipParam}`, {
       signal: controller.signal,
     })
       .then((r) => r.json())
-      .then((json) => {
+      .then(async (json) => {
         if (json.error) throw new Error(json.error);
         setData(json);
         setLoading(false);
+
+        // Wave 2: fetch remaining eBay results for any issue that had more than 200
+        if (!cancelled && json.totals) {
+          const wave2Tasks = [];
+          for (const [issue, total] of Object.entries(json.totals)) {
+            for (let offset = EBAY_PAGE_SIZE; offset < total; offset += EBAY_PAGE_SIZE) {
+              wave2Tasks.push({ issue, offset });
+            }
+          }
+          if (wave2Tasks.length > 0) {
+            setWave2Loading(true);
+            try {
+              const res2 = await fetch("/api/search", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ issueOffsets: wave2Tasks, zip: userZip }),
+                signal: controller.signal,
+              });
+              const data2 = await res2.json();
+              if (!cancelled && res2.ok && data2.results?.length) {
+                const merged = mergeAndRecount(json.results, data2.results);
+                setData(prev => ({ ...prev, results: merged }));
+                // Write complete results to Blob cache for dynamic (metron-*) series
+                if (/^metron-\d+$/.test(slug)) {
+                  fetch(`/api/series/${slug}/results`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ rows: merged, startIdx: fetchStart, count: FETCH_SIZE }),
+                  }).catch(() => {});
+                }
+              }
+            } catch {}
+            if (!cancelled) setWave2Loading(false);
+          }
+        }
       })
       .catch((err) => {
         if (err.name === "AbortError") return;
@@ -97,7 +147,7 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
         setScanning(false);
       });
 
-    return () => controller.abort();
+    return () => { controller.abort(); cancelled = true; };
   }, [fetchStart, slug]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ─── Client-side window into the fetched block ───────────────────────────
@@ -155,8 +205,9 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
 
   // ─── Auto-advance past empty display pages ────────────────────────────────
   // Fires when loading finishes OR when startIdx changes within the same fetch block.
+  // Waits for Wave 2 to complete before deciding a page is empty.
   useEffect(() => {
-    if (loading || !data) return;
+    if (loading || wave2Loading || !data) return;
 
     // Guard: ignore stale data from a previous fetch block.
     // (data.startIdx is the fetchStart used for the last completed fetch)
@@ -194,7 +245,7 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
     const next     = startIdx + batchSize;
     const blockEnd = fetchStart + FETCH_SIZE;
     setStartIdx(Math.min(next, blockEnd));
-  }, [loading, data, startIdx]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [loading, wave2Loading, data, startIdx]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ─── Sorted sellers ───────────────────────────────────────────────────────
   const sortedSellers = Object.entries(sellers).sort(
@@ -279,6 +330,9 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
         .loading-sub{font-family:'Oswald',sans-serif;font-size:0.82rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#666;margin-top:0.75rem}
         .loading-dots::after{content:'…';animation:dots 1.2s steps(3,end) infinite}
         @keyframes dots{0%,100%{content:'.'}33%{content:'..'}66%{content:'...'}}
+        .wave2-banner{display:inline-flex;align-items:center;gap:0.5rem;background:#ffe066;border:2px solid #1a1a1a;font-size:0.75rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:0.3rem 0.85rem;margin-bottom:1.25rem}
+        .wave2-spinner{width:10px;height:10px;border:2px solid #1a1a1a;border-top-color:transparent;border-radius:50%;animation:spin 0.6s linear infinite;display:inline-block;flex-shrink:0}
+        @keyframes spin{to{transform:rotate(360deg)}}
         .error-state{text-align:center;padding:2rem;color:#cc1f00;font-weight:600}
         .no-results{text-align:center;padding:2rem;color:#666;font-size:0.95rem;font-weight:400}
         .wrap-msg{background:#ffe066;border:2px solid #1a1a1a;padding:0.6rem 1rem;font-size:0.85rem;font-weight:600;letter-spacing:0.5px;margin-bottom:1.25rem}
@@ -418,6 +472,12 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
           {!loading && !scanning && !error && data && (
             <>
               {wrapMsg && <div className="wrap-msg">&#8617; {wrapMsg}</div>}
+              {wave2Loading && (
+                <div className="wave2-banner">
+                  <span className="wave2-spinner" />
+                  Loading additional results…
+                </div>
+              )}
               <div className="results-title">
                 {sellerCount === 0
                   ? "No Bundle Opportunities Found"

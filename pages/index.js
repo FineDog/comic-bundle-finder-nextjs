@@ -2,6 +2,8 @@ import { useState, useRef, useEffect } from "react";
 import Head from "next/head";
 import * as XLSX from "xlsx";
 import SiteNav from "../components/SiteNav";
+import { runEbaySearch } from "../lib/ebay-search";
+import { parseCSVLine, yearFromDateString, cleanSeriesName, parseIssueNum } from "../lib/parse-utils";
 
 const STAGES = [
   { pct: 5,  msg: "Waking up the server…" },
@@ -16,51 +18,11 @@ const STAGES = [
   { pct: 94, msg: "Almost there…" },
 ];
 
-// Wave 1 returns MAX_RESULTS per issue; wave 2 fetches the remainder.
-const EBAY_PAGE_SIZE = 200;
-
 // Estimated USPS Media Mail shipping range (Zone 1 → Zone 8) shown when
 // geolocation is unavailable and the listing uses calculated shipping.
 const SHIPPING_FALLBACK = "~$4–$6";
 
-// ── Utility ───────────────────────────────────────────────────────────────────
-
-function parseCSVLine(line) {
-  const fields = []; let current = ""; let inQuotes = false;
-  for (let i = 0; i < line.length; i++) {
-    const ch = line[i];
-    if (ch === '"') { if (inQuotes && line[i+1]==='"'){current+='"';i++;}else inQuotes=!inQuotes; }
-    else if (ch === ',' && !inQuotes) { fields.push(current.trim()); current = ""; }
-    else { current += ch; }
-  }
-  fields.push(current.trim()); return fields;
-}
-
-function yearFromDateString(s) {
-  if (!s) return "";
-  const m = s.match(/^(\d{4})-/); if (m) return m[1];
-  const clz = s.match(/^[A-Za-z]{3}-(\d{2})$/);
-  if (clz) { const y = parseInt(clz[1], 10); return String(y < 30 ? 2000 + y : 1900 + y); }
-  const d = new Date(s); return isNaN(d) ? "" : String(d.getFullYear());
-}
-
 function esc(s) { return String(s || ""); }
-
-// ── Series name helpers ───────────────────────────────────────────────────────
-
-function cleanSeriesName(name) {
-  return name
-    .replace(/\s*\(Vol\.\s*\d+\)/gi, "")
-    .replace(/,?\s*Vol\.\s*\d+/gi, "")
-    .replace(/\s*\(\d{4}\s*[-–]\s*(?:\d{4}|[Pp]resent)\)/g, "")
-    .replace(/\s{2,}/g, " ")
-    .trim();
-}
-
-function parseIssueNum(s) {
-  const m = String(s).match(/^(\d+)/);
-  return m ? parseInt(m[1], 10) : null;
-}
 
 // ── Search parsers ────────────────────────────────────────────────────────────
 
@@ -117,24 +79,6 @@ function formatLabel(r) {
 }
 
 // ── Result processing ─────────────────────────────────────────────────────────
-
-// Merge wave 2 rows into wave 1, deduplicated by URL, with bundle counts recomputed.
-function mergeAndRecount(rows1, rows2) {
-  const urlSet = new Set(rows1.map(r => r.url));
-  const merged = [...rows1];
-  for (const r of rows2) {
-    if (!urlSet.has(r.url)) {
-      urlSet.add(r.url);
-      merged.push(r);
-    }
-  }
-  const sellerIssues = {};
-  for (const r of merged) {
-    if (!sellerIssues[r.seller]) sellerIssues[r.seller] = new Set();
-    sellerIssues[r.seller].add(r.issue);
-  }
-  return merged.map(r => ({ ...r, bundle_count: sellerIssues[r.seller].size }));
-}
 
 // Apply filters and sort to raw rows. Returns sorted array of [sellerName, sellerData].
 function getFilteredSellers(rows, issueCount, filters, sortBy) {
@@ -351,46 +295,17 @@ export default function Preview() {
   async function executeSearch(issues) {
     setResults(null); setWave2Loading(false); startProgress();
     try {
-      // Wave 1
-      const res = await fetch("/api/search", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ issues, zip: userZip }),
+      await runEbaySearch(issues, userZip, {
+        onWave1(rows) {
+          const bundleCount = new Set(rows.filter(r => r.bundle_count >= 2).map(r => r.seller)).size;
+          track("search_completed", { issue_count: issues.length, bundle_count: bundleCount });
+          finishProgress(true);
+          setResults({ rows, issueCount: issues.length, issues });
+        },
+        onWave2Start() { setWave2Loading(true); },
+        onWave2(merged) { setResults(prev => ({ ...prev, rows: merged })); },
+        onWave2End() { setWave2Loading(false); },
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Server error");
-
-      const bundleCount = new Set(data.results.filter(r => r.bundle_count >= 2).map(r => r.seller)).size;
-      track("search_completed", { issue_count: issues.length, bundle_count: bundleCount });
-      finishProgress(true);
-      setResults({ rows: data.results, issueCount: issues.length, issues });
-
-      // Determine which issues need additional pages
-      const wave2Tasks = [];
-      for (const [issue, total] of Object.entries(data.totals || {})) {
-        for (let offset = EBAY_PAGE_SIZE; offset < total; offset += EBAY_PAGE_SIZE) {
-          wave2Tasks.push({ issue, offset });
-        }
-      }
-
-      if (wave2Tasks.length > 0) {
-        setWave2Loading(true);
-        try {
-          const res2 = await fetch("/api/search", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ issueOffsets: wave2Tasks, zip: userZip }),
-          });
-          const data2 = await res2.json();
-          if (res2.ok && data2.results?.length) {
-            setResults(prev => ({
-              ...prev,
-              rows: mergeAndRecount(prev.rows, data2.results),
-            }));
-          }
-        } catch {} // wave 2 failure is non-fatal
-        setWave2Loading(false);
-      }
     } catch (err) {
       finishProgress(false);
       setStatus({ msg: `Error: ${err.message}. Try again in a moment.`, type: "error" });

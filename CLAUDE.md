@@ -12,14 +12,29 @@ GitHub repo: github.com/FineDog/comic-bundle-finder-nextjs (branch: main)
 
 ---
 
+## Active Development Notice
+
+**The site is currently mid-redesign.** Two separate branches and Vercel projects are in use:
+
+- **`main` branch → `comic-bundle-finder-nextjs` Vercel project** — the live production site.
+  Backend changes (API routes, scripts, lib/) are fine here. Do not touch the live UI pages
+  (`pages/index.js` and other user-facing pages) unless specifically asked.
+- **`ui-redesign` branch → `comic-bundle-finder-preview` Vercel project** — where all UI
+  redesign work happens. Frontend changes go here.
+
+Some things (e.g. GitHub Actions scripts) must land on `main` to work correctly, but the
+default assumption is: backend changes to `main`, UI changes to `ui-redesign`.
+
+---
+
 ## Stack
 
 - **Framework:** Next.js (16.2.4) with Turbopack
 - **Hosting:** Vercel (auto-deploys on every push to `main`)
 - **Language:** JavaScript (no TypeScript)
-- **Key dependency:** `xlsx` npm package (client-side Excel parsing)
+- **Key dependencies:** `xlsx` (client-side Excel parsing), `next-auth` (auth), `resend` (email)
 - **External API:** eBay Browse API (OAuth2 client credentials flow)
-- **Optional API:** Anthropic (for "Did you mean?" typo correction feature)
+- **Database:** Postgres (via `DATABASE_URL`) — user accounts, saved lists, digest opt-in
 
 All search logic runs server-side in Next.js API routes. No separate backend.
 Credentials are stored as Vercel environment variables — never in code.
@@ -28,12 +43,40 @@ Credentials are stored as Vercel environment variables — never in code.
 
 ## Environment Variables (Vercel)
 
+### eBay
+
 | Variable | Purpose |
 |---|---|
 | `EBAY_APP_ID` | eBay OAuth client ID |
 | `EBAY_SECRET` | eBay OAuth client secret |
-| `EBAY_CAMPAIGN_ID` | eBay Partner Network campaign ID (affiliate links) |
-| `ANTHROPIC_API_KEY` | Powers "Did you mean?" typo correction (optional) |
+| `EBAY_CAMPAIGN_ID` | eBay Partner Network campaign ID (affiliate links) — optional |
+
+### Auth & Database
+
+| Variable | Purpose |
+|---|---|
+| `DATABASE_URL` | Postgres connection string — user accounts, saved lists, digest opt-in |
+| `NEXTAUTH_SECRET` | Session signing/encryption key |
+| `NEXTAUTH_URL` | Canonical URL for NextAuth redirects (e.g. `https://comicbundlefinder.com`) |
+
+### Email
+
+| Variable | Purpose |
+|---|---|
+| `RESEND_API_KEY` | Resend API key — powers daily digest emails and one-off email results |
+
+### Storage
+
+| Variable | Purpose |
+|---|---|
+| `BLOB_READ_WRITE_TOKEN` | Vercel Blob token — arc/series eBay result caching and issue lists |
+
+### Metron
+
+| Variable | Purpose |
+|---|---|
+| `METRON_USERNAME` | Metron API credentials (arc/series metadata) |
+| `METRON_PASSWORD` | Metron API credentials |
 
 To add/update: Vercel Dashboard → Project → Settings → Environment Variables.
 After changing env vars, trigger a manual redeploy from the Deployments tab.
@@ -42,27 +85,129 @@ After changing env vars, trigger a manual redeploy from the Deployments tab.
 
 ## Features Currently Live
 
-- **Manual input:** Textarea, one issue per line
-- **File upload + drag-and-drop** for want list imports:
-  - **ComicGeeks (.xlsx):** Detected by presence of "Full Title" and "In Wish List" columns.
-    Filters to rows where `In Wish List >= 1`. Formats each as `Full Title (Year)` using
-    year extracted from the `Release Date` column.
-  - **CLZ (.csv):** Detected by "Series" and "Issue" columns. CLZ exports are always wish
-    lists (collection vs. want list are separate exports in CLZ). Formats as `Series #Issue (Year)`.
-  - **Plain .txt or generic .csv:** Each line treated as one search term as-is.
-  - After parsing, textarea is populated with extracted titles so user can review/edit before
-    searching. A confirmation message shows item count (e.g. "✓ Loaded 42 wish list items
-    from League of Comic Geeks export.").
-- **Price cap input:** User-configurable max price filter
-- **Progress bar:** Shows search progress as issues are queried
-- **Bundle filtering:** Only sellers with 2+ matching issues are shown
-- **Stats row:** Issues Searched / Total Sellers Found / Bundle Opportunities
-- **Subtotals per seller:** Shows total cost per seller across matching listings
-- **"Did you mean?" typo correction:** Uses Anthropic API to suggest corrections for
-  unrecognized issue names. Inactive if `ANTHROPIC_API_KEY` is not set.
-- **eBay affiliate links:** Applied when `EBAY_CAMPAIGN_ID` is set (3% promoted listings
-  rate matches the seller automation stack)
-- **eBay affiliate disclosure:** Displayed in results footer per eBay Partner Network ToS
+### Main Search (`pages/index.js`)
+
+**Input**
+- Manual textarea, one issue per line
+- File upload button and drag-and-drop zone accept `.xlsx`, `.csv`, and `.txt`
+  - **ComicGeeks `.xlsx`:** Detected by "Full Title" + "In Wish List" columns. Filters to
+    `In Wish List >= 1`. Formats each as `Full Title (Year)` using `Release Date`.
+  - **CLZ `.csv`:** Detected by "Series" + "Issue" columns. If a "Collection Status" column
+    is present, filters to wish-list rows only. Formats as `Series #Issue (Year)`.
+  - **Plain `.txt` or generic `.csv`:** Each line treated as a search term as-is.
+  - After parsing, textarea is populated for review/edit before searching. A confirmation
+    message shows item count (e.g. "✓ Loaded 42 wish list items from League of Comic Geeks export.").
+
+**Search**
+- Two-wave eBay search via `lib/ebay-search.js` → `runEbaySearch`:
+  - **Wave 1:** Searches all issues at `offset=0` (up to 200 results each). Results render
+    immediately as soon as Wave 1 returns.
+  - **Wave 2:** For any issue where `total > 200`, fires parallel offset requests to fetch
+    remaining results. A spinner banner shows while Wave 2 is in flight. Results are merged
+    and deduplicated (by URL) via `mergeAndRecount`, and bundle counts are recomputed.
+- Geolocation on mount: calls `/api/geolocate` to resolve a zip from the user's IP. Passed
+  as `zip` on every eBay call so calculated-shipping listings return accurate estimates. Falls
+  back to "~$4–$6" range display if geolocation fails or returns no result.
+- Animated progress bar with staged messages during Wave 1.
+
+**Results**
+- Sellers grouped by name, ranked by bundle count (most matching issues first)
+- Per-seller header shows: seller name, issue count badge, subtotal (from cheapest listing
+  per issue), estimated price per issue, and estimated shipping savings vs buying separately
+- Each seller's listings shown in a table: Issue | Listing Title | Price | Est. Shipping | Link
+- "Est. Shipping" column: FREE / dollar amount / fallback range / "calc." if zip resolved
+- Stats row: Issues Searched / Total Sellers Found / Bundle Opportunities
+- Single-issue mode (one issue searched): bundle badge shows listing count instead of issue count
+
+**Filter & Sort**
+- Collapsible panel, toggled by "Filter & Sort" button. Active filters shown with a red dot.
+- **Price per issue:** min and max dollar inputs
+- **Free shipping:** Any / Free only / No free
+- **Min issues per bundle:** numeric input (min 2)
+- **Sort by:** Bundle size (default) / Lowest est. price per issue / Lowest est. shipping
+- **Required issues:** Checkbox list of all searched issues — only show sellers who carry all
+  checked issues. Select All / Deselect All shortcut.
+- Reset button clears all filters and sort back to defaults.
+
+**Save & Share**
+- "Save Results" button: POSTs rows to `/api/save-results`, gets back a shareable ID, auto-copies
+  the URL to clipboard
+- "Email Results" button: reveals an email form; POSTs to `/api/email-results` which sends
+  a styled HTML results email via Resend
+- eBay affiliate disclosure shown in results footer per eBay Partner Network ToS
+
+---
+
+### Series Browser
+
+**Collection Guides index** (`pages/collection-guides.js`)  
+Lists all browsable series. Entry point for series and arc pages.
+
+**Series pages** (`pages/series/[slug].js` + `pages/api/series/[slug]/results.js`)  
+Paginated eBay bundle search across an entire series run (e.g. Amazing Spider-Man Vol. 1).
+
+- Issues shown 10 at a time by default (slider adjusts 5–50 per page)
+- eBay results fetched 50 issues at a time ("fetch block") — navigating within a block is
+  instant (client-side slice). A new API call only fires when the user crosses a 50-issue boundary.
+- **Two-wave search:** Wave 1 from the cached series API route; Wave 2 fires to `/api/search`
+  for any issue where `total > 200`. After Wave 2, merged results are POSTed back to
+  `pages/api/series/[slug]/results.js` to update the Blob cache with complete data.
+- **Auto-advance:** If no bundle opportunities exist at the current max price, the page
+  automatically pages forward (up to 30 consecutive empty pages) looking for results. Wraps
+  to the beginning if it reaches the end with nothing found.
+- Max price filter: client-side, applied to cached data without re-fetching
+- Jump to issue number input
+- Geolocation on mount; zip passed to API for accurate shipping estimates
+- "Updated X hours ago" badge shows cache freshness
+
+**Series groups** (`pages/series-guide/[slug].js`)  
+Groups multiple volumes of the same series (e.g. all Amazing Spider-Man volumes).
+
+---
+
+### Arc Pages (`pages/arc/[slug].js`)
+
+Story arc bundle search. Issue list fetched from Blob cache (written nightly by
+`scripts/refresh-arc-index.js` via GitHub Actions — never from a live Metron call).
+
+- Full two-wave search via `runEbaySearch` once issue list is available
+- Geolocation on mount; zip passed to search
+- Wave 2 spinner banner shown while additional results load
+- Max price filter on displayed results
+- Shows "not yet indexed" message if nightly script hasn't run for this arc yet
+
+---
+
+### Gap Analyzer (`pages/gap-analyzer.js`)
+
+Upload your comic collection and find the issues you're missing from a run.
+
+- Accepts LOCG `.xlsx` (reads owned issues from the collection sheet) or CLZ `.csv`
+- Detects gaps: parses out which issue numbers you have and identifies the missing ones
+  within a contiguous run
+- Displays gap list grouped by series
+- "Search for these on eBay" button pushes the gap list to the main search page
+  via `sessionStorage` and fires the search automatically
+
+---
+
+### User Accounts
+
+- Sign-in via NextAuth.js (email magic link)
+- Account page (`pages/account.js`): upload/manage saved want lists (LOCG, CLZ, manual)
+- Saved lists stored in Postgres; combined on search for daily digest
+- Daily digest email opt-in toggle on account page
+
+---
+
+### Daily Digest (`scripts/daily-digest.mjs`)
+
+GitHub Actions nightly job. For each user with `digest_enabled = true`:
+- Merges their LOCG, CLZ, and manual lists (deduplicated)
+- Searches eBay for all issues using `searchEbay` from `lib/ebay.js` (Wave 1 only — digest
+  doesn't need Wave 2 since it's not interactive)
+- Emails bundle results as styled HTML via Resend if any bundles found
+- Updates `digest_last_sent` timestamp in Postgres
 
 ---
 
@@ -97,9 +242,8 @@ To test a major change before replacing the live page, save it as `pages/preview
 
 ## Outstanding To-Do Items
 
-These were planned but not yet built:
-
-1. **Upload Collection**: Functionality where users can upload their collection list and the app will identify gaps and generate a search list from the gaps.
+1. **Premium features buildout** — ongoing. Auth scaffolding and the premium guard
+   (`lib/premium-guard.js`) are in place. Feature set and gating not yet implemented.
 
 ---
 
@@ -159,7 +303,7 @@ if (remaining <= 3) await sleep(65000); // pause a full minute
 |---|---|---|---|
 | Arc issue list | `arc-issues/{arcId}.json` | none (static) | `scripts/refresh-arc-index.js` |
 | Series issue list | `dynamic-series/metron-{id}/issues.json` | 7d | `lib/metron-issues.js` (getStaticProps only) |
-| Series eBay results | `dynamic-series/metron-{id}/ebay/{start}-{count}.json` | 1h | `pages/api/series/[slug]/results.js` |
+| Series eBay results | `dynamic-series/metron-{id}/ebay/{start}-{count}.json` | 1h | Client POST to `/api/series/[slug]/results` after Wave 2 completes |
 
 ### Required secrets
 
@@ -169,13 +313,68 @@ if (remaining <= 3) await sleep(65000); // pause a full minute
 
 ---
 
+## Canonical eBay Search Engine
+
+All eBay searching goes through `lib/ebay.js`. Do not add eBay API calls anywhere else.
+
+- **`searchEbay(token, issueName, offset=0, zip=null)`** — canonical search function. Returns
+  `{ items, total }`. `total` is eBay's full result count (may exceed 200); `items` is the
+  filtered, de-duped page. Pass `offset` for Wave 2 fetches; pass `zip` for calculated-shipping
+  estimates via `X-EBAY-C-ENDUSERCTX`.
+- **`searchEbayBatch(token, issues, concurrency=8)`** — batch helper for scripts/server routes
+  that don't need Wave 2 (daily digest, nightly cache refresh). Returns `{ issue, listings[] }[]`.
+- **`getEbayToken()`** — cached OAuth token fetch. Import from here, never re-implement.
+- **`aggregateRows(issueListings)`** — groups flat listings into seller-keyed result rows.
+
+### Two-wave client orchestration
+
+Pages that display live eBay results must show Wave 1 immediately and stream Wave 2 in the
+background. Use `lib/ebay-search.js` for this:
+
+```js
+import { runEbaySearch, mergeAndRecount, EBAY_PAGE_SIZE } from "../lib/ebay-search";
+
+await runEbaySearch(issues, userZip, {
+  onWave1(rows)    { /* render immediately */ },
+  onWave2Start()   { /* show spinner      */ },
+  onWave2(merged)  { /* update results    */ },
+  onWave2End()     { /* hide spinner      */ },
+});
+```
+
+Series/arc pages with Blob caching: Wave 1 comes from the cached API route; Wave 2 goes to
+`/api/search` directly. After Wave 2 completes, POST the merged rows back to the series
+results endpoint so the cache contains complete results for future visitors.
+
+---
+
+## Shared Parser Utilities
+
+Comic import parsers (CSV line splitting, date parsing, series name cleaning) live in
+`lib/parse-utils.js`. Import from there — do not copy-paste into pages.
+
+Exports: `parseCSVLine`, `yearFromDateString`, `monthYearFromDateString`, `yearAfterMonths`,
+`cleanSeriesName`, `parseIssueNum`.
+
+---
+
 ## Notes for Claude Code
 
-- The eBay API token is fetched fresh via client credentials OAuth on each request — there
-  is no token caching or refresh cycle in this app.
+- The eBay API token is fetched and cached in `lib/ebay.js` — do not add token logic elsewhere.
 - The `xlsx` package handles all spreadsheet parsing client-side in the browser; no server
   involvement for file uploads.
 - When adding features to the results table, keep the retro aesthetic consistent —
   new UI elements should use the existing color tokens and border style.
-- Gap analysis (finding missing issues within a run) was discussed as a future feature but
-  not scoped yet. CLZ collection exports (vs. wish list exports) would be the input for that.
+
+### Vercel Blob — Advanced Operations Budget
+
+The Vercel Blob plan has a limit of **2,000 advanced operations per month**. This was nearly
+exhausted by an earlier version of the series page caching. Rules:
+
+- **Read from cache** using a plain `fetch()` to the public CDN URL — this is bandwidth only,
+  not an advanced operation.
+- **Write to cache** (`put()`) only on a cache miss — this is a Simple Operation (cheap).
+- **Never use** `list()` or `head()` in hot paths — these are Advanced Operations and will
+  burn through the budget fast.
+- If a new feature would require frequent `list()` or `head()` calls, find an alternative
+  (e.g. store a manifest in a known key, or use Postgres).
