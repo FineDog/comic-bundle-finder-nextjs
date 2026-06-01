@@ -3,7 +3,13 @@ import { getEbayToken, searchEbay } from "../../lib/ebay.js";
 import { Pool } from "pg";
 import { createHash } from "node:crypto";
 
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+let _pool = null;
+function getPool() {
+  if (!_pool && process.env.DATABASE_URL) {
+    _pool = new Pool({ connectionString: process.env.DATABASE_URL });
+  }
+  return _pool;
+}
 
 function hashIp(req) {
   const ip = req.headers["x-forwarded-for"]?.split(",")[0]?.trim() || req.socket?.remoteAddress || "";
@@ -11,6 +17,8 @@ function hashIp(req) {
 }
 
 async function logSearch(queries, ipHash) {
+  const pool = getPool();
+  if (!pool) return;
   try {
     await pool.query(
       "INSERT INTO search_logs (queries, query_count, ip_hash) VALUES ($1, $2, $3)",
