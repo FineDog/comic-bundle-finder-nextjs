@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import Head from "next/head";
 import * as XLSX from "xlsx";
 import SiteNav from "../components/SiteNav";
+import SiteFooter from "../components/SiteFooter";
 import { parseCSVLine, monthYearFromDateString, yearAfterMonths, cleanSeriesName, parseIssueNum } from "../lib/parse-utils";
 import { PremiumGate } from "../components/PremiumGate.js";
 
@@ -314,6 +315,7 @@ export default function GapAnalyzer() {
         )}
       </div>
       </PremiumGate>
+      <SiteFooter />
     </div>
   </>);
 }

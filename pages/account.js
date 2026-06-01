@@ -5,6 +5,8 @@ import Head from "next/head";
 import Link from "next/link";
 import * as XLSX from "xlsx";
 import { parseCSVLine, yearFromDateString, cleanSeriesName } from "../lib/parse-utils";
+import SiteNav from "../components/SiteNav";
+import SiteFooter from "../components/SiteFooter";
 
 export { authProps as getServerSideProps };
 
@@ -243,11 +245,6 @@ export default function Account() {
         <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Oswald:wght@400;600&display=swap" rel="stylesheet" />
       </Head>
       <style>{`
-        /* account.js uses .container (720px) instead of .page-wrap (960px) —
-           intentional: narrower width suits a form-heavy settings page.
-           SiteNav is not rendered here; a plain back-link is used instead. */
-        .container{max-width:720px;margin:0 auto}
-
         /* ── Red title header (account-specific variant) ────────────── */
         .title-panel{background:#cc1f00;border:3px solid #1a1a1a;box-shadow:6px 6px 0 #1a1a1a;text-align:center;padding:1.25rem 1.75rem 1rem;margin-bottom:1.75rem}
         .title-panel h1{font-family:'Bangers',cursive;font-size:2.5rem;color:#fffdf4;letter-spacing:4px;text-shadow:4px 4px 0 #1a1a1a;line-height:1}
@@ -262,8 +259,6 @@ export default function Account() {
         .tier-badge{display:inline-block;background:#003399;color:#fffdf4;border:2px solid #1a1a1a;padding:0.2rem 0.65rem;font-size:0.72rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;margin-left:0.5rem}
         .btn-signout{background:#fffdf4;color:#1a1a1a;border:2px solid #1a1a1a;box-shadow:3px 3px 0 #1a1a1a;font-family:'Oswald',sans-serif;font-size:0.85rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:0.4rem 1rem;cursor:pointer}
         .btn-signout:hover{background:#ffe066}
-        .back{display:inline-block;color:#003399;text-decoration:none;font-size:0.85rem;font-weight:600;margin-bottom:1.5rem}
-        .back:hover{text-decoration:underline}
         .placeholder-msg{color:#888;font-size:0.88rem;font-weight:400;line-height:1.7}
         .input-row{display:flex;align-items:center;gap:0.6rem;margin-bottom:1rem;flex-wrap:wrap}
         .input-row input{border:2px solid #1a1a1a;background:#fffdf4;font-family:'Oswald',sans-serif;font-size:0.95rem;padding:0.45rem 0.65rem;color:#1a1a1a;flex:1;min-width:0}
@@ -313,8 +308,8 @@ export default function Account() {
         .btn-cancel:hover{background:#ffe066}
       `}</style>
 
-      <div className="container">
-        <Link href="/" className="back">← Back to Comic Bundle Finder</Link>
+      <div className="page-wrap">
+        <SiteNav />
 
         <div className="title-panel">
           <h1>My Account</h1>
@@ -504,6 +499,7 @@ export default function Account() {
           )}
         </div>
 
+        <SiteFooter />
       </div>
     </>
   );
