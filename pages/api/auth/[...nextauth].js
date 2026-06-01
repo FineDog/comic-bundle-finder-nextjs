@@ -52,8 +52,8 @@ export const authOptions = {
       session.user.id = user.id;
       // The pg adapter only selects standard columns; fetch plan separately
       try {
-        const { rows } = await pool.query("SELECT plan FROM users WHERE id = $1", [user.id]);
-        session.user.plan = rows[0]?.plan ?? "free";
+        const { rows } = await pool.query("SELECT tier FROM users WHERE id = $1", [user.id]);
+        session.user.plan = rows[0]?.tier ?? "free";
       } catch {
         session.user.plan = "free";
       }

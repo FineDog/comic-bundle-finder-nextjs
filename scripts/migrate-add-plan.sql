@@ -7,8 +7,8 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS name TEXT;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS "emailVerified" TIMESTAMPTZ;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS image TEXT;
 
--- 2. Add the plan column (defaults to 'free' for all existing users)
-ALTER TABLE users ADD COLUMN IF NOT EXISTS plan TEXT NOT NULL DEFAULT 'free';
+-- 2. The tier column already exists in this DB (no-op — kept as a note)
+-- ALTER TABLE users ADD COLUMN IF NOT EXISTS tier TEXT NOT NULL DEFAULT 'free';
 
 -- 3. NextAuth OAuth accounts table
 CREATE TABLE IF NOT EXISTS accounts (
