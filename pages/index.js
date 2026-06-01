@@ -4,6 +4,9 @@ import * as XLSX from "xlsx";
 import SiteNav from "../components/SiteNav";
 import { runEbaySearch } from "../lib/ebay-search";
 import { parseCSVLine, yearFromDateString, cleanSeriesName, parseIssueNum } from "../lib/parse-utils";
+import { useSession, signIn } from "next-auth/react";
+import { PremiumGate, PremiumLock } from "../components/PremiumGate.js";
+import { canAccess } from "../lib/features.js";
 
 const STAGES = [
   { pct: 5,  msg: "Waking up the server…" },
@@ -176,6 +179,13 @@ function track(event, data) {
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function Preview() {
+  const { data: session } = useSession();
+  const userPlan = session?.user?.plan ?? 'free';
+  const canUpload       = canAccess(userPlan, 'file-upload');
+  const canSaveResults  = canAccess(userPlan, 'save-results');
+  const canEmailResults = canAccess(userPlan, 'email-results');
+
+
   // Search tab state
   const [issueInput, setIssueInput] = useState("");
   const [status, setStatus] = useState({ msg: "", type: "" });
@@ -540,10 +550,16 @@ export default function Preview() {
           <div className="caption">Enter your missing issues</div>
           <div className="label-row">
             <label htmlFor="issue-input">Paste your list — one issue per line:</label>
-            <button className="btn-upload" onClick={() => fileInputRef.current?.click()}>Upload want list</button>
-            <input ref={fileInputRef} type="file" accept=".xlsx,.xls,.csv,.txt" style={{ display: "none" }} onChange={onFileSelected} />
+            {canUpload ? (
+              <>
+                <button className="btn-upload" onClick={() => fileInputRef.current?.click()}>Upload want list</button>
+                <input ref={fileInputRef} type="file" accept=".xlsx,.xls,.csv,.txt" style={{ display: "none" }} onChange={onFileSelected} />
+              </>
+            ) : (
+              <PremiumLock feature="file-upload" label="Upload want list" />
+            )}
           </div>
-          <div className={`drop-zone${isDragging ? " dragging" : ""}`} onDragOver={onDragOver} onDragLeave={onDragLeave} onDrop={onDrop}>
+          <div className={`drop-zone${isDragging && canUpload ? " dragging" : ""}`} onDragOver={canUpload ? onDragOver : undefined} onDragLeave={canUpload ? onDragLeave : undefined} onDrop={canUpload ? onDrop : undefined}>
             <textarea id="issue-input" value={issueInput} onChange={e => { setIssueInput(e.target.value); setUploadMsg(""); searchSource.current = null; }} placeholder={"Batgirl: Year One #2\nBlack Widow #10\nBlack Widow #11 (2014)"} />
             <div className="drag-overlay">Drop file here</div>
           </div>
@@ -743,21 +759,39 @@ export default function Preview() {
               <div className="share-panel">
                 <div className="share-title">Save or Share These Results</div>
                 <div className="share-buttons">
-                  <button className="btn-share" onClick={handleSaveResults} disabled={saving || !!savedId}>
-                    {saving ? "Saving…" : savedId ? "✓ Saved" : "💾 Save Results"}
-                  </button>
-                  <button className="btn-share-email" onClick={() => { setShowEmailForm(f => !f); setEmailMsg(""); }}>
-                    ✉ Email Results
-                  </button>
+                  {canSaveResults ? (
+                    <button className="btn-share" onClick={handleSaveResults} disabled={saving || !!savedId}>
+                      {saving ? "Saving…" : savedId ? "✓ Saved" : "💾 Save Results"}
+                    </button>
+                  ) : (
+                    <button className="btn-share" style={{ opacity: 0.5, cursor: "not-allowed", filter: "grayscale(0.4)" }} onClick={() => signIn()} title="Premium feature — sign in to upgrade">
+                      🔒 Save Results
+                    </button>
+                  )}
+                  {canEmailResults ? (
+                    <button className="btn-share-email" onClick={() => { setShowEmailForm(f => !f); setEmailMsg(""); }}>
+                      ✉ Email Results
+                    </button>
+                  ) : (
+                    <button className="btn-share-email" style={{ opacity: 0.5, cursor: "not-allowed", filter: "grayscale(0.4)" }} onClick={() => signIn()} title="Premium feature — sign in to upgrade">
+                      🔒 Email Results
+                    </button>
+                  )}
                 </div>
-                {savedId && (
+                {!canSaveResults && !canEmailResults && (
+                  <p style={{ fontSize: "0.78rem", color: "#888", fontWeight: 400, marginTop: "0.5rem" }}>
+                    <button onClick={() => signIn()} style={{ background: "none", border: "none", color: "#003399", fontWeight: 600, cursor: "pointer", padding: 0, textDecoration: "underline", fontSize: "inherit" }}>Sign in</button>{" "}
+                    to unlock Save &amp; Email Results with a Premium account.
+                  </p>
+                )}
+                {canSaveResults && savedId && (
                   <div className="share-url-row">
                     <input className="share-url-input" readOnly value={`https://comicbundlefinder.com/results/${savedId}`} onClick={e => e.target.select()} />
                     <button className="btn-copy" onClick={handleCopyLink}>{shareMsg === "Copied!" ? "✓ Copied" : "Copy Link"}</button>
                   </div>
                 )}
                 {shareMsg && shareMsg !== "Copied!" && <span className="share-feedback">{shareMsg}</span>}
-                {showEmailForm && (
+                {canEmailResults && showEmailForm && (
                   <form className="email-form" onSubmit={handleEmailResults}>
                     <input className="email-input" type="email" value={emailInput} onChange={e => setEmailInput(e.target.value)} placeholder="your@email.com" required autoFocus />
                     <button className="btn-email-send" type="submit" disabled={emailing}>{emailing ? "Sending…" : "Send"}</button>

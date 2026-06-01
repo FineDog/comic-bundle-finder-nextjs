@@ -1,6 +1,7 @@
 // pages/api/email-results.js
 import { Resend } from "resend";
 import { put } from "@vercel/blob";
+import { requireFeature } from "../../lib/premium-guard.js";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -107,6 +108,7 @@ export const config = { api: { bodyParser: { sizeLimit: "4mb" } } };
 
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed." });
+  if (!await requireFeature(req, res, 'email-results')) return;
   const { email, rows, issueCount, savedId } = req.body;
   if (!email || !rows?.length) return res.status(400).json({ error: "Missing required fields." });
 

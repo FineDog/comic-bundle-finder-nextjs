@@ -50,7 +50,7 @@ export const authOptions = {
   callbacks: {
     async session({ session, user }) {
       session.user.id = user.id;
-      session.user.tier = user.tier ?? "free";
+      session.user.plan = user.plan ?? "free";
       return session;
     },
   },

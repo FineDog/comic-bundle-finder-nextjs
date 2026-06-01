@@ -1,5 +1,6 @@
 // pages/api/save-results.js
 import { put } from "@vercel/blob";
+import { requireFeature } from "../../lib/premium-guard.js";
 
 function generateId() {
   return Array.from({ length: 8 }, () =>
@@ -11,6 +12,7 @@ export const config = { api: { bodyParser: { sizeLimit: "4mb" } } };
 
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed." });
+  if (!await requireFeature(req, res, 'save-results')) return;
   const { rows, issueCount } = req.body;
   if (!rows?.length) return res.status(400).json({ error: "No results to save." });
 

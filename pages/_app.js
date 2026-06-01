@@ -1,3 +1,4 @@
+import { SessionProvider } from 'next-auth/react'
 import { Analytics } from '@vercel/analytics/next';
 import "@/styles/globals.css";
 import { SpeedInsights } from "@vercel/speed-insights/next";

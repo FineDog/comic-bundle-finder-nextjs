@@ -242,8 +242,40 @@ To test a major change before replacing the live page, save it as `pages/preview
 
 ## Outstanding To-Do Items
 
-1. **Premium features buildout** — ongoing. Auth scaffolding and the premium guard
-   (`lib/premium-guard.js`) are in place. Feature set and gating not yet implemented.
+1. **Premium features buildout** — tier system is implemented. See below for details.
+
+2. **eBay Price Data (Premium)** — show historical price data / price trends from eBay
+   listings as a premium feature. Slug `ebay-price-data` is already registered in
+   `lib/features.js`; implementation not yet built.
+
+3. **Upgrade / payment flow** — no payment processor is wired up yet. To manually upgrade
+   a user: `UPDATE users SET plan = 'premium' WHERE email = '...'` directly in Neon.
+
+4. **Auth sign-in/verify pages** — `pages/auth/signin.js` and `pages/auth/verify.js` need
+   to be built. NextAuth falls back to its default pages until they exist.
+
+---
+
+## Premium Tier System
+
+Free and premium tiers are defined in `lib/features.js`. This is the single source of truth
+for what's gated.
+
+**Free tier:** manual search, collection guides.
+**Premium tier:** file upload, gap analyzer, save results, email results, email alerts,
+saved searches, eBay price data (future).
+
+### Adding a new gated feature
+
+1. Add an entry to `FEATURES` in `lib/features.js` with the required plan.
+2. **API routes:** call `requireFeature(req, res, 'slug')` from `lib/premium-guard.js`.
+3. **UI:** wrap with `<PremiumGate feature="slug">` (full-panel) or `<PremiumLock feature="slug">`
+   (inline button) from `components/PremiumGate.js`.
+
+### Database
+
+Run `scripts/migrate-add-plan.sql` against Neon to add the `plan` column and NextAuth tables.
+The `plan` column defaults to `'free'` for all existing and new users.
 
 ---
 
