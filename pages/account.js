@@ -4,29 +4,9 @@ import { useState, useRef, useEffect } from "react";
 import Head from "next/head";
 import Link from "next/link";
 import * as XLSX from "xlsx";
+import { parseCSVLine, yearFromDateString, cleanSeriesName } from "../lib/parse-utils";
 
 export { authProps as getServerSideProps };
-
-// ── Parsers ───────────────────────────────────────────────────────────────────
-
-function parseCSVLine(line) {
-  const fields = []; let current = ""; let inQuotes = false;
-  for (let i = 0; i < line.length; i++) {
-    const ch = line[i];
-    if (ch === '"') { if (inQuotes && line[i+1]==='"'){current+='"';i++;}else inQuotes=!inQuotes; }
-    else if (ch === ',' && !inQuotes) { fields.push(current.trim()); current = ""; }
-    else { current += ch; }
-  }
-  fields.push(current.trim()); return fields;
-}
-
-function yearFromDateString(s) {
-  if (!s) return "";
-  const m = s.match(/^(\d{4})-/); if (m) return m[1];
-  const clz = s.match(/^[A-Za-z]{3}-(\d{2})$/);
-  if (clz) { const y = parseInt(clz[1], 10); return String(y < 30 ? 2000 + y : 1900 + y); }
-  const d = new Date(s); return isNaN(d) ? "" : String(d.getFullYear());
-}
 
 // League of Comic Geeks XLSX export
 async function parseLOCGFile(file) {
@@ -41,15 +21,6 @@ async function parseLOCGFile(file) {
     return y ? `${t} (${y})` : t;
   }).filter(Boolean);
   return { issues, count: issues.length };
-}
-
-function cleanSeriesName(name) {
-  return name
-    .replace(/\s*\(Vol\.\s*\d+\)/gi, "")
-    .replace(/,?\s*Vol\.\s*\d+/gi, "")
-    .replace(/\s*\(\d{4}\s*[-–]\s*(?:\d{4}|[Pp]resent)\)/g, "")
-    .replace(/\s{2,}/g, " ")
-    .trim();
 }
 
 // CLZ CSV export (with Collection Status column added via Manage Columns)
@@ -152,6 +123,20 @@ function SavedSummary({ saved, label, onUpdate, drop, accept, uploadingMsg }) {
 
 export default function Account() {
   const { data: session } = useSession();
+
+  // Account deletion
+  const [deleteState, setDeleteState] = useState(null); // null | 'confirm' | 'deleting' | 'error'
+
+  async function deleteAccount() {
+    setDeleteState("deleting");
+    try {
+      const res = await fetch("/api/user/delete", { method: "DELETE" });
+      if (!res.ok) throw new Error();
+      await signOut({ callbackUrl: "/" });
+    } catch {
+      setDeleteState("error");
+    }
+  }
 
   // Digest preferences
   const [digestEnabled, setDigestEnabled] = useState(false);
@@ -312,6 +297,17 @@ export default function Account() {
         .toggle-slider::before{content:'';position:absolute;width:14px;height:14px;left:3px;top:3px;background:#fffdf4;border:1px solid #1a1a1a;transition:transform 0.2s}
         .toggle input:checked + .toggle-slider{background:#003399}
         .toggle input:checked + .toggle-slider::before{transform:translateX(18px)}
+        .danger-zone{margin-top:1.25rem;padding-top:1.1rem;border-top:1px solid #e0d8c0}
+        .btn-delete{background:#fffdf4;color:#cc1f00;border:2px solid #cc1f00;box-shadow:2px 2px 0 #cc1f00;font-family:'Oswald',sans-serif;font-size:0.82rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:0.4rem 0.9rem;cursor:pointer}
+        .btn-delete:hover{background:#fff0ee}
+        .delete-confirm{margin-top:0.75rem;background:#fff0ee;border:2px solid #cc1f00;padding:0.85rem 1rem;display:flex;flex-direction:column;gap:0.65rem}
+        .delete-confirm p{font-size:0.85rem;line-height:1.55;color:#1a1a1a}
+        .delete-confirm-btns{display:flex;gap:0.65rem;flex-wrap:wrap}
+        .btn-delete-confirm{background:#cc1f00;color:#fffdf4;border:2px solid #1a1a1a;box-shadow:2px 2px 0 #1a1a1a;font-family:'Oswald',sans-serif;font-size:0.82rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:0.4rem 0.9rem;cursor:pointer}
+        .btn-delete-confirm:disabled{opacity:0.6;cursor:not-allowed}
+        .btn-delete-confirm:not(:disabled):hover{background:#e02200}
+        .btn-cancel{background:#fffdf4;color:#1a1a1a;border:2px solid #1a1a1a;box-shadow:2px 2px 0 #1a1a1a;font-family:'Oswald',sans-serif;font-size:0.82rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:0.4rem 0.9rem;cursor:pointer}
+        .btn-cancel:hover{background:#ffe066}
       `}</style>
 
       <div className="container">
@@ -342,6 +338,32 @@ export default function Account() {
             </div>
           </div>
           <button className="btn-signout" onClick={() => signOut({ callbackUrl: "/" })}>Sign Out</button>
+
+          <div className="danger-zone">
+            {deleteState === null && (
+              <button className="btn-delete" onClick={() => setDeleteState("confirm")}>Delete Account</button>
+            )}
+            {(deleteState === "confirm" || deleteState === "deleting" || deleteState === "error") && (
+              <div className="delete-confirm">
+                <p><strong>Delete your account?</strong> This permanently removes your saved lists and preferences. This cannot be undone.</p>
+                {deleteState === "error" && (
+                  <p style={{color:"#cc1f00",fontWeight:600}}>Something went wrong. Please try again.</p>
+                )}
+                <div className="delete-confirm-btns">
+                  <button
+                    className="btn-delete-confirm"
+                    onClick={deleteAccount}
+                    disabled={deleteState === "deleting"}
+                  >
+                    {deleteState === "deleting" ? "Deleting…" : "Yes, Delete My Account"}
+                  </button>
+                  {deleteState !== "deleting" && (
+                    <button className="btn-cancel" onClick={() => setDeleteState(null)}>Cancel</button>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
 
           <div className="digest-row">
             <div>
