@@ -1,7 +1,7 @@
 // pages/api/search.js
 import { getEbayToken, searchEbay } from "../../lib/ebay.js";
 import { Pool } from "pg";
-import { createHash } from "crypto";
+import { createHash } from "node:crypto";
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
