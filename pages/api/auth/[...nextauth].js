@@ -50,7 +50,13 @@ export const authOptions = {
   callbacks: {
     async session({ session, user }) {
       session.user.id = user.id;
-      session.user.plan = user.plan ?? "free";
+      // The pg adapter only selects standard columns; fetch plan separately
+      try {
+        const { rows } = await pool.query("SELECT plan FROM users WHERE id = $1", [user.id]);
+        session.user.plan = rows[0]?.plan ?? "free";
+      } catch {
+        session.user.plan = "free";
+      }
       return session;
     },
   },
