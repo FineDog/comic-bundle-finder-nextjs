@@ -332,7 +332,7 @@ export default function Account() {
             <div>
               <div className="user-name">
                 {session?.user?.name || session?.user?.email}
-                <span className="tier-badge">{session?.user?.tier ?? "free"}</span>
+                <span className="tier-badge">{session?.user?.plan ?? "free"}</span>
               </div>
               {session?.user?.name && <div className="user-email">{session?.user?.email}</div>}
             </div>

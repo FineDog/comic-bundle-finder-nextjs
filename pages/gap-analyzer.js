@@ -4,6 +4,7 @@ import Head from "next/head";
 import * as XLSX from "xlsx";
 import SiteNav from "../components/SiteNav";
 import { parseCSVLine, monthYearFromDateString, yearAfterMonths, cleanSeriesName, parseIssueNum } from "../lib/parse-utils";
+import { PremiumGate } from "../components/PremiumGate.js";
 
 // ── Gap analysis parsers ──────────────────────────────────────────────────────
 
@@ -249,6 +250,7 @@ export default function GapAnalyzer() {
     `}</style>
     <div className="page-wrap">
       <SiteNav />
+      <PremiumGate feature="gap-analyzer">
       <div className="panel">
         <div className="caption">Gap Analyzer</div>
         <p style={{ fontSize: "0.88rem", fontWeight: 400, lineHeight: 1.8, color: "#333", marginBottom: "1.25rem" }}>
@@ -312,6 +314,7 @@ export default function GapAnalyzer() {
           </>
         )}
       </div>
+      </PremiumGate>
     </div>
   </>);
 }
