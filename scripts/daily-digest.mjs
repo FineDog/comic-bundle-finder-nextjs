@@ -4,117 +4,20 @@
  * and emails full results via Resend.
  *
  * Required environment variables (set as GitHub Actions secrets):
- *   DATABASE_URL, EBAY_APP_ID, EBAY_SECRET, RESEND_API_KEY, BLOB_READ_WRITE_TOKEN
+ *   DATABASE_URL, EBAY_APP_ID, EBAY_SECRET, RESEND_API_KEY
  * Optional:
  *   EBAY_CAMPAIGN_ID
  */
 
 import pg from "pg";
 import { Resend } from "resend";
-import { put } from "@vercel/blob";
-import { titleMatchesQuery } from "../lib/parse-title.js";
+import { getEbayToken, searchEbay } from "../lib/ebay.js";
 
 const { Pool } = pg;
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-const EBAY_APP_ID  = process.env.EBAY_APP_ID;
-const EBAY_SECRET  = process.env.EBAY_SECRET;
-const CAMPAIGN_ID  = process.env.EBAY_CAMPAIGN_ID || "";
-const CATEGORY_ID  = "259104";
-const MAX_RESULTS  = 200;
-const CONCURRENCY  = 8;
-
-// ── eBay helpers ──────────────────────────────────────────────────────────────
-
-let cachedToken = null;
-let tokenExpiresAt = 0;
-
-async function getEbayToken() {
-  if (cachedToken && Date.now() < tokenExpiresAt) return cachedToken;
-  const credentials = Buffer.from(`${EBAY_APP_ID}:${EBAY_SECRET}`).toString("base64");
-  const res = await fetch("https://api.ebay.com/identity/v1/oauth2/token", {
-    method: "POST",
-    headers: {
-      Authorization: `Basic ${credentials}`,
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-    body: "grant_type=client_credentials&scope=https://api.ebay.com/oauth/api_scope",
-  });
-  const data = await res.json();
-  if (!data.access_token) throw new Error("Failed to get eBay token.");
-  cachedToken = data.access_token;
-  tokenExpiresAt = Date.now() + (data.expires_in - 60) * 1000;
-  return cachedToken;
-}
-
-function makeAffiliateUrl(url) {
-  if (!CAMPAIGN_ID || !url) return url;
-  const suffix = `mkcid=1&mkrid=711-53200-19255-0&siteid=0&campid=${CAMPAIGN_ID}&toolid=10001&mkevt=1`;
-  return url.includes("?") ? `${url}&${suffix}` : `${url}?${suffix}`;
-}
-
-const HYPHENATED_WORDS = [
-  "spider-man","spider-girl","spider-gwen","spider-woman","spider-verse","spider-ham",
-  "x-men","x-force","x-factor","x-23","x-statix","x-treme",
-  "she-hulk","man-thing","star-lord",
-];
-
-function getQueryVariants(issueName) {
-  const lower = issueName.toLowerCase();
-  const variants = new Set([issueName]);
-  for (const word of HYPHENATED_WORDS) {
-    const flat = word.replace(/-/g, "");
-    if (lower.includes(word)) {
-      variants.add(issueName.replace(new RegExp(word, "gi"), flat));
-    } else if (new RegExp(`\\b${flat}\\b`, "i").test(issueName)) {
-      variants.add(issueName.replace(new RegExp(`\\b${flat}\\b`, "gi"), word));
-    }
-  }
-  return [...variants];
-}
-
-async function searchEbay(token, issueName) {
-  const EXCLUSIONS = "-lot -set -full -run -collection -bundle -wholesale";
-  const filter = `buyingOptions:{FIXED_PRICE},conditions:{NEW|USED}`;
-  const encodedFilter = encodeURIComponent(filter)
-    .replace(/%7B/g,"{").replace(/%7D/g,"}").replace(/%7C/g,"|")
-    .replace(/%5B/g,"[").replace(/%5D/g,"]").replace(/%2C/g,",").replace(/%3A/g,":");
-
-  const seenUrls = new Set();
-  const items = [];
-
-  for (const queryName of getQueryVariants(issueName)) {
-    const params = new URLSearchParams({
-      q: `${queryName} ${EXCLUSIONS}`,
-      category_ids: CATEGORY_ID,
-      limit: MAX_RESULTS,
-    });
-    const url = `https://api.ebay.com/buy/browse/v1/item_summary/search?${params}&filter=${encodedFilter}`;
-    const res = await fetch(url, {
-      headers: { Authorization: `Bearer ${token}`, "X-EBAY-C-MARKETPLACE-ID": "EBAY_US" },
-    });
-    if (!res.ok) continue;
-    const data = await res.json();
-    for (const item of data.itemSummaries || []) {
-      const rawUrl = item.itemWebUrl || "";
-      if (seenUrls.has(rawUrl)) continue;
-      seenUrls.add(rawUrl);
-      const title = item.title || "";
-      if (!titleMatchesQuery(title, issueName)) continue;
-      const seller = item.seller?.username || "unknown";
-      const price = item.price?.value || "0";
-      const itemUrl = makeAffiliateUrl(rawUrl);
-      const shippingOpts = item.shippingOptions || [];
-      const shipping = shippingOpts.length
-        ? (shippingOpts[0].shippingCostType === "FREE" ? "0.00" : shippingOpts[0].shippingCost?.value || "unknown")
-        : "unknown";
-      const promotions = (item.promotions || []).map(p => p.message || "").filter(Boolean).join(" | ");
-      items.push({ seller, price, title, url: itemUrl, shipping, promotions });
-    }
-  }
-  return items;
-}
+const CONCURRENCY = 8;
 
 async function runSearch(token, issues) {
   const sellerIssues = {};
@@ -122,7 +25,7 @@ async function runSearch(token, issues) {
     const batch = issues.slice(i, i + CONCURRENCY);
     const results = await Promise.all(batch.map(issue => searchEbay(token, issue)));
     for (let j = 0; j < batch.length; j++) {
-      for (const listing of results[j]) {
+      for (const listing of results[j].items) {
         if (!sellerIssues[listing.seller]) sellerIssues[listing.seller] = {};
         if (!sellerIssues[listing.seller][batch[j]]) sellerIssues[listing.seller][batch[j]] = [];
         sellerIssues[listing.seller][batch[j]].push(listing);
@@ -142,37 +45,7 @@ async function runSearch(token, issues) {
   return rows;
 }
 
-// ── Listing dedup ─────────────────────────────────────────────────────────────
-
-// Extract the eBay item ID from a listing URL (strips affiliate params first)
-function itemIdFromUrl(url) {
-  const m = url.match(/\/itm\/(\d+)/);
-  return m ? m[1] : null;
-}
-
-// Given all search result rows and a Set of previously-seen item IDs,
-// return only rows whose item ID is new. Recalculates bundle_count per
-// seller based only on new listings so the bundle filter stays accurate.
-function filterToNewListings(rows, seenIds) {
-  // First pass: collect new rows
-  const newRows = rows.filter(r => {
-    const id = itemIdFromUrl(r.url);
-    return id && !seenIds.has(id);
-  });
-
-  // Recalculate bundle_count based on new listings only
-  const sellerIssueCounts = {};
-  for (const r of newRows) {
-    if (!sellerIssueCounts[r.seller]) sellerIssueCounts[r.seller] = new Set();
-    sellerIssueCounts[r.seller].add(r.issue);
-  }
-  return newRows.map(r => ({
-    ...r,
-    bundle_count: sellerIssueCounts[r.seller]?.size ?? 1,
-  }));
-}
-
-// ── Issue list dedup ──────────────────────────────────────────────────────────
+// ── Dedup ─────────────────────────────────────────────────────────────────────
 
 function dedupeIssues(...lists) {
   const seen = new Set();
@@ -186,29 +59,9 @@ function dedupeIssues(...lists) {
   return result;
 }
 
-// ── Blob ──────────────────────────────────────────────────────────────────────
-
-const CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
-function generateId() {
-  return Array.from({ length: 8 }, () => CHARS[Math.floor(Math.random() * CHARS.length)]).join("");
-}
-
-async function saveResultsBlob(rows, issueCount) {
-  const id = generateId();
-  await put(`results/${id}.json`, JSON.stringify({ rows, issueCount, savedAt: Date.now() }), {
-    access: "public",
-    addRandomSuffix: false,
-    contentType: "application/json",
-  });
-  return `https://comicbundlefinder.com/results/${id}`;
-}
-
 // ── Email ─────────────────────────────────────────────────────────────────────
 
-const PREVIEW_SELLERS = 10;  // max sellers shown inline
-const PREVIEW_ISSUES  = 5;   // max issues shown per seller
-
-function buildDigestEmail(rows, issueCount, resultsUrl, isFirstDigest = true) {
+function buildDigestEmail(rows, issueCount) {
   // Group by seller, bundle sellers only
   const sellerMap = {};
   for (const r of rows) {
@@ -223,22 +76,9 @@ function buildDigestEmail(rows, issueCount, resultsUrl, isFirstDigest = true) {
 
   if (!sellers.length) return null;
 
-  const shown = sellers.slice(0, PREVIEW_SELLERS);
-  const remaining = sellers.length - shown.length;
-
-  const sellerHtml = shown.map(([name, data]) => {
-    const allIssues = Object.entries(data.byIssue);
-    const shownIssues = allIssues.slice(0, PREVIEW_ISSUES);
-    const remainingIssues = allIssues.length - shownIssues.length;
-
-    const colHeader = `
-        <tr style="background:#1a1a1a">
-          <td style="padding:5px 12px;font-size:0.68rem;font-weight:700;color:#fffdf4;text-transform:uppercase;letter-spacing:1px">Issue You Need</td>
-          <td style="padding:5px 12px;font-size:0.68rem;font-weight:700;color:#fffdf4;text-transform:uppercase;letter-spacing:1px;width:58px">Price</td>
-          <td style="padding:5px 12px;font-size:0.68rem;font-weight:700;color:#fffdf4;text-transform:uppercase;letter-spacing:1px;width:100px">Shipping</td>
-        </tr>`;
-
-    const listingRows = shownIssues.map(([issue, listings]) => {
+  const sellerHtml = sellers.map(([name, data]) => {
+    const listingRows = Object.entries(data.byIssue).map(([issue, listings]) => {
+      // Show cheapest listing per issue
       const best = listings.sort((a, b) => parseFloat(a.price) - parseFloat(b.price))[0];
       const price = `$${parseFloat(best.price).toFixed(2)}`;
       const shipping = best.shipping === "0.00" ? "Free shipping"
@@ -246,50 +86,25 @@ function buildDigestEmail(rows, issueCount, resultsUrl, isFirstDigest = true) {
         : `+$${parseFloat(best.shipping).toFixed(2)} shipping`;
       return `
         <tr>
-          <td style="padding:6px 12px;border-bottom:1px solid #e8e0cc;font-size:0.82rem;line-height:1.4">
-            <div style="color:#555;font-size:0.75rem;font-weight:700;margin-bottom:2px;text-transform:uppercase;letter-spacing:0.3px">${issue}</div>
+          <td style="padding:7px 14px;border-bottom:1px solid #e8e0cc;font-size:0.85rem">
             <a href="${best.url}" style="color:#003399;text-decoration:none">${best.title}</a>
           </td>
-          <td style="padding:6px 12px;border-bottom:1px solid #e8e0cc;font-size:0.82rem;font-weight:700;color:#1a1a1a;white-space:nowrap;vertical-align:top;width:58px">${price}</td>
-          <td style="padding:6px 12px;border-bottom:1px solid #e8e0cc;font-size:0.75rem;color:#666;white-space:nowrap;vertical-align:top;width:100px">${shipping}</td>
+          <td style="padding:7px 14px;border-bottom:1px solid #e8e0cc;font-size:0.85rem;white-space:nowrap;color:#1a1a1a;font-weight:600">${price}</td>
+          <td style="padding:7px 14px;border-bottom:1px solid #e8e0cc;font-size:0.78rem;color:#666;white-space:nowrap">${shipping}</td>
         </tr>`;
     }).join("");
 
-    const moreIssuesRow = remainingIssues > 0 ? `
-        <tr>
-          <td colspan="3" style="padding:6px 12px;font-size:0.78rem;color:#888;font-style:italic">
-            +${remainingIssues} more issue${remainingIssues === 1 ? "" : "s"} from this seller — see full results
-          </td>
-        </tr>` : "";
-
     return `
-      <div style="margin-bottom:14px;border:2px solid #1a1a1a">
-        <table style="width:100%;border-collapse:collapse;background:#003399">
-          <tr>
-            <td style="padding:8px 12px">
-              <span style="color:#fffdf4;font-family:'Arial Black',sans-serif;font-size:0.88rem;letter-spacing:0.5px">${name}</span>
-              <span style="display:inline-block;background:#cc1f00;color:#fffdf4;padding:2px 8px;font-family:'Arial Black',sans-serif;font-size:0.72rem;letter-spacing:1px;margin-left:10px">${data.bundle_count} ISSUES</span>
-            </td>
-          </tr>
-        </table>
-        <table style="width:100%;border-collapse:collapse;background:#fffdf4;table-layout:fixed">
-          <thead>${colHeader}</thead>
-          <tbody>${listingRows}${moreIssuesRow}</tbody>
+      <div style="margin-bottom:16px;border:2px solid #1a1a1a">
+        <div style="background:#1a1a1a;padding:8px 14px;display:flex;align-items:center;justify-content:space-between">
+          <span style="color:#fffdf4;font-family:'Arial Black',sans-serif;font-size:0.9rem;letter-spacing:0.5px">${name}</span>
+          <span style="background:#cc1f00;color:#fffdf4;padding:2px 10px;font-family:'Arial Black',sans-serif;font-size:0.75rem;letter-spacing:1px">${data.bundle_count} ISSUES</span>
+        </div>
+        <table style="width:100%;border-collapse:collapse;background:#fffdf4">
+          <tbody>${listingRows}</tbody>
         </table>
       </div>`;
   }).join("");
-
-  const truncationNote = remaining > 0 ? `
-    <p style="text-align:center;color:#666;font-size:0.85rem;margin:4px 0 20px">
-      …and <strong>${remaining}</strong> more seller${remaining === 1 ? "" : "s"} in the full results.
-    </p>` : "";
-
-  const viewFullBtn = `
-    <div style="text-align:center;margin:24px 0 8px">
-      <a href="${resultsUrl}" style="display:inline-block;background:#cc1f00;color:#fffdf4;text-decoration:none;padding:12px 32px;border:3px solid #1a1a1a;box-shadow:4px 4px 0 #1a1a1a;font-family:'Arial Black',Gadget,sans-serif;font-size:1rem;letter-spacing:2px">
-        VIEW FULL RESULTS &rarr;
-      </a>
-    </div>`;
 
   const html = `<!DOCTYPE html>
 <html lang="en">
@@ -303,18 +118,12 @@ function buildDigestEmail(rows, issueCount, resultsUrl, isFirstDigest = true) {
     </div>
 
     <div style="background:#fffdf4;border:3px solid #1a1a1a;border-top:none;padding:24px;box-shadow:5px 5px 0 #1a1a1a">
-      <h2 style="margin:0 0 4px;font-family:'Arial Black',Gadget,sans-serif;font-size:1.3rem;letter-spacing:1px;color:#003399">${isFirstDigest ? "YOUR DAILY BUNDLE DIGEST" : "NEW BUNDLE LISTINGS"}</h2>
-      <p style="margin:0 0 14px;color:#555;font-size:0.92rem;line-height:1.6">
-        ${isFirstDigest
-          ? `Searched <strong>${issueCount} issue${issueCount === 1 ? "" : "s"}</strong> from your wish list and found <strong>${sellers.length} seller${sellers.length === 1 ? "" : "s"}</strong> with bundle opportunities today.`
-          : `Found <strong>${sellers.length} seller${sellers.length === 1 ? "" : "s"}</strong> with new listings matching your wish list since your last digest.`
-        }
+      <h2 style="margin:0 0 4px;font-family:'Arial Black',Gadget,sans-serif;font-size:1.3rem;letter-spacing:1px;color:#003399">YOUR DAILY BUNDLE DIGEST</h2>
+      <p style="margin:0 0 20px;color:#555;font-size:0.92rem;line-height:1.6">
+        Searched <strong>${issueCount} issue${issueCount === 1 ? "" : "s"}</strong> from your wish list and found
+        <strong>${sellers.length} seller${sellers.length === 1 ? "" : "s"}</strong> with bundle opportunities today.
       </p>
-      ${viewFullBtn}
-      <div style="margin-bottom:20px"></div>
       ${sellerHtml}
-      ${truncationNote}
-      ${viewFullBtn}
     </div>
 
     <div style="background:#1a1a1a;border:3px solid #1a1a1a;box-shadow:5px 5px 0 #1a1a1a;padding:16px 24px;text-align:center">
@@ -343,7 +152,7 @@ async function main() {
   console.log(`[digest] Starting — ${new Date().toISOString()}`);
 
   const { rows: users } = await pool.query(`
-    SELECT id, email, locg_list, clz_list, manual_list, digest_seen_ids
+    SELECT id, email, locg_list, clz_list, manual_list
     FROM users
     WHERE digest_enabled = true
       AND email IS NOT NULL
@@ -371,26 +180,11 @@ async function main() {
     console.log(`[digest] ${user.email} — searching ${issues.length} issues…`);
 
     try {
-      const allRows = await runSearch(token, issues);
-
-      // First digest ever: send everything. Subsequent: only new listings.
-      const previouslySeen = new Set(user.digest_seen_ids ?? []);
-      const isFirstDigest = previouslySeen.size === 0;
-      const rows = isFirstDigest ? allRows : filterToNewListings(allRows, previouslySeen);
-
-      if (!rows.length) {
-        console.log(`[digest] ${user.email} — no new listings, skipping`);
-        skipped++;
-        continue;
-      }
-
-      // Save full results (all rows) to blob for the "view full results" link
-      const resultsUrl = await saveResultsBlob(allRows, issues.length);
-
-      const result = buildDigestEmail(rows, issues.length, resultsUrl, isFirstDigest);
+      const rows = await runSearch(token, issues);
+      const result = buildDigestEmail(rows, issues.length);
 
       if (!result) {
-        console.log(`[digest] ${user.email} — no new bundle results, skipping`);
+        console.log(`[digest] ${user.email} — no bundle results, skipping`);
         skipped++;
         continue;
       }
@@ -398,31 +192,16 @@ async function main() {
       await resend.emails.send({
         from: "Comic Bundle Finder <digests@comicbundlefinder.com>",
         to: user.email,
-        subject: isFirstDigest
-          ? `Your Daily Comic Bundle Digest — ${issues.length} issue${issues.length === 1 ? "" : "s"} searched`
-          : `New Bundle Listings — ${result.sellerCount} seller${result.sellerCount === 1 ? "" : "s"} with new listings`,
+        subject: `Your Daily Comic Bundle Digest — ${issues.length} issue${issues.length === 1 ? "" : "s"} searched`,
         html: result.html,
       });
 
-      // Merge all current item IDs into seen set and persist
-      const newSeenIds = [...previouslySeen];
-      for (const r of allRows) {
-        const id = itemIdFromUrl(r.url);
-        if (id) newSeenIds.push(id);
-      }
-      // Dedupe and cap at 50k IDs to prevent unbounded growth
-      const dedupedIds = [...new Set(newSeenIds)].slice(-50000);
+      await pool.query("UPDATE users SET digest_last_sent = NOW() WHERE id = $1", [user.id]);
 
-      await pool.query(
-        "UPDATE users SET digest_last_sent = NOW(), digest_seen_ids = $1::jsonb WHERE id = $2",
-        [JSON.stringify(dedupedIds), user.id]
-      );
-      console.log(`[digest] ${user.email} — stored ${dedupedIds.length} seen IDs`);
-
-      console.log(`[digest] ${user.email} — sent (${result.sellerCount} seller${result.sellerCount === 1 ? "" : "s"}${isFirstDigest ? ", first digest" : ", new only"})`);
+      console.log(`[digest] ${user.email} — sent (${result.sellerCount} seller${result.sellerCount === 1 ? "" : "s"})`);
       sent++;
     } catch (e) {
-      console.error(`[digest] ${user.email} — error:`, e.message, e.stack);
+      console.error(`[digest] ${user.email} — error:`, e.message);
     }
   }
 
