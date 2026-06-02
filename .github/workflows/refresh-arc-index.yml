@@ -1,10 +1,10 @@
-# Fetches all story arcs from the Metron API and commits arc-index.json.
-# The commit triggers a Vercel redeploy so the search index stays current.
+# Fetches all story arcs from the Metron API and commits:
+#   public/data/arc-index.json  — arc metadata
+#   public/data/arc-issues.json — arc issue lists (replaces Vercel Blob writes)
 #
 # Required GitHub secrets:
-#   METRON_USERNAME       — Metron account username
-#   METRON_PASSWORD       — Metron account password
-#   BLOB_READ_WRITE_TOKEN — Vercel Blob token (same value as in Vercel env vars)
+#   METRON_USERNAME — Metron account username
+#   METRON_PASSWORD — Metron account password
 
 name: Refresh Arc Index
 
@@ -31,11 +31,10 @@ jobs:
         env:
           METRON_USERNAME: ${{ secrets.METRON_USERNAME }}
           METRON_PASSWORD: ${{ secrets.METRON_PASSWORD }}
-          BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
         run: node scripts/refresh-arc-index.js
       - name: Commit and push arc index
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add public/data/arc-index.json
+          git add public/data/arc-index.json public/data/arc-issues.json
           git diff --staged --quiet || (git commit -m "chore: refresh arc index" && git push)

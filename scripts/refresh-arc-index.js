@@ -1,14 +1,12 @@
-// Fetches all story arcs from the Metron API, writes public/data/arc-index.json,
-// and pre-populates the Vercel Blob cache with each arc's issue list.
+// Fetches all story arcs from the Metron API and writes two static files:
+//   public/data/arc-index.json  — arc metadata (id, name, slug, issueCount)
+//   public/data/arc-issues.json — arc issue lists keyed by arc ID
+//
+// Both files are committed to the repo by GitHub Actions so Vercel serves them
+// as static assets — no Vercel Blob writes, no Advanced Operations consumed.
 //
 // Run nightly via GitHub Actions. Also runnable manually:
-//   METRON_USERNAME=x METRON_PASSWORD=y BLOB_READ_WRITE_TOKEN=z node scripts/refresh-arc-index.js
-//
-// Output format (arc-index.json):
-//   [{ "id": 123, "name": "Brand New Day", "slug": "123-brand-new-day", "issueCount": 12 }, ...]
-//
-// Blob cache (arc-issues/{id}.json, read by /api/arc/[id]/issues):
-//   { "issues": ["Series #N", ...], "cachedAt": <epoch ms> }
+//   METRON_USERNAME=x METRON_PASSWORD=y node scripts/refresh-arc-index.js
 //
 // ─── Metron API rules (DO NOT VIOLATE) ───────────────────────────────────────
 //   Rate limits:  20 requests/minute  ·  5,000 requests/day
@@ -23,19 +21,13 @@
 
 import { writeFileSync, readFileSync, mkdirSync } from "fs";
 import { join } from "path";
-import { put } from "@vercel/blob";
 
 const USERNAME = process.env.METRON_USERNAME;
 const PASSWORD = process.env.METRON_PASSWORD;
-const BLOB_TOKEN = process.env.BLOB_READ_WRITE_TOKEN;
 
 if (!USERNAME || !PASSWORD) {
   console.error("METRON_USERNAME and METRON_PASSWORD must be set.");
   process.exit(1);
-}
-
-if (!BLOB_TOKEN) {
-  console.warn("Warning: BLOB_READ_WRITE_TOKEN not set — Blob cache will not be written.");
 }
 
 const AUTH = Buffer.from(`${USERNAME}:${PASSWORD}`).toString("base64");
@@ -99,25 +91,10 @@ async function metronFetch(url) {
   return null; // exhausted retries
 }
 
-// Write a single arc's issue list to Vercel Blob.
-// Blob key: arc-issues/{arcId}.json
-// Format:   { issues: ["Batman #492", ...], cachedAt: <epoch ms> }
-async function writeBlobCache(arcId, issues) {
-  if (!BLOB_TOKEN) return; // no-op if token not available
-  try {
-    await put(
-      `arc-issues/${arcId}.json`,
-      JSON.stringify({ issues, cachedAt: Date.now() }),
-      { access: "public", addRandomSuffix: false, contentType: "application/json" }
-    );
-  } catch (e) {
-    console.warn(`\n  Blob write failed for arc ${arcId}: ${e.message}`);
-  }
-}
-
 // ── Load existing data ────────────────────────────────────────────────────────
 const outDir = join(process.cwd(), "public", "data");
 const outPath = join(outDir, "arc-index.json");
+const issuesPath = join(outDir, "arc-issues.json");
 
 /** @type {Map<number, { issueCount: number, modified: string }>} */
 const existing = new Map();
@@ -128,6 +105,15 @@ try {
   console.log(`Loaded ${existing.size} existing arcs from arc-index.json`);
 } catch {
   console.log("No existing arc-index.json — starting fresh.");
+}
+
+/** @type {Record<number, string[]>} */
+let existingIssues = {};
+try {
+  existingIssues = JSON.parse(readFileSync(issuesPath, "utf-8"));
+  console.log(`Loaded arc-issues.json (${Object.keys(existingIssues).length} arcs)`);
+} catch {
+  console.log("No existing arc-issues.json — starting fresh.");
 }
 
 // ── Phase 1: fetch arc list ───────────────────────────────────────────────────
@@ -163,7 +149,7 @@ while (nextUrl) {
   page++;
 }
 
-// ── Phase 2: fetch issue lists, write Blob cache, extract counts ──────────────
+// ── Phase 2: fetch issue lists for changed arcs ───────────────────────────────
 // Only re-fetches arcs whose `modified` timestamp has changed since last run.
 // On first run (no existing data) all arcs are processed.
 const toProcess = arcs.filter((arc) => {
@@ -209,27 +195,24 @@ for (let i = 0; i < toProcess.length; i++) {
   // Update the arc entry in our array
   arc.issueCount = count;
 
-  // Write issue list to Blob (read by /api/arc/[id]/issues — cache-only)
+  // Write issue list to the in-memory map; written to disk as a single file below
   if (issues.length > 0) {
-    await writeBlobCache(arc.id, issues);
+    existingIssues[arc.id] = issues;
   }
 }
 
 console.log("\n  done.");
 
-// ── Write arc-index.json ──────────────────────────────────────────────────────
+// ── Write output files ────────────────────────────────────────────────────────
 // Strip internal `modified` field — not needed by the frontend
 const output = arcs.map(({ id, name, slug, issueCount }) => ({ id, name, slug, issueCount }));
 output.sort((a, b) => a.name.localeCompare(b.name));
 
 mkdirSync(outDir, { recursive: true });
 writeFileSync(outPath, JSON.stringify(output));
+writeFileSync(issuesPath, JSON.stringify(existingIssues));
 
 const processed = toProcess.length;
 const skipped = arcs.length - processed;
 console.log(`\nWrote ${arcs.length} arcs to arc-index.json (${processed} updated, ${skipped} unchanged).`);
-if (BLOB_TOKEN) {
-  console.log(`Blob cache updated for arcs with issues.`);
-} else {
-  console.log(`Blob cache NOT updated (BLOB_READ_WRITE_TOKEN missing).`);
-}
+console.log(`Wrote arc-issues.json (${Object.keys(existingIssues).length} arcs with issues).`);

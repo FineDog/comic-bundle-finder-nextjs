@@ -12,8 +12,8 @@
 //
 // IMPORTANT — Blob operation budget:
 //   All cache reads use plain fetch() to the public CDN URL (bandwidth only, not an
-//   Advanced Operation).  Only put() is called on a cache miss (Simple Operation).
-//   list() and head() are never used here.
+//   Advanced Operation).  put() is called on a cache miss — it is an Advanced Operation
+//   but fires at most once per series slice per hour.  list() and head() are never used.
 
 import fs from "fs";
 import path from "path";

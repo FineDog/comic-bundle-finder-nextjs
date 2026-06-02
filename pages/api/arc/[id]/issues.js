@@ -1,48 +1,38 @@
 // GET /api/arc/[id]/issues
 //
-// Returns the cached issue list for a Metron story arc.
+// Returns the issue list for a Metron story arc, read from the static
+// public/data/arc-issues.json file committed nightly by GitHub Actions.
 //
-// *** IMPORTANT — NO LIVE METRON CALLS ***
-// This endpoint is strictly cache-read-only. It never calls the Metron API.
-// Arc issue lists are pre-populated nightly by scripts/refresh-arc-index.js
-// running in GitHub Actions (single stable IP, rate-limit-aware).
+// No Vercel Blob reads or writes — arc issues are static files in the repo.
 //
-// Calling Metron from Vercel serverless functions is prohibited because each
-// invocation uses a different IP address, which Metron flags as a distributed
-// attack and disables the account. See CLAUDE.md for full API rules.
-//
-// Arc issue lists are static (arcs don't change once created), so there is no
-// TTL — entries written by the nightly script are served indefinitely.
-// On cache miss, returns { issues: null, cached: false } — the arc page shows
-// a "not yet indexed" message. Issues appear after the next nightly run.
+// On cache miss (arc not yet in the file), returns { issues: null }.
 
-import { getBlobBaseUrl } from "../../../../lib/metron-issues";
+import fs from "fs";
+import path from "path";
 
-// Arc issue lists are essentially static — once written by the nightly script,
-// they never expire. No TTL check: if the entry exists in Blob, serve it.
-async function readBlobCache(pathname) {
-  const base = getBlobBaseUrl();
-  if (!base) return null;
+let arcIssuesCache = null;
+
+function loadArcIssues() {
+  if (arcIssuesCache) return arcIssuesCache;
   try {
-    const r = await fetch(`${base}/${pathname}`, { cache: "no-store" });
-    if (!r.ok) return null;
-    return await r.json();
+    const filePath = path.join(process.cwd(), "public", "data", "arc-issues.json");
+    arcIssuesCache = JSON.parse(fs.readFileSync(filePath, "utf-8"));
   } catch {
-    return null;
+    arcIssuesCache = {};
   }
+  return arcIssuesCache;
 }
 
-export default async function handler(req, res) {
+export default function handler(req, res) {
   if (req.method !== "GET") return res.status(405).json({ error: "Method not allowed." });
 
   const arcId = parseInt(req.query.id, 10);
   if (!arcId) return res.status(400).json({ error: "Invalid arc ID." });
 
-  const cached = await readBlobCache(`arc-issues/${arcId}.json`);
-  if (cached) {
-    return res.status(200).json({ issues: cached.issues, cachedAt: cached.cachedAt });
+  const issues = loadArcIssues()[arcId];
+  if (issues) {
+    return res.status(200).json({ issues });
   }
 
-  // Cache miss — nightly script hasn't run yet or arc has no issues in Metron
   return res.status(200).json({ issues: null, cached: false });
 }
