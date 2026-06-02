@@ -121,6 +121,36 @@ function SavedSummary({ saved, label, onUpdate, drop, accept, uploadingMsg }) {
   );
 }
 
+// ── Manage Billing button (premium users only) ────────────────────────────────
+
+function ManageBillingButton() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  async function handlePortal() {
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch("/api/stripe/portal", { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to open billing portal.");
+      window.location.href = data.url;
+    } catch (e) {
+      setError(e.message);
+      setLoading(false);
+    }
+  }
+
+  return (
+    <span>
+      <button className="btn-billing" onClick={handlePortal} disabled={loading}>
+        {loading ? "Loading…" : "Manage Billing"}
+      </button>
+      {error && <span style={{ marginLeft: "0.5rem", fontSize: "0.78rem", color: "#cc1f00", fontWeight: 600 }}>{error}</span>}
+    </span>
+  );
+}
+
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function Account() {
@@ -259,6 +289,9 @@ export default function Account() {
         .tier-badge{display:inline-block;background:#003399;color:#fffdf4;border:2px solid #1a1a1a;padding:0.2rem 0.65rem;font-size:0.72rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;margin-left:0.5rem}
         .btn-signout{background:#fffdf4;color:#1a1a1a;border:2px solid #1a1a1a;box-shadow:3px 3px 0 #1a1a1a;font-family:'Oswald',sans-serif;font-size:0.85rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:0.4rem 1rem;cursor:pointer}
         .btn-signout:hover{background:#ffe066}
+        .btn-billing{background:#003399;color:#fffdf4;border:2px solid #1a1a1a;box-shadow:3px 3px 0 #1a1a1a;font-family:'Oswald',sans-serif;font-size:0.85rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:0.4rem 1rem;cursor:pointer}
+        .btn-billing:hover{background:#0044cc}
+        .account-actions{display:flex;gap:0.75rem;flex-wrap:wrap;align-items:center;margin-bottom:1.25rem}
         .placeholder-msg{color:#888;font-size:0.88rem;font-weight:400;line-height:1.7}
         .input-row{display:flex;align-items:center;gap:0.6rem;margin-bottom:1rem;flex-wrap:wrap}
         .input-row input{border:2px solid #1a1a1a;background:#fffdf4;font-family:'Oswald',sans-serif;font-size:0.95rem;padding:0.45rem 0.65rem;color:#1a1a1a;flex:1;min-width:0}
@@ -335,7 +368,16 @@ export default function Account() {
               {session?.user?.name && <div className="user-email">{session?.user?.email}</div>}
             </div>
           </div>
-          <button className="btn-signout" onClick={() => signOut({ callbackUrl: "/" })}>Sign Out</button>
+          <div className="account-actions">
+            {session?.user?.plan === "premium" ? (
+              <ManageBillingButton />
+            ) : (
+              <Link href="/upgrade" style={{ background:"#cc1f00", color:"#fffdf4", border:"2px solid #1a1a1a", boxShadow:"3px 3px 0 #1a1a1a", fontFamily:"'Oswald',sans-serif", fontSize:"0.85rem", fontWeight:600, letterSpacing:"1px", textTransform:"uppercase", padding:"0.4rem 1rem", textDecoration:"none", display:"inline-block" }}>
+                ⚡ Upgrade to Premium
+              </Link>
+            )}
+            <button className="btn-signout" onClick={() => signOut({ callbackUrl: "/" })}>Sign Out</button>
+          </div>
 
           <div className="danger-zone">
             {deleteState === null && (
