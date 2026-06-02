@@ -196,6 +196,7 @@ export default function Preview() {
   const [uploadMsg, setUploadMsg] = useState("");
   const [wave2Loading, setWave2Loading] = useState(false);
   const [userZip, setUserZip] = useState(null);
+  const [userCountry, setUserCountry] = useState(null);
 
   // Filter + sort state
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -221,12 +222,14 @@ export default function Preview() {
   const [emailMsg, setEmailMsg] = useState("");
   const [emailing, setEmailing] = useState(false);
 
-  // Geolocate on mount for shipping estimates
+  // Geolocate on mount for shipping estimates.
+  // US visitors get zip (accurate domestic rates); non-US get country code only
+  // (enough for eBay to return zone-based international estimates).
   useEffect(() => {
     fetch("/api/geolocate")
       .then(r => r.json())
-      .then(({ zip }) => setUserZip(zip || null))
-      .catch(() => setUserZip(null));
+      .then(({ zip, country }) => { setUserZip(zip || null); setUserCountry(country || null); })
+      .catch(() => { setUserZip(null); setUserCountry(null); });
   }, []);
 
   // Pre-fill search from LOCG wishlist (account page → ?wishlist=...)
@@ -316,7 +319,7 @@ export default function Preview() {
         onWave2Start() { setWave2Loading(true); },
         onWave2(merged) { setResults(prev => ({ ...prev, rows: merged })); },
         onWave2End() { setWave2Loading(false); },
-      });
+      }, userCountry);
     } catch (err) {
       finishProgress(false);
       setStatus({ msg: `Error: ${err.message}. Try again in a moment.`, type: "error" });

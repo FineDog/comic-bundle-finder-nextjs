@@ -63,7 +63,7 @@ function buildRows(sellerIssues) {
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed." });
 
-  const { issues, issueOffsets, zip } = req.body;
+  const { issues, issueOffsets, zip, country } = req.body;
 
   let token;
   try {
@@ -78,7 +78,7 @@ export default async function handler(req, res) {
     for (let i = 0; i < issueOffsets.length; i += CONCURRENCY) {
       const batch = issueOffsets.slice(i, i + CONCURRENCY);
       const batchResults = await Promise.all(
-        batch.map(({ issue, offset }) => searchEbay(token, issue, offset, zip || null))
+        batch.map(({ issue, offset }) => searchEbay(token, issue, offset, zip || null, country || null))
       );
       for (let j = 0; j < batch.length; j++) {
         buildSellerIssueMap(sellerIssues, batch[j].issue, batchResults[j].items);
@@ -99,7 +99,7 @@ export default async function handler(req, res) {
   for (let i = 0; i < deduped.length; i += CONCURRENCY) {
     const batch = deduped.slice(i, i + CONCURRENCY);
     const batchResults = await Promise.all(
-      batch.map((issue) => searchEbay(token, issue, 0, zip || null))
+      batch.map((issue) => searchEbay(token, issue, 0, zip || null, country || null))
     );
     for (let j = 0; j < batch.length; j++) {
       const issue = batch[j];

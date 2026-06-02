@@ -17,12 +17,18 @@ export default async function handler(req, res) {
     if (!r.ok) return res.status(200).json({ zip: null, reason: "api_error" });
     const data = await r.json();
 
-    // Only meaningful for US addresses
-    if (data.country_code !== "US" || !data.postal) {
-      return res.status(200).json({ zip: null, reason: data.country_code !== "US" ? "non_us" : "no_postal" });
+    if (!data.country_code) {
+      return res.status(200).json({ zip: null, country: null, reason: "no_country" });
     }
 
-    return res.status(200).json({ zip: data.postal });
+    // For non-US visitors return the country code so the API can still pass
+    // X-EBAY-C-ENDUSERCTX with country-only — enough for flat-rate and
+    // zone-based international shipping estimates.
+    if (data.country_code !== "US" || !data.postal) {
+      return res.status(200).json({ zip: null, country: data.country_code, reason: data.country_code !== "US" ? "non_us" : "no_postal" });
+    }
+
+    return res.status(200).json({ zip: data.postal, country: "US" });
   } catch {
     return res.status(200).json({ zip: null, reason: "error" });
   }
