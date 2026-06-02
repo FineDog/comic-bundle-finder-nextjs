@@ -84,8 +84,7 @@ export default function Upgrade() {
         .plan-card.premium{background:#fffbea;border-left:3px solid #1a1a1a}
         @media(max-width:640px){.plan-card.premium{border-left:none;border-top:3px solid #1a1a1a}}
 
-        .plan-badge{display:inline-block;background:#1a1a1a;color:#ffe066;border:2px solid #1a1a1a;padding:0.25rem 0.65rem;font-size:0.68rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;margin-bottom:0.75rem}
-        .plan-badge.free-badge{background:#fffdf4;color:#888;border-color:#ccc}
+
 
         .plan-name{font-family:'Bangers',cursive;font-size:2.4rem;letter-spacing:3px;line-height:1;margin-bottom:0.5rem}
         .plan-name.free-color{color:#888}
@@ -151,7 +150,6 @@ export default function Upgrade() {
 
           {/* Free */}
           <div className="plan-card">
-            <div className="plan-badge free-badge">Free</div>
             <div className="plan-name free-color">Free</div>
             <div className="plan-price">
               <div className="price-main">$0</div>
@@ -174,7 +172,6 @@ export default function Upgrade() {
 
           {/* Premium */}
           <div className="plan-card premium">
-            <div className="plan-badge">⚡ Premium</div>
             <div className="plan-name premium-color">Premium</div>
             <div className="plan-price">
               {billing === "monthly" ? (

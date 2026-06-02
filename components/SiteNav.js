@@ -39,7 +39,7 @@ export default function SiteNav() {
         <Link href="/gap-analyzer" className={`snav-item${activeAnalyzer ? " snav-active" : ""}`}>Gap Analyzer</Link>
         <Link href="/collection-guides" className={`snav-item${activeGuides ? " snav-active" : ""}`}>Collection Guides</Link>
         <Link href="/faq" className={`snav-item${activeAbout ? " snav-active" : ""}`}>About</Link>
-        <Link href="/upgrade" className={`snav-item${activeUpgrade ? " snav-active" : ""}`} style={activeUpgrade ? {} : { color: "#cc1f00", fontWeight: 700 }}>⚡ Premium</Link>
+        <Link href="/upgrade" className={`snav-item${activeUpgrade ? " snav-active" : ""}`} style={activeUpgrade ? {} : { color: "#cc1f00", fontWeight: 700 }}>Premium</Link>
         <Link href={session ? "/account" : "/auth/signin"} className="snav-account">
           {session ? "My Account" : "Sign In"}
         </Link>
