@@ -1,7 +1,4 @@
-// API route for the valuation test page only.
-// Accepts a list of issue names and returns sold listing data from eBay.
-
-import { searchSoldBatch } from "../../lib/valuation-search.js";
+import { searchForValuationBatch } from "../../lib/valuation-search.js";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).end();
@@ -15,7 +12,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const results = await searchSoldBatch(issues, 4);
+    const results = await searchForValuationBatch(issues);
     return res.status(200).json({ results });
   } catch (err) {
     console.error("valuation-test error:", err);
