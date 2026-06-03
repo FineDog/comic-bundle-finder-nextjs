@@ -9,17 +9,21 @@ import * as XLSX from "xlsx";
 
 // Status → background fill color (ARGB hex, no leading #)
 const STATUS_FILL = {
-  "Used in FMV":                "C6EFCE", // green
-  "Trimmed (low end)":          "FFEB9C", // yellow
-  "Trimmed (high end)":         "FFEB9C", // yellow
-  "Blocked: graded slab":       "FFC7CE", // red
-  "Blocked: reprint / facsimile": "FFC7CE",
-  "Blocked: collected edition": "FFC7CE",
-  "Blocked: signed copy":       "FFC7CE",
+  "Used in FMV":                   "C6EFCE", // green
+  "Trimmed (low end)":             "FFEB9C", // yellow
+  "Trimmed (high end)":            "FFEB9C", // yellow
+  "Blocked: graded slab":          "FFC7CE", // red
+  "Blocked: reprint / facsimile":  "FFC7CE",
+  "Blocked: collected edition":    "FFC7CE",
+  "Blocked: signed copy":          "FFC7CE",
   "Blocked: damaged / incomplete": "FFC7CE",
-  "Blocked: lot listing":       "FFC7CE",
-  "Blocked: year mismatch":     "FCE4D6", // orange
-  "Title mismatch":             "EDEDED", // light grey
+  "Blocked: lot listing":          "FFC7CE",
+  "Blocked: year mismatch":        "FCE4D6", // orange
+  "Title mismatch":                "EDEDED", // light grey
+  "Variation: issue confirmed":    "C6EFCE", // green (same as used)
+  "Variation: issue not listed":   "EDEDED", // grey
+  "Variation: no variation data":  "FCE4D6", // orange
+  "Variation: lookup failed":      "FFC7CE", // red
 };
 
 function applyFill(ws, cellAddr, rgbHex) {
@@ -32,18 +36,20 @@ function applyFill(ws, cellAddr, rgbHex) {
 function buildWorkbook(results) {
   // ── Sheet 1: Summary ───────────────────────────────────────────────────────
   const summaryRows = results.map((r) => ({
-    "Issue":             r.issue,
-    "FMV ($)":           r.fmv != null ? parseFloat(r.fmv.toFixed(2)) : "",
-    "Confidence":        r.confidence,
-    "eBay Total":        r.ebayTotal,
-    "Fetched":           r.counts.fetched,
-    "Title Matched":     r.counts.matched,
-    "Passed Filter":     r.counts.passed,
-    "Used in Calc":      r.counts.used,
-    "Trimmed":           r.counts.trimmed,
-    "Blocked":           r.counts.blocked,
-    "Title Mismatch":    r.counts.mismatch,
-    "Formula":           r.formula,
+    "Issue":               r.issue,
+    "FMV ($)":             r.fmv != null ? parseFloat(r.fmv.toFixed(2)) : "",
+    "Confidence":          r.confidence,
+    "eBay Total":          r.ebayTotal,
+    "Fetched":             r.counts.fetched,
+    "Title Matched":       r.counts.matched,
+    "Passed Filter":       r.counts.passed,
+    "Var. Checked":        r.counts.variationChecked ?? 0,
+    "Var. Confirmed":      r.counts.variationConfirmed ?? 0,
+    "Used in Calc":        r.counts.used,
+    "Trimmed":             r.counts.trimmed,
+    "Blocked":             r.counts.blocked,
+    "Title Mismatch":      r.counts.mismatch,
+    "Formula":             r.formula,
   }));
 
   const wsSummary = XLSX.utils.json_to_sheet(summaryRows);
@@ -55,6 +61,8 @@ function buildWorkbook(results) {
     { wch: 9  }, // Fetched
     { wch: 13 }, // Title Matched
     { wch: 13 }, // Passed Filter
+    { wch: 13 }, // Var. Checked
+    { wch: 14 }, // Var. Confirmed
     { wch: 12 }, // Used
     { wch: 9  }, // Trimmed
     { wch: 9  }, // Blocked
@@ -87,11 +95,12 @@ function buildWorkbook(results) {
     });
     for (const l of sorted) {
       listingRows.push({
-        "Issue":    r.issue,
-        "Status":   l.status,
-        "Price ($)": l.price,
-        "Title":    l.title,
-        "URL":      l.url,
+        "Issue":          r.issue,
+        "Status":         l.status,
+        "Price ($)":      l.price,
+        "Title":          l.title,
+        "URL":            l.url,
+        "Variation Data": l.variationData ?? "",
       });
     }
   }
@@ -103,26 +112,26 @@ function buildWorkbook(results) {
     { wch: 10 }, // Price
     { wch: 80 }, // Title
     { wch: 60 }, // URL
+    { wch: 80 }, // Variation Data
   ];
 
   // Apply row fill colors based on status.
-  // Header is row 1 (index 0), data starts at row 2 (index 1).
   listingRows.forEach((row, i) => {
-    const excelRow = i + 2; // 1-indexed + header row
+    const excelRow = i + 2;
     const fill = STATUS_FILL[row["Status"]];
     if (fill) {
-      ["A", "B", "C", "D", "E"].forEach((col) => {
+      ["A", "B", "C", "D", "E", "F"].forEach((col) => {
         applyFill(wsListings, `${col}${excelRow}`, fill);
       });
     }
   });
 
-  // Style the header rows bold.
-  ["A1","B1","C1","D1","E1"].forEach((addr) => {
+  // Bold headers.
+  ["A1","B1","C1","D1","E1","F1"].forEach((addr) => {
     if (!wsListings[addr]) return;
     wsListings[addr].s = { font: { bold: true } };
   });
-  ["A1","B1","C1","D1","E1","F1","G1","H1","I1","J1","K1","L1"].forEach((addr) => {
+  ["A1","B1","C1","D1","E1","F1","G1","H1","I1","J1","K1","L1","M1","N1"].forEach((addr) => {
     if (!wsSummary[addr]) return;
     wsSummary[addr].s = { font: { bold: true } };
   });
@@ -233,11 +242,11 @@ export default function ValuationTest() {
         <strong>Excel colour key (Listings sheet):</strong>
         <div style={styles.legendGrid}>
           {[
-            ["C6EFCE", "Used in FMV calc"],
+            ["C6EFCE", "Used in FMV calc (incl. variation confirmed)"],
             ["FFEB9C", "Trimmed (low or high end)"],
-            ["FFC7CE", "Blocked (graded / reprint / lot / etc.)"],
-            ["FCE4D6", "Blocked: year mismatch"],
-            ["EDEDED", "Title mismatch (eBay search noise)"],
+            ["FFC7CE", "Blocked (graded / reprint / lot / etc.) or variation lookup failed"],
+            ["FCE4D6", "Blocked: year mismatch · Variation: no variation data"],
+            ["EDEDED", "Title mismatch · Variation: issue not listed"],
           ].map(([color, label]) => (
             <div key={color} style={styles.legendRow}>
               <span style={{ ...styles.swatch, background: `#${color}` }} />
