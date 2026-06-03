@@ -17,8 +17,7 @@ const STATUS_FILL = {
   "Blocked: collected edition":    "FFC7CE",
   "Blocked: signed copy":          "FFC7CE",
   "Blocked: damaged / incomplete": "FFC7CE",
-  "Blocked: lot listing":          "FFC7CE",
-  "Blocked: year mismatch":        "FCE4D6", // orange
+  "Blocked: lot / ratio variant":  "FFC7CE",
   "Title mismatch":                "EDEDED", // light grey
   "Variation: issue confirmed":    "C6EFCE", // green (same as used)
   "Variation: issue not listed":   "EDEDED", // grey
@@ -244,8 +243,8 @@ export default function ValuationTest() {
           {[
             ["C6EFCE", "Used in FMV calc (incl. variation confirmed)"],
             ["FFEB9C", "Trimmed (low or high end)"],
-            ["FFC7CE", "Blocked (graded / reprint / lot / etc.) or variation lookup failed"],
-            ["FCE4D6", "Blocked: year mismatch · Variation: no variation data"],
+            ["FFC7CE", "Blocked (graded / reprint / lot / ratio variant / etc.) or variation lookup failed"],
+            ["FCE4D6", "Variation: no variation data"],
             ["EDEDED", "Title mismatch · Variation: issue not listed"],
           ].map(([color, label]) => (
             <div key={color} style={styles.legendRow}>
@@ -260,9 +259,9 @@ export default function ValuationTest() {
         <strong>Active filters:</strong>
         <ul style={styles.filterList}>
           <li>Query exclusions sent to eBay: <code>-lot -set -run -collection -bundle -wholesale -cgc -cbcs -pgx -facsimile -reprint -signed -omnibus -tpb</code></li>
-          <li>Blocked post-fetch: grading agencies (CGC/CBCS/PGX), facsimile/reprint, omnibus/TPB/digest, signed, coverless/damaged</li>
-          <li>Blocked: listings with more than one issue number in the title (lot detection)</li>
-          <li>Blocked: listings with a conflicting publication year (when query includes a year in parens)</li>
+          <li>Blocked post-fetch: grading agencies (CGC/CBCS/PGX), facsimile/reprint, omnibus/TPB/digest, signed/SS, coverless/damaged</li>
+          <li>Blocked: listings with more than one issue number in the title (lot detection — grade decimals and ratio notation excluded from count)</li>
+          <li>Blocked: ratio incentive variants (1:25, 1:100, etc.) unless the user's search explicitly includes a ratio</li>
           <li>Title mismatch: series name or issue number not found in listing title</li>
           <li>FMV: trimmed mean — drops 1 each end (n 3–9) or ~10% each end (n ≥ 10)</li>
         </ul>
