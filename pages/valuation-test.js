@@ -18,6 +18,7 @@ const STATUS_FILL = {
   "Blocked: signed copy":          "FFC7CE",
   "Blocked: damaged / incomplete": "FFC7CE",
   "Blocked: lot / ratio variant":  "FFC7CE",
+  "Blocked: variant edition":      "FFC7CE",
   "Title mismatch":                "EDEDED", // light grey
   "Variation: issue confirmed":    "C6EFCE", // green (same as used)
   "Variation: issue not listed":   "EDEDED", // grey
