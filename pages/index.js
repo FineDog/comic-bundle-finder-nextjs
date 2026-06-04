@@ -469,33 +469,6 @@ export default function Preview() {
       .progress-fill{height:100%;background:#cc1f00;transition:width 0.7s ease}
       .progress-pct{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;font-family:'Bangers',cursive;font-size:0.85rem;letter-spacing:1px;color:#fffdf4;text-shadow:1px 1px 0 #1a1a1a}
 
-      /* ── Page-specific: filter panel ───────────────────────────────── */
-      .filter-toggle-row{display:flex;align-items:center;gap:0.75rem;margin-bottom:1.25rem;flex-wrap:wrap}
-      .btn-filter-toggle{background:#ffe066;color:#1a1a1a;border:2px solid #1a1a1a;box-shadow:2px 2px 0 #1a1a1a;font-family:'Oswald',sans-serif;font-size:0.78rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:0.3rem 0.9rem;cursor:pointer;white-space:nowrap}
-      .btn-filter-toggle:hover{background:#ffd700}
-      .btn-filter-toggle.active{background:#003399;color:#fffdf4}
-      .btn-filter-toggle.active:hover{background:#0044cc}
-      .filter-active-dot{width:8px;height:8px;background:#cc1f00;border:1.5px solid #1a1a1a;border-radius:50%;display:inline-block;margin-left:2px;vertical-align:middle}
-      .btn-filter-reset{background:none;border:none;color:#cc1f00;font-family:'Oswald',sans-serif;font-size:0.75rem;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;cursor:pointer;text-decoration:underline;padding:0}
-      .filter-panel{background:#f8f3e3;border:2px solid #1a1a1a;padding:1.1rem 1.25rem;margin-bottom:1.5rem}
-      .filter-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem 2rem}
-      @media(max-width:600px){.filter-grid{grid-template-columns:1fr}}
-      .filter-section{margin-bottom:0}
-      .filter-section-label{font-size:0.68rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:#1a1a1a;margin-bottom:0.45rem;display:block}
-      .filter-row{display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap}
-      .filter-input{width:72px;border:2px solid #1a1a1a;background:#fffdf4;font-family:'Oswald',sans-serif;font-size:0.9rem;font-weight:600;padding:0.25rem 0.4rem;text-align:center;color:#1a1a1a}
-      .filter-input:focus{outline:none;border-color:#003399;box-shadow:2px 2px 0 #003399}
-      .filter-radio-group{display:flex;gap:0.65rem;flex-wrap:wrap}
-      .filter-radio-label{display:flex;align-items:center;gap:0.3rem;font-size:0.8rem;font-weight:400;cursor:pointer;user-select:none}
-      .filter-divider{border:none;border-top:1.5px solid #d4c9a8;margin:0.9rem 0;grid-column:1/-1}
-      .filter-checkboxes{display:flex;flex-wrap:wrap;gap:0.4rem;max-height:120px;overflow-y:auto}
-      .filter-checkbox-label{display:flex;align-items:center;gap:0.3rem;font-size:0.75rem;font-weight:400;cursor:pointer;background:#fffdf4;border:1.5px solid #1a1a1a;padding:2px 7px;white-space:nowrap;user-select:none}
-      .filter-checkbox-label.checked{background:#003399;color:#fffdf4;border-color:#003399}
-
-      /* ── Page-specific: extra seller header badges ──────────────────── */
-      .badge-est{font-size:0.75rem;font-weight:600;color:#1a1a1a;background:#ffe066;border:1.5px solid #1a1a1a;padding:2px 8px;letter-spacing:0.5px;white-space:nowrap}
-      .badge-savings{font-size:0.75rem;font-weight:600;color:#fffdf4;background:#1a1a1a;border:1.5px solid #ffe066;padding:2px 8px;letter-spacing:0.5px;white-space:nowrap}
-
       /* ── Page-specific: share / email panel ────────────────────────── */
       .share-panel{border-bottom:2px solid #d4c9a8;margin-bottom:1.5rem;padding-bottom:1.25rem}
       .share-title{font-family:'Bangers',cursive;font-size:1.4rem;letter-spacing:2px;color:#1a1a1a;margin-bottom:0.75rem}
