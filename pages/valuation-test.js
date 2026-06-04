@@ -36,6 +36,7 @@ function buildWorkbook(results) {
   // ── Sheet 1: Summary ───────────────────────────────────────────────────────
   const summaryRows = results.map((r) => ({
     "Issue":               r.issue,
+    "eBay Query Sent":     r.ebayQuery ?? "",
     "FMV ($)":             r.fmv != null ? parseFloat(r.fmv.toFixed(2)) : "",
     "Confidence":          r.confidence,
     "eBay Total":          r.ebayTotal,
@@ -54,6 +55,7 @@ function buildWorkbook(results) {
   const wsSummary = XLSX.utils.json_to_sheet(summaryRows);
   wsSummary["!cols"] = [
     { wch: 45 }, // Issue
+    { wch: 80 }, // eBay Query Sent
     { wch: 10 }, // FMV
     { wch: 12 }, // Confidence
     { wch: 11 }, // eBay Total
