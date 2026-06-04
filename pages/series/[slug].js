@@ -7,13 +7,11 @@ import { SERIES, SERIES_GROUPS, getSeriesConfig } from "../../lib/series-config"
 import { fetchMetronSeriesMeta } from "../../lib/metron-issues";
 import SiteNav from "../../components/SiteNav";
 import SiteFooter from "../../components/SiteFooter";
+import ResultsPanel from "../../components/ResultsPanel";
 import { mergeAndRecount, EBAY_PAGE_SIZE } from "../../lib/ebay-search";
 
-// How many issues are fetched from eBay in one API call. Kept fixed so the
-// Blob cache key is predictable and a single response covers many display pages.
 const FETCH_SIZE = 50;
-
-const MAX_AUTO_SKIP = 30; // stop auto-advancing after this many consecutive empty pages
+const MAX_AUTO_SKIP = 30;
 
 function esc(s) { return String(s || ""); }
 
@@ -33,72 +31,15 @@ function nameToSlug(name) {
     .replace(/^-+|-+$/g, "");
 }
 
-// Apply filters, compute per-seller metrics, and return sorted [name, data] entries.
-function groupResults(rows, filters, sortBy) {
-  const minP = parseFloat(filters.minPrice);
-  const maxP = parseFloat(filters.maxPrice);
-
-  let filtered = rows;
-  if (!isNaN(minP) && minP > 0) filtered = filtered.filter(r => parseFloat(r.price) >= minP);
-  if (!isNaN(maxP) && maxP > 0) filtered = filtered.filter(r => parseFloat(r.price) <= maxP);
-
-  if (filters.shipping === "required") {
-    filtered = filtered.filter(r => r.shipping === "0.00");
-  } else if (filters.shipping === "excluded") {
-    filtered = filtered.filter(r => r.shipping !== "0.00");
+// Quick unfiltered check: are there any sellers with 2+ distinct issues in this window?
+// Used by auto-advance to decide whether to skip a page.
+function hasBundles(rows) {
+  const perSeller = {};
+  for (const r of rows) {
+    if (!perSeller[r.seller]) perSeller[r.seller] = new Set();
+    perSeller[r.seller].add(r.issue);
   }
-
-  const s = {};
-  for (const r of filtered) {
-    if (!s[r.seller]) s[r.seller] = { listings: [] };
-    s[r.seller].listings.push(r);
-  }
-
-  const minBundle = Math.max(2, parseInt(filters.minBundle) || 2);
-
-  for (const name of Object.keys(s)) {
-    const distinctIssues = new Set(s[name].listings.map(l => l.issue)).size;
-    s[name].bundle_count = distinctIssues;
-    if (distinctIssues < minBundle) { delete s[name]; continue; }
-    if (filters.requiredIssues?.length > 0) {
-      const sellerIssues = new Set(s[name].listings.map(l => l.issue));
-      if (!filters.requiredIssues.every(ri => sellerIssues.has(ri))) { delete s[name]; continue; }
-    }
-
-    const cheapestPerIssue = {};
-    for (const l of s[name].listings) {
-      const p = parseFloat(l.price) || 0;
-      if (!(l.issue in cheapestPerIssue) || p < parseFloat(cheapestPerIssue[l.issue].price)) {
-        cheapestPerIssue[l.issue] = l;
-      }
-    }
-
-    let totalIndividualShipping = 0, maxShipping = 0, hasUnknownShipping = false;
-    for (const l of Object.values(cheapestPerIssue)) {
-      const ship = parseFloat(l.shipping);
-      if (!isFinite(ship) || l.shipping === "unknown") {
-        hasUnknownShipping = true;
-      } else {
-        totalIndividualShipping += ship;
-        if (ship > maxShipping) maxShipping = ship;
-      }
-    }
-
-    const sumCheapest = Object.values(cheapestPerIssue).reduce((a, l) => a + (parseFloat(l.price) || 0), 0);
-    const numUnique = Object.keys(cheapestPerIssue).length;
-    s[name].subtotal = sumCheapest;
-    s[name].maxShipping = maxShipping;
-    s[name].estPerIssue = numUnique > 0 ? (sumCheapest + maxShipping) / numUnique : 0;
-    s[name].shippingSavings = hasUnknownShipping ? null : Math.max(0, totalIndividualShipping - maxShipping);
-  }
-
-  const entries = Object.entries(s);
-  entries.sort(([nameA, a], [nameB, b]) => {
-    if (sortBy === "est_price_per_issue") return a.estPerIssue - b.estPerIssue;
-    if (sortBy === "est_shipping") return a.maxShipping - b.maxShipping;
-    return b.bundle_count - a.bundle_count || nameA.localeCompare(nameB);
-  });
-  return entries;
+  return Object.values(perSeller).some(s => s.size >= 2);
 }
 
 export default function SeriesPage({ slug, displayName, subtitle, totalIssues, seoBlurb, seoTitle, groupSlug, prevVolSlug, nextVolSlug }) {
@@ -114,22 +55,10 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
   const [wrapMsg, setWrapMsg]       = useState(null);
   const [userZip, setUserZip]       = useState(null);
 
-  // Filter + sort state
-  const [filtersOpen, setFiltersOpen] = useState(false);
-  const [filters, setFilters] = useState({
-    minPrice: "",
-    maxPrice: "10",
-    shipping: "included",
-    minBundle: 2,
-    requiredIssues: [],
-  });
-  const [sortBy, setSortBy] = useState("bundle_size");
+  const abortRef      = useRef(null);
+  const autoSkipCount = useRef(0);
+  const didWrapRef    = useRef(false);
 
-  const abortRef       = useRef(null);
-  const autoSkipCount  = useRef(0);
-  const didWrapRef     = useRef(false);
-
-  // Geolocate on mount for shipping estimates
   useEffect(() => {
     fetch("/api/geolocate")
       .then(r => r.json())
@@ -137,10 +66,8 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
       .catch(() => setUserZip(null));
   }, []);
 
-  // Derived: start of the 50-issue fetch window that covers startIdx.
   const fetchStart = Math.floor(startIdx / FETCH_SIZE) * FETCH_SIZE;
 
-  // Re-fetch only when the fetch block (or the series slug) changes.
   useEffect(() => {
     if (abortRef.current) abortRef.current.abort();
     const controller = new AbortController();
@@ -163,7 +90,6 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
         setData(json);
         setLoading(false);
 
-        // Wave 2: fetch remaining eBay results for any issue that had more than 200
         if (!cancelled && json.totals) {
           const wave2Tasks = [];
           for (const [issue, total] of Object.entries(json.totals)) {
@@ -184,7 +110,6 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
               if (!cancelled && res2.ok && data2.results?.length) {
                 const merged = mergeAndRecount(json.results, data2.results);
                 setData(prev => ({ ...prev, results: merged }));
-                // Write complete results to Blob cache for dynamic (metron-*) series
                 if (/^metron-\d+$/.test(slug)) {
                   fetch(`/api/series/${slug}/results`, {
                     method: "POST",
@@ -208,16 +133,10 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
     return () => { controller.abort(); cancelled = true; };
   }, [fetchStart, slug]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ─── Client-side window into the fetched block ───────────────────────────
   const offsetInBlock  = startIdx - fetchStart;
   const issuesInWindow = data?.issues?.slice(offsetInBlock, offsetInBlock + batchSize) ?? [];
   const issueNamesInWindow = new Set(issuesInWindow.map(i => i.issueName));
   const windowResults  = data?.results?.filter(r => issueNamesInWindow.has(r.issue)) ?? [];
-
-  const maxPriceNum = parseFloat(filters.maxPrice) || 10;
-  const sortedSellers = groupResults(windowResults, filters, sortBy);
-  const sellerCount   = sortedSellers.length;
-  const totalSellers  = new Set(windowResults.map(r => r.seller)).size;
 
   const displayStart = startIdx + 1;
   const displayEnd   = data
@@ -226,7 +145,6 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
   const hasPrev = startIdx > 0;
   const hasNext = startIdx + batchSize < totalIssues;
 
-  // ─── Navigation ──────────────────────────────────────────────────────────
   function goNext() {
     if (!hasNext) return;
     autoSkipCount.current = 0;
@@ -258,12 +176,13 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
     setJumpInput("");
   }
 
-  // ─── Auto-advance past empty display pages ────────────────────────────────
+  // Auto-advance past pages with no bundle opportunities.
+  // Uses unfiltered data so the user's filter settings don't cause skipping.
   useEffect(() => {
     if (loading || wave2Loading || !data) return;
     if (data.startIdx !== fetchStart) return;
 
-    if (sellerCount > 0) {
+    if (hasBundles(windowResults)) {
       autoSkipCount.current = 0;
       didWrapRef.current    = false;
       setScanning(false);
@@ -279,7 +198,7 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
       autoSkipCount.current = 0;
       setScanning(false);
       if (wasScanning) {
-        setWrapMsg(`No bundles found at $${maxPriceNum.toFixed(2)} through the full series — try raising your max price.`);
+        setWrapMsg("No bundle opportunities found through the full series — try adjusting your max price.");
         didWrapRef.current = true;
         setStartIdx(0);
       }
@@ -295,35 +214,6 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
     const blockEnd = fetchStart + FETCH_SIZE;
     setStartIdx(Math.min(next, blockEnd));
   }, [loading, wave2Loading, data, startIdx]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Reset required-issues selection when the visible issue window changes
-  useEffect(() => {
-    setFilters(f => ({ ...f, requiredIssues: [] }));
-  }, [startIdx]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // ─── Filter helpers ───────────────────────────────────────────────────────
-  function setFilter(key, value) {
-    setFilters(f => ({ ...f, [key]: value }));
-  }
-  function resetFilters() {
-    setFilters({ minPrice: "", maxPrice: "10", shipping: "included", minBundle: 2, requiredIssues: [] });
-    setSortBy("bundle_size");
-  }
-  function toggleRequiredIssue(issue) {
-    setFilters(f => ({
-      ...f,
-      requiredIssues: f.requiredIssues.includes(issue)
-        ? f.requiredIssues.filter(i => i !== issue)
-        : [...f.requiredIssues, issue],
-    }));
-  }
-  const filtersActive =
-    filters.minPrice !== "" ||
-    filters.maxPrice !== "10" ||
-    filters.shipping !== "included" ||
-    filters.minBundle > 2 ||
-    filters.requiredIssues.length > 0 ||
-    sortBy !== "bundle_size";
 
   const metaDescription = `Find the best eBay bundle deals for ${displayName} (${subtitle}). Browse all ${totalIssues} issues and find sellers carrying multiple issues you need — save big on combined shipping.`;
 
@@ -348,16 +238,8 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
               "name": seoTitle,
               "description": metaDescription,
               "url": `https://www.comicbundlefinder.com/series/${slug}`,
-              "isPartOf": {
-                "@type": "WebSite",
-                "name": "Comic Bundle Finder",
-                "url": "https://www.comicbundlefinder.com",
-              },
-              "about": {
-                "@type": "ComicSeries",
-                "name": displayName,
-                "description": seoBlurb,
-              },
+              "isPartOf": { "@type": "WebSite", "name": "Comic Bundle Finder", "url": "https://www.comicbundlefinder.com" },
+              "about": { "@type": "ComicSeries", "name": displayName, "description": seoBlurb },
             }),
           }}
         />
@@ -366,19 +248,14 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
         <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Oswald:wght@400;600&display=swap" rel="stylesheet" />
       </Head>
       <style>{`
-        /* ── Series header accent card ──────────────────────────────── */
         .series-sub{color:#555;font-size:0.85rem;letter-spacing:2px;text-transform:uppercase;margin-top:0.4rem;font-weight:400}
         .updated-badge{display:inline-block;background:#003399;color:#fffdf4;border:2px solid #1a1a1a;padding:0.25rem 0.7rem;font-size:0.72rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-left:0.75rem;vertical-align:middle}
-
-        /* ── Vol navigation breadcrumb ──────────────────────────────── */
         .vol-nav{display:flex;justify-content:space-between;align-items:center;gap:0.5rem;width:100%}
         .vol-nav-links{display:flex;gap:0.4rem;align-items:center}
         .btn-vol{font-family:'Oswald',sans-serif;font-size:0.72rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:0.2rem 0.65rem;border:1.5px solid #1a1a1a;white-space:nowrap;text-decoration:none;display:inline-block}
         .btn-vol-active{background:#ffe066;color:#1a1a1a;cursor:pointer}
         .btn-vol-active:hover{background:#ffd700}
         .btn-vol-disabled{background:#e8e0cc;color:#aaa;border-color:#ccc;cursor:default}
-
-        /* ── Controls panel ─────────────────────────────────────────── */
         .controls-row{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1.25rem}
         .range-label{font-family:'Bangers',cursive;font-size:1.5rem;letter-spacing:2px;color:#1a1a1a;flex:1;min-width:200px}
         .nav-buttons{display:flex;gap:0.5rem;align-items:center}
@@ -433,7 +310,7 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
           </div>
         </div>
 
-        {/* Series header card */}
+        {/* Series header */}
         <div className="panel-accent">
           <div className="panel-accent-stripe" />
           <div className="panel-accent-body">
@@ -450,7 +327,7 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
           </p>
         </div>
 
-        {/* Controls */}
+        {/* Pagination controls */}
         <div className="panel">
           <div className="controls-row">
             <div className="range-label">
@@ -493,149 +370,6 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
               />
             )}
           </div>
-
-          {/* Filter & Sort */}
-          <div className="filter-toggle-row">
-            <button
-              className={`btn-filter-toggle${filtersOpen ? " active" : ""}`}
-              onClick={() => setFiltersOpen(o => !o)}
-            >
-              Filter &amp; Sort {filtersOpen ? "▲" : "▼"}
-              {filtersActive && !filtersOpen && <span className="filter-active-dot" />}
-            </button>
-            {filtersActive && (
-              <button className="btn-filter-reset" onClick={resetFilters}>Reset</button>
-            )}
-            <span className="hint" style={{ marginTop: 0 }}>All prices cached — filters apply to displayed results</span>
-          </div>
-
-          {filtersOpen && (
-            <div className="filter-panel">
-              <div className="filter-grid">
-                {/* Price range */}
-                <div className="filter-section">
-                  <span className="filter-section-label">Price per issue</span>
-                  <div className="filter-row">
-                    <span style={{ fontSize: "0.8rem", fontWeight: 600 }}>From</span>
-                    <span style={{ fontWeight: 600 }}>$</span>
-                    <input
-                      className="filter-input"
-                      type="number"
-                      placeholder="0"
-                      value={filters.minPrice}
-                      onChange={e => setFilter("minPrice", e.target.value)}
-                      min="0" step="0.50"
-                    />
-                    <span style={{ fontSize: "0.8rem", fontWeight: 600 }}>to</span>
-                    <span style={{ fontWeight: 600 }}>$</span>
-                    <input
-                      className="filter-input"
-                      type="number"
-                      placeholder="any"
-                      value={filters.maxPrice}
-                      onChange={e => { setFilter("maxPrice", e.target.value); setWrapMsg(null); }}
-                      min="0" step="0.50"
-                    />
-                  </div>
-                </div>
-
-                {/* Min bundle size */}
-                <div className="filter-section">
-                  <span className="filter-section-label">Min issues per bundle</span>
-                  <div className="filter-row">
-                    <input
-                      className="filter-input"
-                      type="number"
-                      value={filters.minBundle}
-                      onChange={e => setFilter("minBundle", Math.max(2, parseInt(e.target.value) || 2))}
-                      min="2" step="1"
-                      style={{ width: "60px" }}
-                    />
-                    <span style={{ fontSize: "0.8rem", fontWeight: 400 }}>issues minimum</span>
-                  </div>
-                </div>
-
-                {/* Shipping filter */}
-                <div className="filter-section">
-                  <span className="filter-section-label">Free shipping</span>
-                  <div className="filter-radio-group">
-                    {[["included", "Any"], ["required", "Free only"], ["excluded", "No free"]].map(([val, label]) => (
-                      <label key={val} className="filter-radio-label">
-                        <input
-                          type="radio"
-                          name="shipping-filter-series"
-                          value={val}
-                          checked={filters.shipping === val}
-                          onChange={() => setFilter("shipping", val)}
-                        />
-                        {label}
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Sort */}
-                <div className="filter-section">
-                  <span className="filter-section-label">Sort by</span>
-                  <div className="filter-radio-group" style={{ flexDirection: "column", gap: "0.3rem" }}>
-                    {[
-                      ["bundle_size", "Bundle size (most issues first)"],
-                      ["est_price_per_issue", "Lowest est. price per issue"],
-                      ["est_shipping", "Lowest est. shipping"],
-                    ].map(([val, label]) => (
-                      <label key={val} className="filter-radio-label">
-                        <input
-                          type="radio"
-                          name="sort-by-series"
-                          value={val}
-                          checked={sortBy === val}
-                          onChange={() => setSortBy(val)}
-                        />
-                        {label}
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Required issues */}
-                {issuesInWindow.length > 1 && (() => {
-                  const issueNames = issuesInWindow.map(i => i.issueName);
-                  const allSelected = issueNames.every(i => filters.requiredIssues.includes(i));
-                  return (
-                    <div className="filter-section" style={{ gridColumn: "1 / -1" }}>
-                      <hr className="filter-divider" style={{ marginTop: 0, marginBottom: "0.75rem" }} />
-                      <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.5rem", flexWrap: "wrap" }}>
-                        <span className="filter-section-label" style={{ margin: 0 }}>Required issues (only show sellers who have these)</span>
-                        <button
-                          className="btn-filter-reset"
-                          style={{ textDecoration: "none", background: "#ffe066", border: "1.5px solid #1a1a1a", padding: "1px 8px", fontSize: "0.72rem", fontWeight: 600, letterSpacing: "0.5px", cursor: "pointer" }}
-                          onClick={() => setFilter("requiredIssues", allSelected ? [] : issueNames)}
-                        >
-                          {allSelected ? "Deselect All" : "Select All"}
-                        </button>
-                      </div>
-                      <div className="filter-checkboxes">
-                        {issueNames.map(issue => (
-                          <label
-                            key={issue}
-                            className={`filter-checkbox-label${filters.requiredIssues.includes(issue) ? " checked" : ""}`}
-                          >
-                            <input
-                              type="checkbox"
-                              style={{ display: "none" }}
-                              checked={filters.requiredIssues.includes(issue)}
-                              onChange={() => toggleRequiredIssue(issue)}
-                            />
-                            {issue}
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })()}
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Results */}
@@ -658,97 +392,14 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
           {!loading && !scanning && !error && data && (
             <>
               {wrapMsg && <div className="wrap-msg">&#8617; {wrapMsg}</div>}
-              {wave2Loading && (
-                <div className="wave2-banner">
-                  <span className="wave2-spinner" />
-                  Loading additional results…
-                </div>
-              )}
-              <div className="section-title">
-                {sellerCount === 0
-                  ? "No Bundle Opportunities Found"
-                  : "Bundle Deals — Sellers Ranked by Issues Carried"}
-              </div>
-
-              {sellerCount === 0 ? (
-                <div className="no-results">
-                  No single seller carries more than one issue from this range at the current filters.
-                  Try adjusting filters or navigating to a different range.
-                </div>
-              ) : (
-                <>
-                  <div className="stats-row">
-                    <div className="stat-box">
-                      <div className="stat-number">{issuesInWindow.length}</div>
-                      <div className="stat-label">Issues Searched</div>
-                    </div>
-                    <div className="stat-box">
-                      <div className="stat-number">{totalSellers}</div>
-                      <div className="stat-label">Total Sellers Found</div>
-                    </div>
-                    <div className="stat-box">
-                      <div className="stat-number">{sellerCount}</div>
-                      <div className="stat-label">Bundle Opportunities</div>
-                    </div>
-                  </div>
-
-                  {sortedSellers.map(([name, sellerData]) => {
-                    const estPerIssueStr = `~$${sellerData.estPerIssue.toFixed(2)}/issue`;
-                    const savingsStr = sellerData.shippingSavings !== null && sellerData.shippingSavings > 0.01
-                      ? `save ~$${sellerData.shippingSavings.toFixed(2)} shipping`
-                      : null;
-
-                    return (
-                      <div className="seller-group" key={name}>
-                        <div className="seller-header">
-                          <span className="seller-name">{esc(name)}</span>
-                          <span className="bundle-badge">{sellerData.bundle_count} issues &mdash; bundle shipping!</span>
-                          <span className="subtotal-badge">from ${sellerData.subtotal.toFixed(2)} in items</span>
-                          <span className="badge-est">{estPerIssueStr}</span>
-                          {savingsStr && <span className="badge-savings">{savingsStr}</span>}
-                        </div>
-                        <table className="listings-table">
-                          <thead>
-                            <tr>
-                              <th className="col-issue">Issue</th>
-                              <th className="col-title">Listing Title</th>
-                              <th className="col-price">Price</th>
-                              <th className="col-ship">Shipping</th>
-                              <th className="col-link">Link</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {sellerData.listings.map((l, i) => {
-                              const ship =
-                                l.shipping === "0.00"
-                                  ? "FREE"
-                                  : l.shipping === "unknown"
-                                  ? "—"
-                                  : `$${parseFloat(l.shipping).toFixed(2)}`;
-                              return (
-                                <tr key={i}>
-                                  <td className="col-issue">{esc(l.issue)}</td>
-                                  <td className="col-title">{esc(l.title)}</td>
-                                  <td className="col-price">${parseFloat(l.price).toFixed(2)}</td>
-                                  <td className="col-ship">{ship}</td>
-                                  <td className="col-link">
-                                    <a className="listing-link" href={l.url} target="_blank" rel="noopener noreferrer">
-                                      View &rarr;
-                                    </a>
-                                  </td>
-                                </tr>
-                              );
-                            })}
-                          </tbody>
-                        </table>
-                      </div>
-                    );
-                  })}
-                  <div className="disclosure">
-                    Some links on this page may be affiliate links. A small commission may be earned if you purchase through these links, at no extra cost to you.
-                  </div>
-                </>
-              )}
+              <ResultsPanel
+                rows={windowResults}
+                issues={issuesInWindow.map(i => i.issueName)}
+                wave2Loading={wave2Loading}
+                defaultMaxPrice="10"
+                hint="All prices cached — filters apply to displayed results"
+                resetKey={startIdx}
+              />
             </>
           )}
         </div>
@@ -785,14 +436,12 @@ function metronAuthHeader() {
 export async function getStaticProps({ params }) {
   const { slug } = params;
 
-  // --- Dynamic series: metron-[id] ---
   const metronMatch = /^metron-(\d+)$/.exec(slug);
   if (metronMatch) {
     const metronId = parseInt(metronMatch[1], 10);
     const meta = await fetchMetronSeriesMeta(metronId);
     if (!meta) return { notFound: true };
 
-    // Metron's series detail endpoint uses "name"; list endpoint uses "series".
     const seriesName = meta.name || meta.series || "";
     const baseName = seriesName.replace(/\s*\(\d{4,}\)\s*$/, "").trim();
     const yearMatch = /\((\d{4})\)\s*$/.exec(seriesName.trim());
@@ -801,21 +450,15 @@ export async function getStaticProps({ params }) {
     const vol = meta.volume || null;
 
     const yearRange = yearBegan
-      ? yearEnd && yearEnd !== yearBegan
-        ? `${yearBegan}–${yearEnd}`
-        : String(yearBegan)
+      ? yearEnd && yearEnd !== yearBegan ? `${yearBegan}–${yearEnd}` : String(yearBegan)
       : "";
-    const subtitle = vol
-      ? `Vol. ${vol}${yearRange ? ` · ${yearRange}` : ""}`
-      : yearRange;
-
+    const subtitle = vol ? `Vol. ${vol}${yearRange ? ` · ${yearRange}` : ""}` : yearRange;
     const displayName = baseName;
     const groupSlug = nameToSlug(baseName);
     const totalIssues = meta.issue_count || 0;
     const seoTitle = `${displayName} ${subtitle} — eBay Bundle Deals | Comic Bundle Finder`;
     const seoBlurb = `Browse all ${totalIssues} issues and find sellers carrying multiple books you need.`;
 
-    // Find sibling volumes for Prev/Next Vol navigation
     let prevVolSlug = null, nextVolSlug = null;
     try {
       const sibRes = await fetch(
@@ -825,10 +468,7 @@ export async function getStaticProps({ params }) {
       if (sibRes.ok) {
         const sibData = await sibRes.json();
         const siblings = (sibData.results || [])
-          .filter(s => {
-            const sibBase = (s.name || s.series || "").replace(/\s*\(\d{4,}\)\s*$/, "").trim();
-            return sibBase.toLowerCase() === baseName.toLowerCase();
-          })
+          .filter(s => (s.name || s.series || "").replace(/\s*\(\d{4,}\)\s*$/, "").trim().toLowerCase() === baseName.toLowerCase())
           .sort((a, b) => {
             const yA = parseInt(/\((\d{4})\)/.exec(a.name || a.series || "")?.[1] || "9999");
             const yB = parseInt(/\((\d{4})\)/.exec(b.name || b.series || "")?.[1] || "9999");
@@ -846,17 +486,14 @@ export async function getStaticProps({ params }) {
     };
   }
 
-  // --- Locally configured series ---
   const config = getSeriesConfig(slug);
   if (!config) return { notFound: true };
 
   const allIssues = JSON.parse(
     fs.readFileSync(path.join(process.cwd(), "data", config.dataFile), "utf-8")
   );
-
   const groupSlug = nameToSlug(config.displayName);
 
-  // Find prev/next volume from SERIES_GROUPS
   let prevVolSlug = null, nextVolSlug = null;
   for (const group of Object.values(SERIES_GROUPS)) {
     const idx = group.slugs.indexOf(slug);
