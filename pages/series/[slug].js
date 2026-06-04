@@ -60,6 +60,10 @@ function groupResults(rows, filters, sortBy) {
     const distinctIssues = new Set(s[name].listings.map(l => l.issue)).size;
     s[name].bundle_count = distinctIssues;
     if (distinctIssues < minBundle) { delete s[name]; continue; }
+    if (filters.requiredIssues?.length > 0) {
+      const sellerIssues = new Set(s[name].listings.map(l => l.issue));
+      if (!filters.requiredIssues.every(ri => sellerIssues.has(ri))) { delete s[name]; continue; }
+    }
 
     const cheapestPerIssue = {};
     for (const l of s[name].listings) {
@@ -117,6 +121,7 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
     maxPrice: "10",
     shipping: "included",
     minBundle: 2,
+    requiredIssues: [],
   });
   const [sortBy, setSortBy] = useState("bundle_size");
 
@@ -291,19 +296,33 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
     setStartIdx(Math.min(next, blockEnd));
   }, [loading, wave2Loading, data, startIdx]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Reset required-issues selection when the visible issue window changes
+  useEffect(() => {
+    setFilters(f => ({ ...f, requiredIssues: [] }));
+  }, [startIdx]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // ─── Filter helpers ───────────────────────────────────────────────────────
   function setFilter(key, value) {
     setFilters(f => ({ ...f, [key]: value }));
   }
   function resetFilters() {
-    setFilters({ minPrice: "", maxPrice: "10", shipping: "included", minBundle: 2 });
+    setFilters({ minPrice: "", maxPrice: "10", shipping: "included", minBundle: 2, requiredIssues: [] });
     setSortBy("bundle_size");
+  }
+  function toggleRequiredIssue(issue) {
+    setFilters(f => ({
+      ...f,
+      requiredIssues: f.requiredIssues.includes(issue)
+        ? f.requiredIssues.filter(i => i !== issue)
+        : [...f.requiredIssues, issue],
+    }));
   }
   const filtersActive =
     filters.minPrice !== "" ||
     filters.maxPrice !== "10" ||
     filters.shipping !== "included" ||
     filters.minBundle > 2 ||
+    filters.requiredIssues.length > 0 ||
     sortBy !== "bundle_size";
 
   const metaDescription = `Find the best eBay bundle deals for ${displayName} (${subtitle}). Browse all ${totalIssues} issues and find sellers carrying multiple issues you need — save big on combined shipping.`;
@@ -577,6 +596,43 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
                     ))}
                   </div>
                 </div>
+
+                {/* Required issues */}
+                {issuesInWindow.length > 1 && (() => {
+                  const issueNames = issuesInWindow.map(i => i.issueName);
+                  const allSelected = issueNames.every(i => filters.requiredIssues.includes(i));
+                  return (
+                    <div className="filter-section" style={{ gridColumn: "1 / -1" }}>
+                      <hr className="filter-divider" style={{ marginTop: 0, marginBottom: "0.75rem" }} />
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.5rem", flexWrap: "wrap" }}>
+                        <span className="filter-section-label" style={{ margin: 0 }}>Required issues (only show sellers who have these)</span>
+                        <button
+                          className="btn-filter-reset"
+                          style={{ textDecoration: "none", background: "#ffe066", border: "1.5px solid #1a1a1a", padding: "1px 8px", fontSize: "0.72rem", fontWeight: 600, letterSpacing: "0.5px", cursor: "pointer" }}
+                          onClick={() => setFilter("requiredIssues", allSelected ? [] : issueNames)}
+                        >
+                          {allSelected ? "Deselect All" : "Select All"}
+                        </button>
+                      </div>
+                      <div className="filter-checkboxes">
+                        {issueNames.map(issue => (
+                          <label
+                            key={issue}
+                            className={`filter-checkbox-label${filters.requiredIssues.includes(issue) ? " checked" : ""}`}
+                          >
+                            <input
+                              type="checkbox"
+                              style={{ display: "none" }}
+                              checked={filters.requiredIssues.includes(issue)}
+                              onChange={() => toggleRequiredIssue(issue)}
+                            />
+                            {issue}
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
             </div>
           )}
