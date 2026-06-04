@@ -152,11 +152,13 @@ Paginated eBay bundle search across an entire series run (e.g. Amazing Spider-Ma
 - **Two-wave search:** Wave 1 from the cached series API route; Wave 2 fires to `/api/search`
   for any issue where `total > 200`. After Wave 2, merged results are POSTed back to
   `pages/api/series/[slug]/results.js` to update the Blob cache with complete data.
-- **Auto-advance:** If no bundle opportunities exist at the current max price, the page
-  automatically pages forward (up to 30 consecutive empty pages) looking for results. Wraps
-  to the beginning if it reaches the end with nothing found.
-- Max price filter: client-side, applied to cached data without re-fetching
-- Jump to issue number input
+- **Auto-advance:** If no raw bundle opportunities exist in the current window (any seller
+  with 2+ issues at any price), the page automatically pages forward (up to 30 consecutive
+  empty pages). Wraps to the beginning if it reaches the end with nothing found.
+- Breadcrumb links back to the series-guide page; Prev Vol / Next Vol buttons on the right
+  (greyed if at first/last volume). Local series siblings come from `SERIES_GROUPS`;
+  dynamic metron-* series do one extra Metron call at build time to find siblings.
+- Results rendered by `<ResultsPanel>` — see below
 - Geolocation on mount; zip passed to API for accurate shipping estimates
 - "Updated X hours ago" badge shows cache freshness
 
@@ -172,8 +174,7 @@ Story arc bundle search. Issue list fetched from Blob cache (written nightly by
 
 - Full two-wave search via `runEbaySearch` once issue list is available
 - Geolocation on mount; zip passed to search
-- Wave 2 spinner banner shown while additional results load
-- Max price filter on displayed results
+- Results rendered by `<ResultsPanel>` — see below
 - Shows "not yet indexed" message if nightly script hasn't run for this arc yet
 
 ---
@@ -377,6 +378,79 @@ await runEbaySearch(issues, userZip, {
 Series/arc pages with Blob caching: Wave 1 comes from the cached API route; Wave 2 goes to
 `/api/search` directly. After Wave 2 completes, POST the merged rows back to the series
 results endpoint so the cache contains complete results for future visitors.
+
+---
+
+## ResultsPanel — Shared Collection Guide Presentation
+
+**`components/ResultsPanel.js`** is the single source of truth for how collection guide
+results are displayed. All filter/sort state, seller metric computation, seller cards,
+badges, stats row, wave-2 banner, and affiliate disclosure live here.
+
+**Do not duplicate this logic in a new guide page.** Import and render the component:
+
+```jsx
+import ResultsPanel from "../../components/ResultsPanel";
+
+// Inside the page, once data is ready:
+<ResultsPanel
+  rows={rows}            // flat eBay listing rows from runEbaySearch / cache
+  issues={issues}        // ordered array of issue name strings
+  wave2Loading={bool}    // true while Wave 2 is still fetching
+  defaultMaxPrice="10"   // initial value of the max-price filter (string)
+  hint="…"               // optional text beside the Filter & Sort button
+  resetKey={someValue}   // optional: when this value changes, requiredIssues clears
+/>
+```
+
+### What ResultsPanel renders
+
+- **Wave 2 banner** — "Loading additional results…" spinner while Wave 2 is in flight
+- **Filter & Sort panel** (collapsible) — price range, min bundle size, free-shipping
+  radio, sort order, and a Required Issues checkbox list (Select/Deselect All)
+- **Stats row** — Issues Searched / Total Sellers Found / Bundle Opportunities
+- **Seller cards** — seller name, bundle-count badge, subtotal badge, `~$x/issue`
+  badge, `save ~$x shipping` badge (when calculable), listings table
+- **Disclosure** — eBay affiliate disclosure
+
+### Props
+
+| Prop | Type | Default | Notes |
+|---|---|---|---|
+| `rows` | array | `[]` | Flat listing rows from eBay search |
+| `issues` | array | `[]` | Issue name strings; drives the Required Issues filter and Issues Searched stat |
+| `wave2Loading` | bool | `false` | Shows the loading banner |
+| `defaultMaxPrice` | string | `"10"` | Initial max-price value; also used by Reset |
+| `hint` | string | — | Short text beside the Filter toggle (series pages use "All prices cached…") |
+| `resetKey` | any | — | When this value changes, requiredIssues is cleared. Series page passes `startIdx` so selections reset on page navigation |
+
+### Also exported
+
+`groupResults(rows, filters, sortBy)` is a named export from `ResultsPanel.js`. Import
+it if a page needs to compute filtered bundle counts outside the component (e.g. the
+series page's auto-advance logic uses it to check whether a window has any raw bundles).
+
+---
+
+## Adding a New Collection Guide Page
+
+1. **Create the page** at `pages/<type>/[slug].js`. It is responsible for:
+   - Fetching the issue list (from Blob cache, Metron, or a static data file)
+   - Running the eBay search (via `runEbaySearch` from `lib/ebay-search.js`)
+   - Rendering page chrome: breadcrumb, header card, any page-specific controls
+   - Handing off to `<ResultsPanel>` once data is available
+
+2. **Use ResultsPanel for all results output.** Do not re-implement the filter panel,
+   seller cards, or badge logic. Pass `defaultMaxPrice` appropriate for the guide type
+   (series uses `"10"`, arcs use `"15"`).
+
+3. **Wire up geolocation** with `fetch("/api/geolocate")` on mount and pass `zip` to
+   `runEbaySearch` so calculated-shipping listings return accurate estimates.
+
+4. **Add a breadcrumb** linking back to `/collection-guides` (or to an intermediate
+   grouping page if one exists).
+
+5. **Register the page** in `pages/collection-guides.js` so it appears in the index.
 
 ---
 
