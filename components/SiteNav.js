@@ -54,7 +54,7 @@ export default function SiteNav() {
       <Link href="/" className="snav-header">
         <h1 className="snav-sr-only">Comic Bundle Finder</h1>
         <img
-          src="/logo/logo-full.svg"
+          src="/logo/logo-full-2.svg"
           role="img"
           aria-label="Comic Bundle Finder"
           title="Comic Bundle Finder"
