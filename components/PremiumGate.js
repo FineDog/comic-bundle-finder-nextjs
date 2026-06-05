@@ -1,4 +1,6 @@
 import { useSession, signIn } from 'next-auth/react'
+import Link from 'next/link'
+import { useEffect } from 'react'
 import { canAccess, FEATURES } from '../lib/features.js'
 
 const RETRO = {
@@ -110,9 +112,93 @@ export function PremiumLock({ feature, children, label }) {
       title={`${FEATURES[feature]?.name ?? 'This feature'} requires a Premium account`}
       onClick={() => signIn()}
     >
-      <span>🔒</span>
       {label ?? (FEATURES[feature]?.name ?? 'Premium')}
     </button>
+  )
+}
+
+const MODAL_FEATURES = [
+  'File Upload (LOCG, CLZ, plain text)',
+  'Gap Analyzer',
+  'Save & Share Results',
+  'Email Results',
+  'Email Alerts & Daily Digest',
+  'Saved Lists & Searches',
+]
+
+// Popover modal — shown in-place without navigating away.
+// Render it at the top of your page/layout tree and toggle with state.
+export function PremiumModal({ onClose }) {
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') onClose() }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [onClose])
+
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: 'fixed', inset: 0, zIndex: 1000,
+        background: 'rgba(26,26,26,0.6)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: '1rem',
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          ...RETRO.panel,
+          position: 'relative',
+          maxWidth: '420px',
+          width: '100%',
+          padding: '1.75rem 2rem 1.5rem',
+        }}
+      >
+        <button
+          onClick={onClose}
+          aria-label="Close"
+          style={{
+            position: 'absolute', top: '0.75rem', right: '0.75rem',
+            background: 'none', border: 'none', cursor: 'pointer',
+            fontSize: '1.1rem', color: '#888', lineHeight: 1,
+            padding: '0.2rem 0.4rem',
+          }}
+        >✕</button>
+
+        <div style={RETRO.badge}>Premium Feature</div>
+        <h2 style={{ ...RETRO.heading, fontSize: '1.6rem' }}>Unlock Premium</h2>
+        <p style={{ ...RETRO.body, marginBottom: '0.75rem' }}>
+          Upgrade to unlock all premium features:
+        </p>
+
+        <ul style={{ listStyle: 'none', margin: '0 0 1.25rem', padding: 0 }}>
+          {MODAL_FEATURES.map((f) => (
+            <li key={f} style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginBottom: '0.4rem', fontSize: '0.88rem', color: '#333' }}>
+              <span style={{ color: '#2a7a2a', fontWeight: 700, flexShrink: 0 }}>✓</span>
+              {f}
+            </li>
+          ))}
+        </ul>
+
+        <Link href="/upgrade" style={{ ...RETRO.btn, display: 'inline-block', marginBottom: '0.25rem' }}>
+          Upgrade to Premium
+        </Link>
+
+        <div style={{ marginTop: '0.9rem' }}>
+          <button
+            onClick={() => signIn()}
+            style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              fontSize: '0.82rem', color: '#555', textDecoration: 'underline',
+              fontFamily: "'Oswald', sans-serif", padding: 0,
+            }}
+          >
+            Already Premium? Log in here
+          </button>
+        </div>
+      </div>
+    </div>
   )
 }
 
