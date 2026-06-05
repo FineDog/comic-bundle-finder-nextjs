@@ -1,4 +1,4 @@
-// pages/api/email-results.js
+﻿// pages/api/email-results.js
 import { Resend } from "resend";
 import { put } from "@vercel/blob";
 import { requireFeature } from "../../lib/premium-guard.js";
@@ -31,13 +31,13 @@ function buildEmailHtml(rows, issueCount, resultsUrl) {
       <tr>
         <td style="padding:8px 12px;border-bottom:1px solid #d4c9a8;font-weight:600;color:#1a1a1a">${name}</td>
         <td style="padding:8px 12px;border-bottom:1px solid #d4c9a8;text-align:center;font-family:Impact,Arial,sans-serif;font-size:1.1rem;color:#cc1f00">${data.bundle_count}</td>
-        <td style="padding:8px 12px;border-bottom:1px solid #d4c9a8;font-size:0.85rem;color:#444">${issues}${overflow}</td>
+        <td style="padding:8px 12px;border-bottom:1px solid #d4c9a8;font-size:1rem;color:#444">${issues}${overflow}</td>
         <td style="padding:8px 12px;border-bottom:1px solid #d4c9a8;white-space:nowrap;color:#333">from $${minPrice.toFixed(2)}</td>
       </tr>`;
   }).join("");
 
   const moreSellers = bundleSellers.length > 5
-    ? `<p style="text-align:center;color:#666;font-size:0.85rem;margin-top:0">…and ${bundleSellers.length - 5} more seller${bundleSellers.length - 5 === 1 ? "" : "s"}. View the full list below.</p>`
+    ? `<p style="text-align:center;color:#666;font-size:1rem;margin-top:0">…and ${bundleSellers.length - 5} more seller${bundleSellers.length - 5 === 1 ? "" : "s"}. View the full list below.</p>`
     : "";
 
   return `<!DOCTYPE html>
@@ -60,7 +60,7 @@ function buildEmailHtml(rows, issueCount, resultsUrl) {
 
       ${bundleSellers.length > 0 ? `
       <h3 style="margin:0 0 10px;font-family:'Arial Black',Gadget,sans-serif;font-size:1rem;letter-spacing:1px;color:#1a1a1a;text-transform:uppercase">Top Bundle Sellers</h3>
-      <table style="width:100%;border-collapse:collapse;margin-bottom:8px;font-size:0.88rem">
+      <table style="width:100%;border-collapse:collapse;margin-bottom:8px;font-size:1rem">
         <thead>
           <tr style="background:#1a1a1a">
             <th style="padding:7px 12px;text-align:left;color:#fffdf4;font-size:0.7rem;letter-spacing:1px;text-transform:uppercase;font-weight:600">Seller</th>

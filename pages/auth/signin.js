@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { signIn, getProviders } from "next-auth/react";
 import Head from "next/head";
 import Link from "next/link";
@@ -45,8 +45,8 @@ export default function SignIn({ providers }) {
         .btn-email{width:100%;background:#003399;color:#fffdf4;border:2px solid #1a1a1a;box-shadow:3px 3px 0 #1a1a1a;font-family:'Bangers',cursive;font-size:1.3rem;letter-spacing:2px;padding:0.4rem 1rem 0.5rem;cursor:pointer}
         .btn-email:hover{background:#0044cc}
         .btn-email:disabled{background:#888;cursor:not-allowed}
-        .success{background:#e8f5e9;border:2px solid #1a1a1a;padding:1rem;font-size:0.9rem;line-height:1.6}
-        .back{display:block;text-align:center;margin-top:1rem;font-size:0.85rem;color:#003399;text-decoration:none;font-weight:600}
+        .success{background:#e8f5e9;border:2px solid #1a1a1a;padding:1rem;font-size:1rem;line-height:1.6}
+        .back{display:block;text-align:center;margin-top:1rem;font-size:1rem;color:#003399;text-decoration:none;font-weight:600}
         .back:hover{text-decoration:underline}
       `}</style>
       <div className="wrap">

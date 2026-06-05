@@ -1,4 +1,4 @@
-import { getServerSideProps as authProps } from "@/lib/auth-guard";
+﻿import { getServerSideProps as authProps } from "@/lib/auth-guard";
 import { signOut, useSession } from "next-auth/react";
 import { useState, useRef, useEffect } from "react";
 import Head from "next/head";
@@ -285,14 +285,14 @@ export default function Account() {
         .avatar{width:52px;height:52px;border:2px solid #1a1a1a;border-radius:50%;object-fit:cover}
         .avatar-placeholder{width:52px;height:52px;border:2px solid #1a1a1a;background:#ffe066;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Bangers',cursive;font-size:1.4rem;color:#1a1a1a}
         .user-name{font-size:1.1rem;font-weight:600;letter-spacing:1px}
-        .user-email{font-size:0.85rem;color:#555;font-weight:400}
+        .user-email{font-size:1rem;color:#555;font-weight:400}
         .tier-badge{display:inline-block;background:#003399;color:#fffdf4;border:2px solid #1a1a1a;padding:0.2rem 0.65rem;font-size:0.72rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;margin-left:0.5rem}
-        .btn-signout{background:#fffdf4;color:#1a1a1a;border:2px solid #1a1a1a;box-shadow:3px 3px 0 #1a1a1a;font-family:'Oswald',sans-serif;font-size:0.85rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:0.4rem 1rem;cursor:pointer}
+        .btn-signout{background:#fffdf4;color:#1a1a1a;border:2px solid #1a1a1a;box-shadow:3px 3px 0 #1a1a1a;font-family:'Oswald',sans-serif;font-size:1rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:0.4rem 1rem;cursor:pointer}
         .btn-signout:hover{background:#ffe066}
-        .btn-billing{background:#003399;color:#fffdf4;border:2px solid #1a1a1a;box-shadow:3px 3px 0 #1a1a1a;font-family:'Oswald',sans-serif;font-size:0.85rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:0.4rem 1rem;cursor:pointer}
+        .btn-billing{background:#003399;color:#fffdf4;border:2px solid #1a1a1a;box-shadow:3px 3px 0 #1a1a1a;font-family:'Oswald',sans-serif;font-size:1rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:0.4rem 1rem;cursor:pointer}
         .btn-billing:hover{background:#0044cc}
         .account-actions{display:flex;gap:0.75rem;flex-wrap:wrap;align-items:center;margin-bottom:1.25rem}
-        .placeholder-msg{color:#888;font-size:0.88rem;font-weight:400;line-height:1.7}
+        .placeholder-msg{color:#888;font-size:1rem;font-weight:400;line-height:1.7}
         .input-row{display:flex;align-items:center;gap:0.6rem;margin-bottom:1rem;flex-wrap:wrap}
         .input-row input{border:2px solid #1a1a1a;background:#fffdf4;font-family:'Oswald',sans-serif;font-size:0.95rem;padding:0.45rem 0.65rem;color:#1a1a1a;flex:1;min-width:0}
         .input-row input:focus{outline:none;border-color:#003399;box-shadow:2px 2px 0 #003399}
@@ -302,14 +302,14 @@ export default function Account() {
         .btn-edit:hover{background:#ffe066}
         .username-display{font-size:1rem;font-weight:600;letter-spacing:0.5px}
         .steps{margin:1rem 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:0.75rem}
-        .steps li{display:flex;align-items:flex-start;gap:0.65rem;font-size:0.88rem;line-height:1.55}
+        .steps li{display:flex;align-items:flex-start;gap:0.65rem;font-size:1rem;line-height:1.55}
         .step-num{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;background:#1a1a1a;color:#ffe066;font-family:'Bangers',cursive;font-size:0.95rem;letter-spacing:1px;flex-shrink:0;margin-top:1px}
         .step-note{display:block;margin-top:0.3rem;background:#fffbe6;border:1px solid #e0c840;padding:0.35rem 0.6rem;font-size:0.8rem;color:#555;line-height:1.5}
         .btn-external{display:inline-block;background:#ffe066;color:#1a1a1a;border:2px solid #1a1a1a;box-shadow:3px 3px 0 #1a1a1a;font-family:'Oswald',sans-serif;font-size:0.82rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:0.35rem 0.85rem;text-decoration:none;cursor:pointer}
         .btn-external:hover{background:#ffd700}
         .drop-zone{border:2px dashed #1a1a1a;padding:1.25rem;text-align:center;cursor:pointer;transition:background 0.15s;margin-top:0.75rem;background:#fffdf4}
         .drop-zone.dragging,.drop-zone:hover{background:#f0f4ff;border-color:#003399}
-        .drop-zone-label{font-size:0.85rem;color:#555;font-weight:400}
+        .drop-zone-label{font-size:1rem;color:#555;font-weight:400}
         .upload-msg{font-size:0.82rem;font-weight:600;color:#003399;margin-top:0.6rem;letter-spacing:0.5px}
         .wishlist-preview{margin-top:1rem}
         .wishlist-preview-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.5rem}
@@ -318,9 +318,9 @@ export default function Account() {
         .btn-search:hover{background:#e02200}
         .plain-hint{font-size:0.82rem;color:#888;margin-bottom:0.75rem;line-height:1.6}
         code{background:#f0e6c4;border:1px solid #c8b98a;padding:0.1rem 0.35rem;font-size:0.8rem}
-        .saved-summary{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:0.85rem;font-size:0.88rem;font-weight:600;color:#1a1a1a}
+        .saved-summary{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:0.85rem;font-size:1rem;font-weight:600;color:#1a1a1a}
         .digest-row{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-top:1.1rem;padding-top:1.1rem;border-top:1px solid #e0d8c0}
-        .digest-label{font-size:0.88rem;font-weight:600;letter-spacing:0.3px}
+        .digest-label{font-size:1rem;font-weight:600;letter-spacing:0.3px}
         .digest-meta{font-size:0.78rem;color:#888;font-weight:400;margin-top:0.15rem}
         .toggle{position:relative;display:inline-block;width:42px;height:24px;flex-shrink:0}
         .toggle input{opacity:0;width:0;height:0}
@@ -332,7 +332,7 @@ export default function Account() {
         .btn-delete{background:#fffdf4;color:#cc1f00;border:2px solid #cc1f00;box-shadow:2px 2px 0 #cc1f00;font-family:'Oswald',sans-serif;font-size:0.82rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:0.4rem 0.9rem;cursor:pointer}
         .btn-delete:hover{background:#fff0ee}
         .delete-confirm{margin-top:0.75rem;background:#fff0ee;border:2px solid #cc1f00;padding:0.85rem 1rem;display:flex;flex-direction:column;gap:0.65rem}
-        .delete-confirm p{font-size:0.85rem;line-height:1.55;color:#1a1a1a}
+        .delete-confirm p{font-size:1rem;line-height:1.55;color:#1a1a1a}
         .delete-confirm-btns{display:flex;gap:0.65rem;flex-wrap:wrap}
         .btn-delete-confirm{background:#cc1f00;color:#fffdf4;border:2px solid #1a1a1a;box-shadow:2px 2px 0 #1a1a1a;font-family:'Oswald',sans-serif;font-size:0.82rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:0.4rem 0.9rem;cursor:pointer}
         .btn-delete-confirm:disabled{opacity:0.6;cursor:not-allowed}

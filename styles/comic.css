@@ -1,4 +1,4 @@
-/* =======================================================================
+﻿/* =======================================================================
    Comic Bundle Finder — Canonical Design System
    -----------------------------------------------------------------------
    All shared, reusable styles live here. Imported globally via globals.css.
@@ -111,7 +111,7 @@ body {
 
 /* Body intro / SEO blurb text */
 .intro {
-  font-size: 0.88rem;
+  font-size:1rem;
   font-weight: 400;
   line-height: 1.8;
   color: #333;
@@ -305,7 +305,7 @@ body {
   background: #ffe066;
   border: 2px solid #1a1a1a;
   padding: 0.6rem 1rem;
-  font-size: 0.85rem;
+  font-size:1rem;
   font-weight: 600;
   letter-spacing: 0.5px;
   margin-bottom: 1.25rem;
@@ -373,7 +373,7 @@ body {
 .filter-section{margin-bottom:0}
 .filter-section-label{font-size:0.68rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:#1a1a1a;margin-bottom:0.45rem;display:block}
 .filter-row{display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap}
-.filter-input{width:72px;border:2px solid #1a1a1a;background:#fffdf4;font-family:'Oswald',sans-serif;font-size:0.9rem;font-weight:600;padding:0.25rem 0.4rem;text-align:center;color:#1a1a1a}
+.filter-input{width:72px;border:2px solid #1a1a1a;background:#fffdf4;font-family:'Oswald',sans-serif;font-size:1rem;font-weight:600;padding:0.25rem 0.4rem;text-align:center;color:#1a1a1a}
 .filter-input:focus{outline:none;border-color:#003399;box-shadow:2px 2px 0 #003399}
 .filter-radio-group{display:flex;gap:0.65rem;flex-wrap:wrap}
 .filter-radio-label{display:flex;align-items:center;gap:0.3rem;font-size:0.8rem;font-weight:400;cursor:pointer;user-select:none}

@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import Head from "next/head";
 import { useSession, signIn } from "next-auth/react";
 import SiteNav from "../components/SiteNav";
@@ -97,8 +97,8 @@ export default function Upgrade() {
         .price-billed{font-size:0.82rem;font-weight:600;color:#003399;margin-top:0.15rem}
 
         .feature-list{list-style:none;margin-bottom:1.75rem;display:flex;flex-direction:column;gap:0.55rem;flex:1}
-        .feature-item{display:flex;align-items:flex-start;gap:0.6rem;font-size:0.88rem;font-weight:400;line-height:1.4}
-        .feature-check{font-size:0.9rem;flex-shrink:0;margin-top:0.05rem}
+        .feature-item{display:flex;align-items:flex-start;gap:0.6rem;font-size:1rem;font-weight:400;line-height:1.4}
+        .feature-check{font-size:1rem;flex-shrink:0;margin-top:0.05rem}
         .feature-check.yes{color:#1a8a1a}
         .feature-divider-text{font-family:'Bangers',cursive;font-size:1rem;letter-spacing:1px;color:#1a1a1a;padding-bottom:0.1rem;border-bottom:1px dashed #ccc}
         .soon-pill{display:inline-block;background:#ffe066;border:1.5px solid #1a1a1a;padding:0.1rem 0.45rem;font-size:0.62rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-left:0.35rem;vertical-align:middle;line-height:1.4}
@@ -115,8 +115,8 @@ export default function Upgrade() {
 
         .panel{background:#fffdf4;border:3px solid #1a1a1a;box-shadow:6px 6px 0 #1a1a1a;padding:1.5rem 1.75rem;margin-bottom:1.75rem}
         .section-label{font-family:'Bangers',cursive;font-size:1.6rem;letter-spacing:2px;color:#1a1a1a;margin-bottom:0.75rem}
-        .faq-q{font-weight:600;font-size:0.88rem;letter-spacing:0.5px;margin-bottom:0.3rem;color:#1a1a1a}
-        .faq-a{font-size:0.85rem;font-weight:400;color:#555;line-height:1.6;margin-bottom:1.1rem}
+        .faq-q{font-weight:600;font-size:1rem;letter-spacing:0.5px;margin-bottom:0.3rem;color:#1a1a1a}
+        .faq-a{font-size:1rem;font-weight:400;color:#555;line-height:1.6;margin-bottom:1.1rem}
         .faq-a:last-child{margin-bottom:0}
       `}</style>
 

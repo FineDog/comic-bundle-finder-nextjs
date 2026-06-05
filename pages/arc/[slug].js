@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+﻿import { useState, useEffect, useRef } from "react";
 import Head from "next/head";
 import SiteNav from "../../components/SiteNav";
 import SiteFooter from "../../components/SiteFooter";
@@ -70,7 +70,7 @@ export default function ArcPage({ slug, arcId, arcName, arcDesc, configError }) 
       <style>{`
         .arc-title{font-family:'Bangers',cursive;font-size:clamp(2rem,6vw,3.5rem);letter-spacing:3px;color:#1a1a1a;line-height:1;margin-bottom:0.4rem}
         .arc-sub{font-size:0.72rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:#888;margin-bottom:0.6rem}
-        .arc-desc{font-size:0.88rem;font-weight:400;line-height:1.7;color:#444}
+        .arc-desc{font-size:1rem;font-weight:400;line-height:1.7;color:#444}
         .issue-grid{list-style:none;display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:0.35rem;margin-top:0.25rem}
         .issue-item{background:#f8f3e3;border:1px solid #d4c9a8;padding:0.3rem 0.6rem;font-size:0.82rem;font-weight:400}
       `}</style>

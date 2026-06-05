@@ -1,4 +1,4 @@
-import fs from "fs";
+﻿import fs from "fs";
 import path from "path";
 import Head from "next/head";
 import Link from "next/link";
@@ -84,11 +84,11 @@ export default function SeriesGuidePage({ groupName, groupSlug, volumes }) {
         .volume-card-body{flex:1;padding:1.25rem 1.5rem;min-width:0}
         .volume-title{font-family:'Bangers',cursive;font-size:1.5rem;letter-spacing:2px;color:#1a1a1a;line-height:1.1;margin-bottom:0.5rem;display:flex;align-items:center;gap:0.6rem;flex-wrap:wrap}
         .issue-count{display:inline-block;background:#ffe066;border:2px solid #1a1a1a;padding:0.15rem 0.6rem;font-family:'Oswald',sans-serif;font-size:0.72rem;font-weight:600;letter-spacing:1px;text-transform:uppercase}
-        .volume-blurb{font-size:0.88rem;font-weight:400;line-height:1.7;color:#444;margin-bottom:1rem}
+        .volume-blurb{font-size:1rem;font-weight:400;line-height:1.7;color:#444;margin-bottom:1rem}
         .btn-series{display:inline-block;background:#003399;color:#fffdf4;border:3px solid #1a1a1a;box-shadow:4px 4px 0 #1a1a1a;font-family:'Bangers',cursive;font-size:1.1rem;letter-spacing:2px;padding:0.3rem 1.25rem 0.4rem;cursor:pointer;text-decoration:none;white-space:nowrap;transition:transform 0.08s,box-shadow 0.08s}
         .btn-series:hover{background:#0044cc}
         .btn-series:active{transform:translate(3px,3px);box-shadow:1px 1px 0 #1a1a1a}
-        .no-volumes{font-size:0.9rem;color:#666;font-weight:400;padding:0.5rem 0}
+        .no-volumes{font-size:1rem;color:#666;font-weight:400;padding:0.5rem 0}
       `}</style>
 
       <div className="page-wrap">

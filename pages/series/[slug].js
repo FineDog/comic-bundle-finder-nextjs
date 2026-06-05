@@ -1,4 +1,4 @@
-import fs from "fs";
+﻿import fs from "fs";
 import path from "path";
 import { useState, useEffect, useRef } from "react";
 import Head from "next/head";
@@ -248,7 +248,7 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
         <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Oswald:wght@400;600&display=swap" rel="stylesheet" />
       </Head>
       <style>{`
-        .series-sub{color:#555;font-size:0.85rem;letter-spacing:2px;text-transform:uppercase;margin-top:0.4rem;font-weight:400}
+        .series-sub{color:#555;font-size:1rem;letter-spacing:2px;text-transform:uppercase;margin-top:0.4rem;font-weight:400}
         .updated-badge{display:inline-block;background:#003399;color:#fffdf4;border:2px solid #1a1a1a;padding:0.25rem 0.7rem;font-size:0.72rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-left:0.75rem;vertical-align:middle}
         .vol-nav{display:flex;justify-content:space-between;align-items:center;gap:0.5rem;width:100%}
         .vol-nav-links{display:flex;gap:0.4rem;align-items:center}
@@ -265,7 +265,7 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
         .btn-nav:disabled{background:#888;cursor:not-allowed;transform:none;box-shadow:3px 3px 0 #1a1a1a}
         .jump-form{display:flex;gap:0.4rem;align-items:center}
         .jump-label{font-size:0.78rem;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;white-space:nowrap}
-        .jump-input{width:62px;border:2px solid #1a1a1a;background:#fffdf4;font-family:'Oswald',sans-serif;font-size:0.9rem;font-weight:600;padding:0.25rem 0.4rem;color:#1a1a1a;text-align:center}
+        .jump-input{width:62px;border:2px solid #1a1a1a;background:#fffdf4;font-family:'Oswald',sans-serif;font-size:1rem;font-weight:600;padding:0.25rem 0.4rem;color:#1a1a1a;text-align:center}
         .jump-input:focus{outline:none;border-color:#003399;box-shadow:2px 2px 0 #003399}
         .btn-jump{background:#ffe066;color:#1a1a1a;border:2px solid #1a1a1a;box-shadow:2px 2px 0 #1a1a1a;font-family:'Oswald',sans-serif;font-size:0.78rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:0.28rem 0.75rem;cursor:pointer}
         .btn-jump:hover{background:#ffd700}
@@ -273,7 +273,7 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
         .slider-label{font-size:0.82rem;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;white-space:nowrap}
         .btn-toggle{background:none;border:none;color:#003399;font-family:'Oswald',sans-serif;font-size:0.78rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;cursor:pointer;text-decoration:underline;padding:0}
         .batch-slider{flex:1;min-width:140px;max-width:260px;accent-color:#cc1f00}
-        label{display:block;font-weight:600;font-size:0.9rem;letter-spacing:1px;text-transform:uppercase;margin-bottom:0.5rem}
+        label{display:block;font-weight:600;font-size:1rem;letter-spacing:1px;text-transform:uppercase;margin-bottom:0.5rem}
       `}</style>
 
       <div className="page-wrap">

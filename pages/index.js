@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+﻿import { useState, useRef, useEffect } from "react";
 import Head from "next/head";
 import * as XLSX from "xlsx";
 import SiteNav from "../components/SiteNav";
@@ -442,7 +442,7 @@ export default function Preview() {
     </Head>
     <style>{`
       /* ── Page-specific: input form ─────────────────────────────────── */
-      label{display:block;font-weight:600;font-size:0.9rem;letter-spacing:1px;text-transform:uppercase;margin-bottom:0.5rem}
+      label{display:block;font-weight:600;font-size:1rem;letter-spacing:1px;text-transform:uppercase;margin-bottom:0.5rem}
       .label-row{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:0.5rem;flex-wrap:wrap}
       .label-row label{margin:0}
       .btn-upload{background:#fffdf4;color:#1a1a1a;border:2px solid #1a1a1a;box-shadow:2px 2px 0 #1a1a1a;font-family:'Oswald',sans-serif;font-size:0.78rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:0.25rem 0.75rem;cursor:pointer;white-space:nowrap}
@@ -451,7 +451,7 @@ export default function Preview() {
       .drop-zone.dragging textarea{border-color:#003399;box-shadow:0 0 0 3px #003399;background:#f0f4ff}
       .drag-overlay{display:none;position:absolute;inset:0;background:rgba(0,51,153,0.08);border:3px dashed #003399;pointer-events:none;align-items:center;justify-content:center;font-family:'Bangers',cursive;font-size:1.4rem;letter-spacing:2px;color:#003399}
       .drop-zone.dragging .drag-overlay{display:flex}
-      textarea{width:100%;height:150px;border:2px solid #1a1a1a;background:#fffdf4;font-family:'Courier New',monospace;font-size:0.9rem;padding:0.75rem;resize:vertical;color:#1a1a1a}
+      textarea{width:100%;height:150px;border:2px solid #1a1a1a;background:#fffdf4;font-family:'Courier New',monospace;font-size:1rem;padding:0.75rem;resize:vertical;color:#1a1a1a}
       textarea:focus{outline:none;border-color:#003399;box-shadow:2px 2px 0 #003399}
       .upload-msg{font-size:0.8rem;font-weight:600;color:#003399;margin-top:0.5rem;letter-spacing:0.5px}
       .search-action-row{display:flex;align-items:center;gap:1rem;margin-top:1.25rem;flex-wrap:wrap}
@@ -459,15 +459,15 @@ export default function Preview() {
       .btn-search:hover{background:#0044cc}
       .btn-search:active{transform:translate(3px,3px);box-shadow:1px 1px 0 #1a1a1a}
       .btn-search:disabled{background:#888;cursor:not-allowed;transform:none;box-shadow:4px 4px 0 #1a1a1a}
-      .s-error{color:#cc1f00;font-weight:600;font-size:0.88rem;margin-top:0.9rem}
-      .s-loading{color:#003399;font-size:0.88rem;margin-top:0.9rem}
+      .s-error{color:#cc1f00;font-weight:600;font-size:1rem;margin-top:0.9rem}
+      .s-loading{color:#003399;font-size:1rem;margin-top:0.9rem}
 
       /* ── Page-specific: progress bar ───────────────────────────────── */
       .progress-wrap{margin-top:1.25rem}
       .progress-msg{font-size:0.82rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:0.5rem;color:#003399}
       .progress-track{border:2px solid #1a1a1a;background:#f0e6c4;height:24px;position:relative;overflow:hidden}
       .progress-fill{height:100%;background:#cc1f00;transition:width 0.7s ease}
-      .progress-pct{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;font-family:'Bangers',cursive;font-size:0.85rem;letter-spacing:1px;color:#fffdf4;text-shadow:1px 1px 0 #1a1a1a}
+      .progress-pct{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;font-family:'Bangers',cursive;font-size:1rem;letter-spacing:1px;color:#fffdf4;text-shadow:1px 1px 0 #1a1a1a}
 
       /* ── Page-specific: share / email panel ────────────────────────── */
       .share-panel{border-bottom:2px solid #d4c9a8;margin-bottom:1.5rem;padding-bottom:1.25rem}
@@ -486,7 +486,7 @@ export default function Preview() {
       .btn-copy:hover{background:#ffd700}
       .share-feedback{font-size:0.8rem;font-weight:600;color:#003399;letter-spacing:0.5px;display:block;margin-bottom:0.5rem}
       .email-form{display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;margin-top:0.5rem}
-      .email-input{flex:1;min-width:200px;border:2px solid #1a1a1a;background:#fffdf4;font-family:'Oswald',sans-serif;font-size:0.88rem;padding:0.35rem 0.6rem;color:#1a1a1a}
+      .email-input{flex:1;min-width:200px;border:2px solid #1a1a1a;background:#fffdf4;font-family:'Oswald',sans-serif;font-size:1rem;padding:0.35rem 0.6rem;color:#1a1a1a}
       .email-input:focus{outline:none;border-color:#003399;box-shadow:2px 2px 0 #003399}
       .btn-email-send{background:#cc1f00;color:#fffdf4;border:3px solid #1a1a1a;box-shadow:3px 3px 0 #1a1a1a;font-family:'Bangers',cursive;font-size:1.2rem;letter-spacing:2px;padding:0.2rem 1.1rem 0.3rem;cursor:pointer;white-space:nowrap}
       .btn-email-send:hover{background:#a81900}
@@ -723,7 +723,7 @@ export default function Preview() {
                     </button>
                   ) : (
                     <button className="btn-share" style={{ opacity: 0.5, cursor: "not-allowed", filter: "grayscale(0.4)" }} onClick={() => signIn()} title="Premium feature — sign in to upgrade">
-                      🔒 Save Results
+                      Save Results
                     </button>
                   )}
                   {canEmailResults ? (
@@ -732,7 +732,7 @@ export default function Preview() {
                     </button>
                   ) : (
                     <button className="btn-share-email" style={{ opacity: 0.5, cursor: "not-allowed", filter: "grayscale(0.4)" }} onClick={() => signIn()} title="Premium feature — sign in to upgrade">
-                      🔒 Email Results
+                      Email Results
                     </button>
                   )}
                 </div>

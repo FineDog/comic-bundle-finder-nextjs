@@ -1,4 +1,4 @@
-import Head from "next/head";
+﻿import Head from "next/head";
 import { getBlobUrl } from "../../lib/blob-url";
 import SiteNav from "../../components/SiteNav";
 
@@ -43,7 +43,7 @@ export default function ResultsPage({ data }) {
       .panel{background:#fffdf4;border:3px solid #1a1a1a;box-shadow:6px 6px 0 #1a1a1a;padding:1.5rem 1.75rem;margin-bottom:1.5rem}
       .title-panel{background:#cc1f00;text-align:center;padding:1.25rem 1.75rem 1rem}
       .title-panel h1{font-family:'Bangers',cursive;font-size:clamp(2.5rem,8vw,5rem);color:#fffdf4;letter-spacing:4px;text-shadow:4px 4px 0 #1a1a1a;line-height:1}
-      .tagline{color:#ffe066;font-size:0.85rem;letter-spacing:2px;text-transform:uppercase;margin-top:0.4rem;font-weight:400}
+      .tagline{color:#ffe066;font-size:1rem;letter-spacing:2px;text-transform:uppercase;margin-top:0.4rem;font-weight:400}
       .saved-banner{background:#003399;color:#fffdf4;border:3px solid #1a1a1a;box-shadow:6px 6px 0 #1a1a1a;padding:0.75rem 1.75rem;margin-bottom:1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem}
       .saved-label{font-family:'Bangers',cursive;font-size:1.3rem;letter-spacing:2px}
       .saved-date{font-size:0.78rem;font-weight:400;opacity:0.8}

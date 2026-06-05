@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+﻿import { useState, useRef } from "react";
 import { useRouter } from "next/router";
 import Head from "next/head";
 import * as XLSX from "xlsx";
@@ -224,11 +224,11 @@ export default function GapAnalyzer() {
       .btn-upload{background:#fffdf4;color:#1a1a1a;border:2px solid #1a1a1a;box-shadow:2px 2px 0 #1a1a1a;font-family:'Oswald',sans-serif;font-size:0.78rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:0.25rem 0.75rem;cursor:pointer;white-space:nowrap}
       .btn-upload:hover{background:#ffe066}
       .upload-msg{font-size:0.8rem;font-weight:600;color:#003399;margin-bottom:1rem;letter-spacing:0.5px}
-      textarea{width:100%;height:200px;border:2px solid #1a1a1a;background:#fffdf4;font-family:'Courier New',monospace;font-size:0.9rem;padding:0.75rem;resize:vertical;color:#1a1a1a}
+      textarea{width:100%;height:200px;border:2px solid #1a1a1a;background:#fffdf4;font-family:'Courier New',monospace;font-size:1rem;padding:0.75rem;resize:vertical;color:#1a1a1a}
       textarea:focus{outline:none;border-color:#003399;box-shadow:2px 2px 0 #003399}
       .gap-upload-area{border:3px dashed #1a1a1a;background:#fffdf4;padding:2rem;text-align:center;margin-bottom:1.25rem;position:relative;transition:border-color 0.1s,background 0.1s}
       .gap-upload-area.dragging{border-color:#003399;background:#f0f4ff}
-      .gap-upload-area p{font-size:0.88rem;font-weight:400;color:#555;margin-top:0.5rem}
+      .gap-upload-area p{font-size:1rem;font-weight:400;color:#555;margin-top:0.5rem}
       .gap-drag-overlay{display:none;position:absolute;inset:0;background:rgba(0,51,153,0.08);align-items:center;justify-content:center;font-family:'Bangers',cursive;font-size:1.4rem;letter-spacing:2px;color:#003399;pointer-events:none}
       .gap-upload-area.dragging .gap-drag-overlay{display:flex}
       .gap-upload-area.dragging .gap-upload-contents{visibility:hidden}
@@ -246,7 +246,7 @@ export default function GapAnalyzer() {
       .btn-gap-secondary{background:#fffdf4;color:#1a1a1a;border:2px solid #1a1a1a;box-shadow:3px 3px 0 #1a1a1a;font-family:'Oswald',sans-serif;font-size:0.82rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:0.35rem 1rem;cursor:pointer;white-space:nowrap}
       .btn-gap-secondary:hover{background:#ffe066}
       .copy-msg{font-size:0.8rem;font-weight:600;color:#003399;letter-spacing:0.5px}
-      .gap-empty{color:#666;font-size:0.9rem;font-weight:400;padding:1rem 0}
+      .gap-empty{color:#666;font-size:1rem;font-weight:400;padding:1rem 0}
     `}</style>
     <div className="page-wrap">
       <SiteNav />

@@ -1,4 +1,4 @@
-import Head from "next/head";
+﻿import Head from "next/head";
 import { getBlogSlugs, getBlogPost } from "../../lib/content";
 import SiteNav from "../../components/SiteNav";
 
@@ -41,20 +41,20 @@ export default function BlogPost({ frontmatter, html }) {
         .nav-sep{color:#aaa;font-size:0.78rem}
         .post-date{font-size:0.72rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:#888;margin-bottom:0.75rem}
         .post-title{font-family:'Bangers',cursive;font-size:clamp(2rem,6vw,3.5rem);letter-spacing:3px;color:#1a1a1a;line-height:1.1;margin-bottom:1.5rem}
-        .post-desc{font-size:0.9rem;font-weight:400;line-height:1.7;color:#555;border-left:4px solid #cc1f00;padding-left:1rem;margin-bottom:1.75rem}
+        .post-desc{font-size:1rem;font-weight:400;line-height:1.7;color:#555;border-left:4px solid #cc1f00;padding-left:1rem;margin-bottom:1.75rem}
         .divider{border:none;border-top:2px dashed #ccc;margin:1.5rem 0}
         .prose h2{font-family:'Bangers',cursive;font-size:1.7rem;letter-spacing:2px;margin:1.75rem 0 0.75rem;color:#cc1f00}
         .prose h3{font-family:'Bangers',cursive;font-size:1.3rem;letter-spacing:1.5px;margin:1.5rem 0 0.5rem}
-        .prose p{font-size:0.9rem;font-weight:400;line-height:1.85;color:#333;margin-bottom:1.1rem}
+        .prose p{font-size:1rem;font-weight:400;line-height:1.85;color:#333;margin-bottom:1.1rem}
         .prose ul,.prose ol{padding-left:1.5rem;margin-bottom:1.1rem}
-        .prose li{font-size:0.9rem;font-weight:400;line-height:1.8;color:#333;margin-bottom:0.25rem}
+        .prose li{font-size:1rem;font-weight:400;line-height:1.8;color:#333;margin-bottom:0.25rem}
         .prose a{color:#003399;font-weight:600}
         .prose a:hover{text-decoration:underline}
         .prose strong{font-weight:600;color:#1a1a1a}
         .prose blockquote{border-left:4px solid #ffe066;background:#fffbe8;padding:0.75rem 1rem;margin:1.25rem 0;font-style:italic}
         .prose code{background:#f0e6c4;border:1px solid #ccc;padding:0.1em 0.4em;font-size:0.85em;border-radius:2px}
         .prose pre{background:#1a1a1a;color:#fffdf4;padding:1rem 1.25rem;margin:1.25rem 0;overflow-x:auto;border:3px solid #1a1a1a}
-        .prose pre code{background:none;border:none;padding:0;font-size:0.85rem}
+        .prose pre code{background:none;border:none;padding:0;font-size:1rem}
         .prose hr{border:none;border-top:2px dashed #ccc;margin:1.75rem 0}
       `}</style>
       <div className="page-wrap">

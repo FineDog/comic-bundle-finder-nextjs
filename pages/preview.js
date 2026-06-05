@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+﻿import { useState, useRef, useEffect } from "react";
 import Head from "next/head";
 import Link from "next/link";
 import * as XLSX from "xlsx";
@@ -596,7 +596,7 @@ export default function Preview() {
       .panel{background:#fffdf4;border:3px solid #1a1a1a;box-shadow:6px 6px 0 #1a1a1a;padding:1.5rem 1.75rem;margin-bottom:1.75rem}
       .title-panel{background:#cc1f00;text-align:center;padding:1.25rem 1.75rem 1rem}
       .title-panel h1{font-family:'Bangers',cursive;font-size:clamp(2.5rem,8vw,5rem);color:#fffdf4;letter-spacing:4px;text-shadow:4px 4px 0 #1a1a1a;line-height:1}
-      .tagline{color:#ffe066;font-size:0.85rem;letter-spacing:2px;text-transform:uppercase;margin-top:0.4rem;font-weight:400}
+      .tagline{color:#ffe066;font-size:1rem;letter-spacing:2px;text-transform:uppercase;margin-top:0.4rem;font-weight:400}
       .tab-bar{display:flex;gap:0;margin-bottom:1.75rem;border:3px solid #1a1a1a;box-shadow:4px 4px 0 #1a1a1a}
       .tab-btn{flex:1;font-family:'Bangers',cursive;font-size:1.3rem;letter-spacing:2px;padding:0.55rem 1rem 0.65rem;border:none;cursor:pointer;transition:background 0.1s;text-transform:uppercase}
       .tab-btn.active{background:#cc1f00;color:#fffdf4}
@@ -605,29 +605,29 @@ export default function Preview() {
       .tab-btn:first-child{border-right:2px solid #1a1a1a}
       .caption{display:inline-block;background:#ffe066;border:2px solid #1a1a1a;padding:0.3rem 0.7rem;font-size:0.8rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:1rem}
       .label-row{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:0.5rem;flex-wrap:wrap}
-      .label-row label{font-weight:600;font-size:0.9rem;letter-spacing:1px;text-transform:uppercase;margin:0}
+      .label-row label{font-weight:600;font-size:1rem;letter-spacing:1px;text-transform:uppercase;margin:0}
       .btn-upload{background:#fffdf4;color:#1a1a1a;border:2px solid #1a1a1a;box-shadow:2px 2px 0 #1a1a1a;font-family:'Oswald',sans-serif;font-size:0.78rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:0.25rem 0.75rem;cursor:pointer;white-space:nowrap}
       .btn-upload:hover{background:#ffe066}
       .drop-zone{position:relative}
       .drop-zone.dragging textarea{border-color:#003399;box-shadow:0 0 0 3px #003399;background:#f0f4ff}
       .drag-overlay{display:none;position:absolute;inset:0;background:rgba(0,51,153,0.08);border:3px dashed #003399;pointer-events:none;align-items:center;justify-content:center;font-family:'Bangers',cursive;font-size:1.4rem;letter-spacing:2px;color:#003399}
       .drop-zone.dragging .drag-overlay{display:flex}
-      textarea{width:100%;height:150px;border:2px solid #1a1a1a;background:#fffdf4;font-family:'Courier New',monospace;font-size:0.9rem;padding:0.75rem;resize:vertical;color:#1a1a1a}
+      textarea{width:100%;height:150px;border:2px solid #1a1a1a;background:#fffdf4;font-family:'Courier New',monospace;font-size:1rem;padding:0.75rem;resize:vertical;color:#1a1a1a}
       textarea:focus{outline:none;border-color:#003399;box-shadow:2px 2px 0 #003399}
       .hint{font-size:0.78rem;color:#666;margin-top:0.4rem;font-weight:400;line-height:1.5}
       .upload-msg{font-size:0.8rem;font-weight:600;color:#003399;margin-top:0.5rem;letter-spacing:0.5px}
-      label{display:block;font-weight:600;font-size:0.9rem;letter-spacing:1px;text-transform:uppercase;margin-bottom:0.5rem}
+      label{display:block;font-weight:600;font-size:1rem;letter-spacing:1px;text-transform:uppercase;margin-bottom:0.5rem}
       .btn-search{display:inline-block;background:#003399;color:#fffdf4;border:3px solid #1a1a1a;box-shadow:4px 4px 0 #1a1a1a;font-family:'Bangers',cursive;font-size:1.6rem;letter-spacing:2px;padding:0.3rem 2.5rem 0.4rem;cursor:pointer;margin-top:1.25rem;transition:transform 0.08s,box-shadow 0.08s}
       .btn-search:hover{background:#0044cc}
       .btn-search:active{transform:translate(3px,3px);box-shadow:1px 1px 0 #1a1a1a}
       .btn-search:disabled{background:#888;cursor:not-allowed;transform:none;box-shadow:4px 4px 0 #1a1a1a}
-      .s-error{color:#cc1f00;font-weight:600;font-size:0.88rem;margin-top:0.9rem}
-      .s-loading{color:#003399;font-size:0.88rem;margin-top:0.9rem}
+      .s-error{color:#cc1f00;font-weight:600;font-size:1rem;margin-top:0.9rem}
+      .s-loading{color:#003399;font-size:1rem;margin-top:0.9rem}
       .progress-wrap{margin-top:1.25rem}
       .progress-msg{font-size:0.82rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:0.5rem;color:#003399}
       .progress-track{border:2px solid #1a1a1a;background:#f0e6c4;height:24px;position:relative;overflow:hidden}
       .progress-fill{height:100%;background:#cc1f00;transition:width 0.7s ease}
-      .progress-pct{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;font-family:'Bangers',cursive;font-size:0.85rem;letter-spacing:1px;color:#fffdf4;text-shadow:1px 1px 0 #1a1a1a}
+      .progress-pct{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;font-family:'Bangers',cursive;font-size:1rem;letter-spacing:1px;color:#fffdf4;text-shadow:1px 1px 0 #1a1a1a}
       .stats-row{display:flex;gap:1rem;margin-bottom:1.25rem;flex-wrap:wrap}
       .stat-box{flex:1;min-width:110px;background:#ffe066;border:2px solid #1a1a1a;padding:0.6rem 1rem;text-align:center}
       .stat-number{font-family:'Bangers',cursive;font-size:2.2rem;color:#cc1f00;line-height:1}
@@ -649,7 +649,7 @@ export default function Preview() {
       .filter-section{margin-bottom:0}
       .filter-section-label{font-size:0.68rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:#1a1a1a;margin-bottom:0.45rem;display:block}
       .filter-row{display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap}
-      .filter-input{width:72px;border:2px solid #1a1a1a;background:#fffdf4;font-family:'Oswald',sans-serif;font-size:0.9rem;font-weight:600;padding:0.25rem 0.4rem;text-align:center;color:#1a1a1a}
+      .filter-input{width:72px;border:2px solid #1a1a1a;background:#fffdf4;font-family:'Oswald',sans-serif;font-size:1rem;font-weight:600;padding:0.25rem 0.4rem;text-align:center;color:#1a1a1a}
       .filter-input:focus{outline:none;border-color:#003399;box-shadow:2px 2px 0 #003399}
       .filter-radio-group{display:flex;gap:0.65rem;flex-wrap:wrap}
       .filter-radio-label{display:flex;align-items:center;gap:0.3rem;font-size:0.8rem;font-weight:400;cursor:pointer;user-select:none}
@@ -690,14 +690,14 @@ export default function Preview() {
       .btn-copy:hover{background:#ffd700}
       .share-feedback{font-size:0.8rem;font-weight:600;color:#003399;letter-spacing:0.5px;display:block;margin-bottom:0.5rem}
       .email-form{display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;margin-top:0.5rem}
-      .email-input{flex:1;min-width:200px;border:2px solid #1a1a1a;background:#fffdf4;font-family:'Oswald',sans-serif;font-size:0.88rem;padding:0.35rem 0.6rem;color:#1a1a1a}
+      .email-input{flex:1;min-width:200px;border:2px solid #1a1a1a;background:#fffdf4;font-family:'Oswald',sans-serif;font-size:1rem;padding:0.35rem 0.6rem;color:#1a1a1a}
       .email-input:focus{outline:none;border-color:#003399;box-shadow:2px 2px 0 #003399}
       .btn-email-send{background:#cc1f00;color:#fffdf4;border:3px solid #1a1a1a;box-shadow:3px 3px 0 #1a1a1a;font-family:'Bangers',cursive;font-size:1.2rem;letter-spacing:2px;padding:0.2rem 1.1rem 0.3rem;cursor:pointer;white-space:nowrap}
       .btn-email-send:hover{background:#a81900}
       .btn-email-send:disabled{opacity:0.6;cursor:default}
       .gap-upload-area{border:3px dashed #1a1a1a;background:#fffdf4;padding:2rem;text-align:center;margin-bottom:1.25rem;position:relative;transition:border-color 0.1s,background 0.1s}
       .gap-upload-area.dragging{border-color:#003399;background:#f0f4ff}
-      .gap-upload-area p{font-size:0.88rem;font-weight:400;color:#555;margin-top:0.5rem}
+      .gap-upload-area p{font-size:1rem;font-weight:400;color:#555;margin-top:0.5rem}
       .gap-drag-overlay{display:none;position:absolute;inset:0;background:rgba(0,51,153,0.08);align-items:center;justify-content:center;font-family:'Bangers',cursive;font-size:1.4rem;letter-spacing:2px;color:#003399;pointer-events:none}
       .gap-upload-area.dragging .gap-drag-overlay{display:flex}
       .gap-upload-area.dragging .gap-upload-contents{visibility:hidden}
@@ -713,7 +713,7 @@ export default function Preview() {
       .btn-gap-secondary{background:#fffdf4;color:#1a1a1a;border:2px solid #1a1a1a;box-shadow:3px 3px 0 #1a1a1a;font-family:'Oswald',sans-serif;font-size:0.82rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:0.35rem 1rem;cursor:pointer;white-space:nowrap}
       .btn-gap-secondary:hover{background:#ffe066}
       .copy-msg{font-size:0.8rem;font-weight:600;color:#003399;letter-spacing:0.5px}
-      .gap-empty{color:#666;font-size:0.9rem;font-weight:400;padding:1rem 0}
+      .gap-empty{color:#666;font-size:1rem;font-weight:400;padding:1rem 0}
       .search-action-row{display:flex;align-items:center;gap:1rem;margin-top:1.25rem;flex-wrap:wrap}
       .or-text{font-family:'Bangers',cursive;font-size:1.1rem;letter-spacing:2px;color:#1a1a1a;white-space:nowrap}
       .btn-guides{display:inline-block;background:#ffe066;color:#1a1a1a;border:3px solid #1a1a1a;box-shadow:4px 4px 0 #1a1a1a;font-family:'Bangers',cursive;font-size:1.35rem;letter-spacing:2px;padding:0.3rem 1.75rem 0.4rem;cursor:pointer;text-decoration:none;transition:transform 0.08s,box-shadow 0.08s,background 0.08s}

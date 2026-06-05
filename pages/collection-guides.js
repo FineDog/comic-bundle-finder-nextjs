@@ -1,4 +1,4 @@
-import fs from "fs";
+﻿import fs from "fs";
 import path from "path";
 import { useState } from "react";
 import Head from "next/head";
@@ -132,9 +132,9 @@ export default function CollectionGuides({ arcs }) {
         .arc-result-link{display:inline-block;background:#cc1f00;color:#fffdf4;border:2px solid #1a1a1a;box-shadow:2px 2px 0 #1a1a1a;font-family:'Bangers',cursive;font-size:1rem;letter-spacing:1.5px;padding:0.2rem 0.85rem 0.25rem;text-decoration:none;white-space:nowrap;flex-shrink:0;transition:transform 0.08s,box-shadow 0.08s}
         .arc-result-link:hover{background:#a81800}
         .arc-result-link:active{transform:translate(1px,1px);box-shadow:1px 1px 0 #1a1a1a}
-        .arc-no-results{font-size:0.88rem;font-weight:400;color:#666;padding:0.5rem 0}
+        .arc-no-results{font-size:1rem;font-weight:400;color:#666;padding:0.5rem 0}
         .arc-hint{font-size:0.78rem;font-weight:400;color:#888;margin-top:0.5rem}
-        .arc-coming-soon{font-size:0.88rem;font-weight:400;color:#888;font-style:italic}
+        .arc-coming-soon{font-size:1rem;font-weight:400;color:#888;font-style:italic}
         @media(max-width:540px){.arc-result-card{flex-direction:column;align-items:flex-start}}
         .series-stat-badge{display:inline-block;background:#ffe066;border:1.5px solid #1a1a1a;padding:0.1rem 0.45rem;font-size:0.7rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-left:0.4rem;vertical-align:middle}
         .search-btn{background:#cc1f00;color:#fffdf4;border:3px solid #1a1a1a;box-shadow:3px 3px 0 #1a1a1a;font-family:'Bangers',cursive;font-size:1rem;letter-spacing:1.5px;padding:0.35rem 1rem 0.4rem;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:transform 0.08s,box-shadow 0.08s}
