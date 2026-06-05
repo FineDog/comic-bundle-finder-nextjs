@@ -372,7 +372,7 @@ export default function Account() {
             {session?.user?.plan === "premium" ? (
               <ManageBillingButton />
             ) : (
-              <Link href="/upgrade" style={{ background:"#cc1f00", color:"#fffdf4", border:"2px solid #1a1a1a", boxShadow:"3px 3px 0 #1a1a1a", fontFamily:"'Oswald',sans-serif", fontSize:"0.85rem", fontWeight:600, letterSpacing:"1px", textTransform:"uppercase", padding:"0.4rem 1rem", textDecoration:"none", display:"inline-block" }}>
+              <Link href="/upgrade" style={{ background:"#cc1f00", color:"#fffdf4", border:"2px solid #1a1a1a", boxShadow:"3px 3px 0 #1a1a1a", fontFamily:"'Oswald',sans-serif", fontSize:"1rem", fontWeight:600, letterSpacing:"1px", textTransform:"uppercase", padding:"0.4rem 1rem", textDecoration:"none", display:"inline-block" }}>
                 ⚡ Upgrade to Premium
               </Link>
             )}

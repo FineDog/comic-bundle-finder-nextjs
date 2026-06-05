@@ -734,7 +734,7 @@ export default function Preview() {
       </div>
 
       {activeTab === "search" && (<>
-        <div className="panel" style={{ fontSize: "0.88rem", fontWeight: 400, lineHeight: 1.8, color: "#333" }}>
+        <div className="panel" style={{ fontSize:"1rem", fontWeight: 400, lineHeight: 1.8, color: "#333" }}>
           Buying back issues on eBay? Shipping costs can turn a $2 comic into a $10 purchase. But most sellers combine shipping —
           so if you can find one seller who has several issues you need, you save big. Comic Bundle Finder searches eBay for every
           issue on your want list, then ranks sellers by how many of your issues they carry. Paste your list, hit search, and find
@@ -1030,7 +1030,7 @@ export default function Preview() {
       {activeTab === "analyzer" && (
         <div className="panel">
           <div className="caption">Gap Analyzer</div>
-          <p style={{ fontSize: "0.88rem", fontWeight: 400, lineHeight: 1.8, color: "#333", marginBottom: "1.25rem" }}>
+          <p style={{ fontSize:"1rem", fontWeight: 400, lineHeight: 1.8, color: "#333", marginBottom: "1.25rem" }}>
             Upload your collection export to find gaps in your runs — issues you&rsquo;re missing between ones you own.
             The analyzer groups your collection by series and finds small gaps worth filling.
           </p>
@@ -1042,7 +1042,7 @@ export default function Preview() {
             onDrop={onCollectionDrop}
           >
             <div className="gap-upload-contents">
-              <button className="btn-upload" style={{ fontSize: "0.88rem", padding: "0.4rem 1.25rem" }} onClick={() => collectionFileInputRef.current?.click()}>
+              <button className="btn-upload" style={{ fontSize:"1rem", padding: "0.4rem 1.25rem" }} onClick={() => collectionFileInputRef.current?.click()}>
                 Upload Collection File
               </button>
               <p>League of Comic Geeks (.xlsx), CLZ (.csv), or plain text (.txt) — or drag and drop here</p>

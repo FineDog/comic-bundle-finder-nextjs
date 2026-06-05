@@ -19,11 +19,11 @@ export default function VerifyRequest() {
         <div style={{ background: "#fffdf4", border: "3px solid #1a1a1a", borderTop: "none", padding: "1.75rem", boxShadow: "6px 6px 0 #1a1a1a", textAlign: "center" }}>
           <div style={{ fontSize: "2.5rem", marginBottom: "0.75rem" }}>✉</div>
           <h2 style={{ fontFamily: "'Bangers', cursive", fontSize: "1.8rem", letterSpacing: "2px", color: "#003399", marginBottom: "0.75rem" }}>Check Your Email</h2>
-          <p style={{ fontSize: "0.9rem", fontWeight: 400, lineHeight: 1.7, color: "#444", marginBottom: "1.5rem" }}>
+          <p style={{ fontSize: "1rem", fontWeight: 400, lineHeight: 1.7, color: "#444", marginBottom: "1.5rem" }}>
             A sign-in link has been sent to your email address. Click the link in the email to sign in.
             The link expires after 24 hours.
           </p>
-          <Link href="/" style={{ display: "inline-block", background: "#1a1a1a", color: "#fffdf4", textDecoration: "none", border: "2px solid #1a1a1a", fontFamily: "'Oswald', sans-serif", fontSize: "0.85rem", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase", padding: "0.4rem 1.25rem" }}>
+          <Link href="/" style={{ display: "inline-block", background: "#1a1a1a", color: "#fffdf4", textDecoration: "none", border: "2px solid #1a1a1a", fontFamily: "'Oswald', sans-serif", fontSize: "1rem", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase", padding: "0.4rem 1.25rem" }}>
             ← Back to search
           </Link>
         </div>

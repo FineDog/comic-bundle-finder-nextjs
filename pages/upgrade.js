@@ -123,11 +123,6 @@ export default function Upgrade() {
       <div className="page-wrap">
         <SiteNav />
 
-        {/* Intro */}
-        <div className="panel" style={{ marginBottom: "1.75rem", fontSize: "0.88rem", fontWeight: 400, lineHeight: 1.8, color: "#333" }}>
-          Free searching, no account required — ever. Premium unlocks power features for serious collectors: file imports, gap finding, email alerts, and more.
-        </div>
-
         {/* Billing toggle */}
         <div className="billing-toggle">
           <button

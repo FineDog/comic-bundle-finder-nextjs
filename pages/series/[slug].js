@@ -320,7 +320,7 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
         </div>
 
         <div className="panel">
-          <p style={{ fontSize: "0.88rem", fontWeight: 400, lineHeight: 1.8, color: "#333" }}>
+          <p style={{ fontSize: "1rem", fontWeight: 400, lineHeight: 1.8, color: "#333" }}>
             Find the best eBay bundle deals for <strong>{displayName} &mdash; {subtitle}</strong>.{" "}
             {seoBlurb} This page finds sellers who carry multiple issues you need so you can save
             on combined shipping instead of paying separately for every book.

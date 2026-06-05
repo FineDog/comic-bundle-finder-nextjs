@@ -498,7 +498,7 @@ export default function Preview() {
     <div className="page-wrap">
       <SiteNav />
 
-      <div className="panel" style={{ fontSize: "0.88rem", fontWeight: 400, lineHeight: 1.8, color: "#333" }}>
+      <div className="panel" style={{ fontSize: "1rem", fontWeight: 400, lineHeight: 1.8, color: "#333" }}>
           Buying back issues on eBay? Shipping costs can turn a $2 comic into a $10 purchase. But most sellers combine shipping —
           so if you can find one seller who has several issues you need, you save big. Comic Bundle Finder searches eBay for every
           issue on your want list, then ranks sellers by how many of your issues they carry. Paste your list, hit search, and find

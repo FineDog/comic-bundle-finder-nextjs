@@ -83,7 +83,7 @@ export default function ArcPage({ slug, arcId, arcName, arcDesc, configError }) 
         </div>
 
         {configError && (
-          <div className="panel" style={{ background: "#fff0f0", borderColor: "#cc1f00", color: "#cc1f00", fontWeight: 600, fontSize: "0.9rem" }}>
+          <div className="panel" style={{ background: "#fff0f0", borderColor: "#cc1f00", color: "#cc1f00", fontWeight: 600, fontSize: "1rem" }}>
             Configuration error: {configError}
           </div>
         )}

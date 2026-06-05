@@ -253,7 +253,7 @@ export default function GapAnalyzer() {
       <PremiumGate feature="gap-analyzer">
       <div className="panel">
         <div className="caption">Gap Analyzer</div>
-        <p style={{ fontSize: "0.88rem", fontWeight: 400, lineHeight: 1.8, color: "#333", marginBottom: "1.25rem" }}>
+        <p style={{ fontSize:"1rem", fontWeight: 400, lineHeight: 1.8, color: "#333", marginBottom: "1.25rem" }}>
           Upload your collection export to find gaps in your runs — issues you&rsquo;re missing between ones you own.
           The analyzer groups your collection by series and finds small gaps worth filling, then lets you search eBay for bundle deals to fill them.
         </p>
@@ -265,7 +265,7 @@ export default function GapAnalyzer() {
           onDrop={onCollectionDrop}
         >
           <div className="gap-upload-contents">
-            <button className="btn-upload" style={{ fontSize: "0.88rem", padding: "0.4rem 1.25rem" }} onClick={() => collectionFileInputRef.current?.click()}>
+            <button className="btn-upload" style={{ fontSize:"1rem", padding: "0.4rem 1.25rem" }} onClick={() => collectionFileInputRef.current?.click()}>
               Upload Collection File
             </button>
             <p>League of Comic Geeks (.xlsx), CLZ (.csv), or plain text (.txt) — or drag and drop here</p>
