@@ -1,6 +1,7 @@
 ﻿import Head from "next/head";
 import { getFaqContent } from "../lib/content";
 import SiteNav from "../components/SiteNav";
+import SiteFooter from "../components/SiteFooter";
 
 export async function getStaticProps() {
   const faq = await getFaqContent();
@@ -44,6 +45,8 @@ export default function Faq({ frontmatter, html }) {
         <div className="panel">
           <div className="faq" dangerouslySetInnerHTML={{ __html: html }} />
         </div>
+
+        <SiteFooter />
       </div>
     </>
   );

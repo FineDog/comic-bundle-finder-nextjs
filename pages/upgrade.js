@@ -2,6 +2,7 @@
 import Head from "next/head";
 import { useSession, signIn } from "next-auth/react";
 import SiteNav from "../components/SiteNav";
+import SiteFooter from "../components/SiteFooter";
 
 const FREE_FEATURES = [
   "Unlimited manual searching",
@@ -250,9 +251,7 @@ export default function Upgrade() {
           <div className="faq-a">League of Comic Geeks exports (.xlsx), CLZ exports (.csv), and plain text lists (.txt).</div>
         </div>
 
-        <div style={{ textAlign: "center", fontSize: "0.78rem", fontWeight: 400, color: "#888", lineHeight: 1.6 }}>
-          Questions? <a href="mailto:hello@comicbundlefinder.com" style={{ color: "#003399", fontWeight: 600 }}>hello@comicbundlefinder.com</a>
-        </div>
+        <SiteFooter />
       </div>
     </>
   );
