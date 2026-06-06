@@ -1,4 +1,4 @@
-﻿import { useState, useRef } from "react";
+﻿import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/router";
 import Head from "next/head";
 import * as XLSX from "xlsx";
@@ -152,6 +152,18 @@ export default function GapAnalyzer() {
   const [copyMsg, setCopyMsg] = useState("");
   const [isCollectionDragging, setIsCollectionDragging] = useState(false);
   const collectionFileInputRef = useRef(null);
+
+  useEffect(() => {
+    const stored = sessionStorage.getItem("gap_collection");
+    if (!stored) return;
+    sessionStorage.removeItem("gap_collection");
+    const items = stored.split("\n").map(plainLineToItem).filter(Boolean);
+    if (!items.length) return;
+    setCollectionItems(items);
+    setCollectionMsg(`Loaded ${items.length} collection issue${items.length === 1 ? "" : "s"} from your saved list.`);
+    const foundGaps = analyzeGaps(items, 5);
+    setGaps(foundGaps);
+  }, []);
 
   async function handleCollectionFile(file) {
     setCollectionMsg("Reading file…");
