@@ -438,6 +438,20 @@ export default function Preview() {
       .catch(() => setUserZip(null));
   }, []);
 
+  // Pre-fill from newsletter prep page
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("prefill") !== "newsletter") return;
+    try {
+      const issues = JSON.parse(localStorage.getItem("newsletter_search_prefill") || "[]");
+      if (issues.length) {
+        setIssueInput(issues.join("\n"));
+        localStorage.removeItem("newsletter_search_prefill");
+      }
+    } catch {
+      // ignore malformed data
+    }
+  }, []);
+
   // ── Derived state ──────────────────────────────────────────────────────
 
   const singleIssueMode = results?.issueCount === 1;
