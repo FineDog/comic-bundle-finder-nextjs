@@ -108,8 +108,9 @@ function SavedSummary({ saved, label, drop, accept, uploadingMsg, onImport }) {
   if (!hasSaved) return <div className="upload-msg">{uploadingMsg}</div>;
 
   // Has existing data — show message as a banner without hiding the rest
-  const isLoading = uploadingMsg === "Fetching from League of Comic Geeks…";
-  const isError = !!uploadingMsg && !isLoading;
+  const isLoading = uploadingMsg === "Starting sync…";
+  const isSuccess = !!uploadingMsg && uploadingMsg.startsWith("Sync started");
+  const isError = !!uploadingMsg && !isLoading && !isSuccess;
 
   const wishCount = saved.items.length;
   const collCount = saved.collectionItems?.length || 0;
@@ -125,7 +126,7 @@ function SavedSummary({ saved, label, drop, accept, uploadingMsg, onImport }) {
   return (
     <div>
       {uploadingMsg && (
-        <div className={`upload-msg${isError ? " upload-msg-error" : ""}`} style={{ marginBottom: "0.75rem" }}>
+        <div className={`upload-msg${isError ? " upload-msg-error" : isSuccess ? " upload-msg-success" : ""}`} style={{ marginBottom: "0.75rem" }}>
           {uploadingMsg}
         </div>
       )}
@@ -309,18 +310,13 @@ export default function Account() {
   }
 
   async function handleLOCGImport() {
-    setLocgUploading("Fetching from League of Comic Geeks…");
+    setLocgUploading("Starting sync…");
     try {
-      const res = await fetch(`/api/locg-import?username=${encodeURIComponent(savedUsername)}`);
+      const res = await fetch("/api/locg-trigger", { method: "POST" });
       const data = await res.json();
-      if (!res.ok) { setLocgUploading(data.error || "Could not fetch from LOCG."); return; }
-      if (!data.wishlist?.length) { setLocgUploading("No wish list items found on LOCG."); return; }
-      const updatedAt = new Date().toISOString();
-      const collItems = data.collection || [];
-      setLocgSaved({ items: data.wishlist, collectionItems: collItems, updatedAt, username: savedUsername });
-      setLocgUploading("");
-      saveList("locg", data.wishlist, { username: savedUsername, collectionItems: collItems });
-    } catch { setLocgUploading("Could not connect to LOCG. Try uploading your export file instead."); }
+      if (!res.ok) { setLocgUploading(data.error || "Could not start sync."); return; }
+      setLocgUploading(data.message || "Sync started — refresh this page in about a minute.");
+    } catch { setLocgUploading("Could not connect. Try uploading your export file instead."); }
   }
 
   const locgDrop = useDropZone(handleLOCGFile);
@@ -371,6 +367,7 @@ export default function Account() {
         .drop-zone-label{font-size:1rem;color:#555;font-weight:400}
         .upload-msg{font-size:0.82rem;font-weight:600;color:#003399;margin-top:0.6rem;letter-spacing:0.5px}
         .upload-msg-error{color:#cc1f00}
+        .upload-msg-success{color:#1a7a1a}
         .wishlist-preview{margin-top:1rem}
         .wishlist-preview-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.5rem}
         .wishlist-preview textarea{width:100%;height:140px;border:2px solid #1a1a1a;background:#fffdf4;font-family:'Oswald',sans-serif;font-size:0.82rem;padding:0.5rem;resize:vertical;color:#1a1a1a}
