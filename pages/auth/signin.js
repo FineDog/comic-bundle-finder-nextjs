@@ -71,8 +71,9 @@ export default function SignIn({ providers }) {
         .perk-label{font-family:'Bangers',cursive;font-size:1.1rem;letter-spacing:1px;color:#1a1a1a;line-height:1}
         .perk-desc{font-size:0.85rem;font-weight:400;color:#555;line-height:1.4;margin-top:0.15rem}
         .perk-note{font-size:0.78rem;font-weight:400;color:#888;margin-top:1.25rem;line-height:1.5;border-top:1px solid #d0c8b0;padding-top:1rem}
-        .perk-note a{color:#003399;font-weight:600;text-decoration:none}
-        .perk-note a:hover{text-decoration:underline}
+        .btn-plans{display:block;width:100%;background:#cc1f00;color:#fffdf4;border:2px solid #1a1a1a;box-shadow:3px 3px 0 #1a1a1a;font-family:'Bangers',cursive;font-size:1.3rem;letter-spacing:2px;padding:0.45rem 1rem 0.55rem;text-align:center;text-decoration:none;margin-top:1.25rem;transition:background 0.1s,transform 0.08s,box-shadow 0.08s}
+        .btn-plans:hover{background:#a81800;transform:translate(-1px,-1px);box-shadow:4px 4px 0 #1a1a1a}
+        .btn-plans:active{transform:translate(2px,2px);box-shadow:1px 1px 0 #1a1a1a}
 
         .panel{background:#fffdf4;border:3px solid #1a1a1a;box-shadow:6px 6px 0 #1a1a1a;padding:1.5rem 1.75rem;margin-bottom:1.75rem}
       `}</style>
@@ -137,9 +138,9 @@ export default function SignIn({ providers }) {
               </div>
             ))}
             <div className="perk-note">
-              Free accounts can search without signing in. Premium is $3/mo billed annually.{" "}
-              <a href="/upgrade">See plans →</a>
+              Free accounts can search without signing in. Premium is $3/mo billed annually.
             </div>
+            <a href="/upgrade" className="btn-plans">See plans →</a>
           </div>
         </div>
 
