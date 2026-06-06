@@ -101,8 +101,15 @@ function useDropZone(onFile) {
 
 function SavedSummary({ saved, label, drop, accept, uploadingMsg, onImport }) {
   const [showDrop, setShowDrop] = useState(false);
-  if (!saved?.items?.length && !uploadingMsg) return null;
-  if (uploadingMsg) return <div className="upload-msg">{uploadingMsg}</div>;
+  const hasSaved = saved?.items?.length > 0;
+
+  if (!hasSaved && !uploadingMsg) return null;
+  // No existing data yet — show only the status/loading message
+  if (!hasSaved) return <div className="upload-msg">{uploadingMsg}</div>;
+
+  // Has existing data — show message as a banner without hiding the rest
+  const isLoading = uploadingMsg === "Fetching from League of Comic Geeks…";
+  const isError = !!uploadingMsg && !isLoading;
 
   const wishCount = saved.items.length;
   const collCount = saved.collectionItems?.length || 0;
@@ -117,14 +124,20 @@ function SavedSummary({ saved, label, drop, accept, uploadingMsg, onImport }) {
 
   return (
     <div>
+      {uploadingMsg && (
+        <div className={`upload-msg${isError ? " upload-msg-error" : ""}`} style={{ marginBottom: "0.75rem" }}>
+          {uploadingMsg}
+        </div>
+      )}
       <div className="saved-summary">
         <span>{countText}</span>
         <div style={{ display: "flex", gap: "0.5rem" }}>
-          {onImport && <button className="btn-edit" onClick={onImport}>Refresh from LOCG</button>}
+          {onImport && !isLoading && <button className="btn-edit" onClick={onImport}>Refresh from LOCG</button>}
           <button className="btn-edit" onClick={() => setShowDrop(v => !v)}>{onImport ? "Update File" : "Update"}</button>
         </div>
       </div>
-      {showDrop && (
+      {/* Show drop zone when explicitly opened, or automatically on error */}
+      {(showDrop || isError) && (
         <div>
           <div
             className={`drop-zone${drop.isDragging ? " dragging" : ""}`}
@@ -357,6 +370,7 @@ export default function Account() {
         .drop-zone.dragging,.drop-zone:hover{background:#f0f4ff;border-color:#003399}
         .drop-zone-label{font-size:1rem;color:#555;font-weight:400}
         .upload-msg{font-size:0.82rem;font-weight:600;color:#003399;margin-top:0.6rem;letter-spacing:0.5px}
+        .upload-msg-error{color:#cc1f00}
         .wishlist-preview{margin-top:1rem}
         .wishlist-preview-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.5rem}
         .wishlist-preview textarea{width:100%;height:140px;border:2px solid #1a1a1a;background:#fffdf4;font-family:'Oswald',sans-serif;font-size:0.82rem;padding:0.5rem;resize:vertical;color:#1a1a1a}
