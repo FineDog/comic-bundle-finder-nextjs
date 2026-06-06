@@ -409,7 +409,6 @@ const TABS = [
   { id: "releases", label: "New Releases" },
   { id: "reddit", label: "Reddit Buzz" },
   { id: "news", label: "News Feed" },
-  { id: "chart", label: "Sales Chart" },
 ];
 
 export default function NewsletterPrep() {
@@ -481,6 +480,9 @@ export default function NewsletterPrep() {
               <Link href="/" style={{ color: "#ffcccc" }}>
                 ← Comic Bundle Finder
               </Link>
+              <span style={{ color: "#ffaaaa", marginLeft: "12px" }}>
+                · Run locally with <code style={{ background: "rgba(0,0,0,0.3)", padding: "1px 5px" }}>npm run dev</code>
+              </span>
             </div>
           </div>
 
@@ -581,7 +583,6 @@ export default function NewsletterPrep() {
             {activeTab === "releases" && <ReleasesTab selected={selected} onToggle={toggleItem} />}
             {activeTab === "reddit" && <RedditTab />}
             {activeTab === "news" && <NewsTab />}
-            {activeTab === "chart" && <SalesChartTab selected={selected} onToggle={toggleItem} />}
           </div>
         </div>
       </div>
