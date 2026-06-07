@@ -18,7 +18,6 @@ const PREMIUM_FEATURES = [
   "Email results to yourself",
   "Daily digest email alerts",
   "Saved want lists",
-  { label: "eBay Price Data", soon: true },
 ];
 
 export default function Upgrade() {
