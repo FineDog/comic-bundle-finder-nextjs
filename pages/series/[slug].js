@@ -429,8 +429,18 @@ export async function getStaticPaths() {
   };
 }
 
-function metronAuthHeader() {
-  return `Basic ${Buffer.from(`${process.env.METRON_USERNAME}:${process.env.METRON_PASSWORD}`).toString("base64")}`;
+// Module-level cache — parsed once per serverless function instance
+let seriesIndexCache = null;
+function loadSeriesIndex() {
+  if (seriesIndexCache) return seriesIndexCache;
+  try {
+    seriesIndexCache = JSON.parse(
+      fs.readFileSync(path.join(process.cwd(), "public", "data", "series-index.json"), "utf-8")
+    );
+  } catch {
+    seriesIndexCache = null;
+  }
+  return seriesIndexCache;
 }
 
 export async function getStaticProps({ params }) {
@@ -439,49 +449,63 @@ export async function getStaticProps({ params }) {
   const metronMatch = /^metron-(\d+)$/.exec(slug);
   if (metronMatch) {
     const metronId = parseInt(metronMatch[1], 10);
-    const meta = await fetchMetronSeriesMeta(metronId);
-    if (!meta) return { notFound: true };
 
-    const seriesName = meta.name || meta.series || "";
+    let seriesName = "";
+    let yearEnd = null;
+    let vol = null;
+    let totalIssues = 0;
+
+    const index = loadSeriesIndex();
+    const entry = index?.find((s) => s.id === metronId);
+
+    if (entry) {
+      // Fast path: read from static index (no Metron call)
+      seriesName = entry.name;
+      yearEnd = entry.yearEnd;
+      vol = entry.volume;
+      totalIssues = entry.issueCount;
+    } else {
+      // Fallback: live Metron call (used before first index build, or for very new series)
+      const meta = await fetchMetronSeriesMeta(metronId);
+      if (!meta) return { notFound: true };
+      seriesName = meta.name || meta.series || "";
+      yearEnd = meta.year_end || null;
+      vol = meta.volume || null;
+      totalIssues = meta.issue_count || 0;
+    }
+
     const baseName = seriesName.replace(/\s*\(\d{4,}\)\s*$/, "").trim();
     const yearMatch = /\((\d{4})\)\s*$/.exec(seriesName.trim());
     const yearBegan = yearMatch ? parseInt(yearMatch[1]) : null;
-    const yearEnd = meta.year_end || null;
-    const vol = meta.volume || null;
 
     const yearRange = yearBegan
       ? yearEnd && yearEnd !== yearBegan ? `${yearBegan}–${yearEnd}` : String(yearBegan)
       : "";
     const subtitle = vol ? `Vol. ${vol}${yearRange ? ` · ${yearRange}` : ""}` : yearRange;
-    const displayName = baseName;
     const groupSlug = nameToSlug(baseName);
-    const totalIssues = meta.issue_count || 0;
-    const seoTitle = `${displayName} ${subtitle} — eBay Bundle Deals | Comic Bundle Finder`;
-    const seoBlurb = `Browse all ${totalIssues} issues and find sellers carrying multiple books you need.`;
+    const totalIssuesNum = totalIssues;
+    const seoTitle = `${baseName} ${subtitle} — eBay Bundle Deals | Comic Bundle Finder`;
+    const seoBlurb = `Browse all ${totalIssuesNum} issues and find sellers carrying multiple books you need.`;
 
+    // Sibling lookup for Prev Vol / Next Vol navigation.
+    // Use the static index if available — no Metron call needed.
     let prevVolSlug = null, nextVolSlug = null;
-    try {
-      const sibRes = await fetch(
-        `https://metron.cloud/api/series/?name=${encodeURIComponent(baseName)}&page_size=100`,
-        { headers: { Authorization: metronAuthHeader() } }
-      );
-      if (sibRes.ok) {
-        const sibData = await sibRes.json();
-        const siblings = (sibData.results || [])
-          .filter(s => (s.name || s.series || "").replace(/\s*\(\d{4,}\)\s*$/, "").trim().toLowerCase() === baseName.toLowerCase())
-          .sort((a, b) => {
-            const yA = parseInt(/\((\d{4})\)/.exec(a.name || a.series || "")?.[1] || "9999");
-            const yB = parseInt(/\((\d{4})\)/.exec(b.name || b.series || "")?.[1] || "9999");
-            return yA - yB;
-          });
-        const currentIdx = siblings.findIndex(s => s.id === metronId);
-        if (currentIdx > 0) prevVolSlug = `metron-${siblings[currentIdx - 1].id}`;
-        if (currentIdx !== -1 && currentIdx < siblings.length - 1) nextVolSlug = `metron-${siblings[currentIdx + 1].id}`;
-      }
-    } catch {}
+    if (index) {
+      const lowerBase = baseName.toLowerCase();
+      const siblings = index
+        .filter((s) => s.name.replace(/\s*\(\d{4,}\)\s*$/, "").trim().toLowerCase() === lowerBase)
+        .sort((a, b) => {
+          const yA = parseInt(/\((\d{4})\)/.exec(a.name)?.[1] ?? "9999");
+          const yB = parseInt(/\((\d{4})\)/.exec(b.name)?.[1] ?? "9999");
+          return yA - yB;
+        });
+      const currentIdx = siblings.findIndex((s) => s.id === metronId);
+      if (currentIdx > 0) prevVolSlug = `metron-${siblings[currentIdx - 1].id}`;
+      if (currentIdx !== -1 && currentIdx < siblings.length - 1) nextVolSlug = `metron-${siblings[currentIdx + 1].id}`;
+    }
 
     return {
-      props: { slug, displayName, subtitle, totalIssues, seoBlurb, seoTitle, groupSlug, prevVolSlug, nextVolSlug },
+      props: { slug, displayName: baseName, subtitle, totalIssues: totalIssuesNum, seoBlurb, seoTitle, groupSlug, prevVolSlug, nextVolSlug },
       revalidate: 86400,
     };
   }

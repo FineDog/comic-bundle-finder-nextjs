@@ -1,6 +1,6 @@
 ﻿import fs from "fs";
 import path from "path";
-import { useState } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import Head from "next/head";
 import Link from "next/link";
 import SiteNav from "../components/SiteNav";
@@ -41,30 +41,54 @@ export default function CollectionGuides({ arcs }) {
   // Story arc search (local)
   const [query, setQuery] = useState("");
 
-  // Series search (live Metron)
+  // Series search — client-side against lazily loaded static index
   const [seriesQuery, setSeriesQuery] = useState("");
   const [seriesResults, setSeriesResults] = useState(null);
-  const [seriesSearching, setSeriesSearching] = useState(false);
   const [seriesSubmittedQuery, setSeriesSubmittedQuery] = useState("");
+  // null = not loaded, "loading" = in flight, array = ready
+  const [seriesIndex, setSeriesIndex] = useState(null);
+  const seriesIndexLoading = useRef(false);
+
+  // Fetch the series index once on first user interaction with the search box.
+  // ~350 KB gzipped; cached by the browser after the first load.
+  const ensureSeriesIndex = useCallback(() => {
+    if (seriesIndex !== null || seriesIndexLoading.current) return;
+    seriesIndexLoading.current = true;
+    fetch("/data/series-index.json")
+      .then((r) => r.json())
+      .then((data) => {
+        setSeriesIndex(Array.isArray(data) ? data : []);
+        seriesIndexLoading.current = false;
+      })
+      .catch(() => {
+        setSeriesIndex([]);
+        seriesIndexLoading.current = false;
+      });
+  }, [seriesIndex]);
 
   function handleSeriesSearch() {
     const q = seriesQuery.trim();
     if (q.length < 3) return;
-    setSeriesSearching(true);
     setSeriesSubmittedQuery(q);
-    setSeriesResults(null);
-    // full=1 paginates through up to 4 pages of Metron results for a complete set
-    fetch(`/api/series/search?q=${encodeURIComponent(q)}&full=1`)
-      .then((r) => r.json())
-      .then((data) => {
-        setSeriesResults(aggregateByBaseName(data.results || []));
-        setSeriesSearching(false);
-      })
-      .catch(() => {
-        setSeriesResults([]);
-        setSeriesSearching(false);
-      });
+    if (!seriesIndex) {
+      // Index still loading — results will appear once it arrives via the
+      // useEffect below that re-runs search when the index becomes ready.
+      return;
+    }
+    const lower = q.toLowerCase();
+    const matches = seriesIndex.filter((s) => s.name.toLowerCase().includes(lower));
+    setSeriesResults(aggregateByBaseName(matches));
   }
+
+  // When the index finishes loading, re-run any pending submitted query.
+  // Handles the race where the user clicked Search before the index arrived.
+  useEffect(() => {
+    if (!seriesIndex || seriesSubmittedQuery.length < 3) return;
+    const lower = seriesSubmittedQuery.toLowerCase();
+    const pending = seriesIndex.filter((s) => s.name.toLowerCase().includes(lower));
+    setSeriesResults(aggregateByBaseName(pending));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [seriesIndex]);
 
   // Story arc local filtering
   const matches =
@@ -225,6 +249,7 @@ export default function CollectionGuides({ arcs }) {
               placeholder="e.g. Spider-Man, Daredevil, X-Men..."
               value={seriesQuery}
               onChange={(e) => setSeriesQuery(e.target.value)}
+              onFocus={ensureSeriesIndex}
               onKeyDown={(e) => { if (e.key === "Enter") handleSeriesSearch(); }}
               autoComplete="off"
               style={{ flex: 1 }}
@@ -241,13 +266,17 @@ export default function CollectionGuides({ arcs }) {
           {/* Hint before typing */}
           {seriesResults === null && seriesQuery.trim().length < 3 && (
             <p className="arc-hint">
-              Type at least 3 characters to search the Metron series database.
+              Type at least 3 characters to search the series database.
             </p>
           )}
 
+          {/* Loading index / searching */}
+          {seriesResults === null && seriesSubmittedQuery.length >= 3 && seriesIndex === null && (
+            <p className="arc-hint">Loading series index&hellip;</p>
+          )}
+
           {/* Full results after Search / Enter */}
-          {seriesSearching && <p className="arc-hint">Searching Metron...</p>}
-          {seriesResults !== null && !seriesSearching && (
+          {seriesResults !== null && (
             <>
               {seriesResults.length === 0 ? (
                 <p className="arc-no-results">

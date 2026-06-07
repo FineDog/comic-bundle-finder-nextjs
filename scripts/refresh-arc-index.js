@@ -138,6 +138,7 @@ while (nextUrl) {
     arcs.push({
       id: arc.id,
       name: arc.name,
+      desc: arc.desc || "",
       slug: `${arc.id}-${toSlug(arc.name)}`,
       modified: arc.modified || "",
       issueCount: existing.get(arc.id)?.issueCount || 0, // will be updated in Phase 2
@@ -205,7 +206,7 @@ console.log("\n  done.");
 
 // ── Write output files ────────────────────────────────────────────────────────
 // Strip internal `modified` field — not needed by the frontend
-const output = arcs.map(({ id, name, slug, issueCount }) => ({ id, name, slug, issueCount }));
+const output = arcs.map(({ id, name, desc, slug, issueCount }) => ({ id, name, desc, slug, issueCount }));
 output.sort((a, b) => a.name.localeCompare(b.name));
 
 mkdirSync(outDir, { recursive: true });

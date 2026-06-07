@@ -1,57 +1,47 @@
-export default async function handler(req, res) {
-  const q = (req.query.q || "").trim();
-  const full = req.query.full === "1"; // paginate for full search results
+// GET /api/series/search?q=<query>[&full=1]
+//
+// Searches the static series index (public/data/series-index.json) built
+// nightly by scripts/refresh-series-index.js. No live Metron calls.
+//
+// Response format matches the previous Metron-backed implementation so
+// existing callers don't break during transition. The collection-guides
+// page now does client-side search against the JSON directly (no API call),
+// but this route is kept as a lightweight fallback.
 
+import fs from "fs";
+import path from "path";
+
+let seriesIndexCache = null;
+function loadSeriesIndex() {
+  if (seriesIndexCache) return seriesIndexCache;
+  try {
+    seriesIndexCache = JSON.parse(
+      fs.readFileSync(path.join(process.cwd(), "public", "data", "series-index.json"), "utf-8")
+    );
+  } catch {
+    seriesIndexCache = [];
+  }
+  return seriesIndexCache;
+}
+
+export default function handler(req, res) {
+  const q = (req.query.q || "").trim().toLowerCase();
   if (q.length < 3) {
     return res.status(400).json({ error: "Query must be at least 3 characters" });
   }
 
-  const auth = Buffer.from(
-    `${process.env.METRON_USERNAME}:${process.env.METRON_PASSWORD}`
-  ).toString("base64");
-
-  const baseUrl = `https://metron.cloud/api/series/?name=${encodeURIComponent(q)}&page_size=100`;
-
-  // Fetch first page
-  let firstRes;
-  try {
-    firstRes = await fetch(baseUrl, { headers: { Authorization: `Basic ${auth}` } });
-  } catch {
-    return res.status(502).json({ error: "Could not reach Metron API" });
-  }
-  if (!firstRes.ok) {
-    return res.status(502).json({ error: `Metron API returned ${firstRes.status}` });
-  }
-
-  const firstData = await firstRes.json();
-  let allResults = firstData.results || [];
-  const totalCount = firstData.count || 0;
-
-  // For full searches, paginate through up to 4 pages total to get a complete result set
-  // (Metron hard-caps page_size at 100, so 400 results max).
-  // Pages are fetched in parallel so all 4 resolve in ~200ms instead of ~800ms sequentially.
-  if (full && firstData.next) {
-    const extraPages = await Promise.all(
-      [2, 3, 4].map((page) =>
-        fetch(`${baseUrl}&page=${page}`, { headers: { Authorization: `Basic ${auth}` } })
-          .then((r) => (r.ok ? r.json() : null))
-          .catch(() => null)
-      )
-    );
-    for (const pageData of extraPages) {
-      if (pageData && pageData.results) {
-        allResults = allResults.concat(pageData.results);
-      }
-    }
-  }
+  const index = loadSeriesIndex();
+  const matches = index.filter((s) => s.name.toLowerCase().includes(q));
 
   return res.json({
-    count: totalCount,
-    results: allResults.map((s) => ({
+    count: matches.length,
+    results: matches.map((s) => ({
       id: s.id,
-      name: s.series,          // Metron uses "series" field, not "name"
-      issueCount: s.issue_count || 0,
-      yearBegan: s.year_began || null,
+      name: s.name,
+      issueCount: s.issueCount,
+      yearBegan: s.name.match(/\((\d{4})\)\s*$/)?.[1]
+        ? parseInt(s.name.match(/\((\d{4})\)\s*$/)[1])
+        : null,
     })),
   });
 }

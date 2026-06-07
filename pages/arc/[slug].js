@@ -1,4 +1,6 @@
-﻿import { useState, useEffect, useRef } from "react";
+﻿import fs from "fs";
+import path from "path";
+import { useState, useEffect, useRef } from "react";
 import Head from "next/head";
 import SiteNav from "../../components/SiteNav";
 import SiteFooter from "../../components/SiteFooter";
@@ -148,6 +150,20 @@ export async function getStaticPaths() {
   return { paths: [], fallback: "blocking" };
 }
 
+// Module-level cache — parsed once per serverless function instance
+let arcIndexCache = null;
+function loadArcIndex() {
+  if (arcIndexCache) return arcIndexCache;
+  try {
+    arcIndexCache = JSON.parse(
+      fs.readFileSync(path.join(process.cwd(), "public", "data", "arc-index.json"), "utf-8")
+    );
+  } catch {
+    arcIndexCache = [];
+  }
+  return arcIndexCache;
+}
+
 export async function getStaticProps({ params }) {
   const { slug } = params;
 
@@ -155,27 +171,12 @@ export async function getStaticProps({ params }) {
   if (!idMatch) return { notFound: true };
   const arcId = parseInt(idMatch[1], 10);
 
-  if (!process.env.METRON_USERNAME || !process.env.METRON_PASSWORD) {
-    return { props: { slug, arcId, arcName: "Arc Unavailable", arcDesc: "", configError: "METRON credentials not configured." }, revalidate: 60 };
-  }
-
-  const auth = Buffer.from(`${process.env.METRON_USERNAME}:${process.env.METRON_PASSWORD}`).toString("base64");
-  const headers = { Authorization: `Basic ${auth}`, Accept: "application/json", "User-Agent": "ComicBundleFinder/1.0" };
-
-  let arcRes;
-  try {
-    arcRes = await fetch(`https://metron.cloud/api/arc/${arcId}/`, { headers });
-  } catch (e) {
-    return { props: { slug, arcId, arcName: "Arc Unavailable", arcDesc: "", configError: `Network error: ${e.message}` }, revalidate: 60 };
-  }
-  if (!arcRes.ok) {
-    if (arcRes.status === 404) return { notFound: true };
-    return { props: { slug, arcId, arcName: "Arc Unavailable", arcDesc: "", configError: `Metron returned ${arcRes.status}` }, revalidate: 60 };
-  }
-  const arc = await arcRes.json();
+  const index = loadArcIndex();
+  const entry = index.find((a) => a.id === arcId);
+  if (!entry) return { notFound: true };
 
   return {
-    props: { slug, arcId, arcName: arc.name, arcDesc: arc.desc || "" },
+    props: { slug, arcId, arcName: entry.name, arcDesc: entry.desc || "" },
     revalidate: 86400,
   };
 }
