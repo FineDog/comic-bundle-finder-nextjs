@@ -16,6 +16,10 @@ on:
         description: "DB user ID to sync (leave blank to sync all users)"
         required: false
         default: ""
+      locg_user_id:
+        description: "LOCG numeric user ID (only needed once — will be saved for future runs)"
+        required: false
+        default: ""
 
 jobs:
   sync:
@@ -32,4 +36,5 @@ jobs:
         env:
           DATABASE_URL:    ${{ secrets.DATABASE_URL }}
           SYNC_DB_USER_ID: ${{ inputs.db_user_id }}
+          LOCG_USER_ID:    ${{ inputs.locg_user_id }}
         run: node scripts/sync-locg.mjs
