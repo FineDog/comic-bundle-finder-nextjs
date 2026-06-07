@@ -25,7 +25,7 @@ export default async function handler(req, res) {
   }
 
   if (req.method === "PATCH") {
-    const { source, items, username } = req.body;
+    const { source, items, username, collectionItems } = req.body;
     if (!["locg", "clz", "manual"].includes(source)) {
       return res.status(400).json({ error: "Invalid source." });
     }
@@ -33,7 +33,12 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "items must be an array." });
     }
     const col = source === "locg" ? "locg_list" : source === "clz" ? "clz_list" : "manual_list";
-    const payload = { items, updatedAt: new Date().toISOString(), ...(username ? { username } : {}) };
+    const payload = {
+      items,
+      updatedAt: new Date().toISOString(),
+      ...(username ? { username } : {}),
+      ...(Array.isArray(collectionItems) ? { collectionItems } : {}),
+    };
     await pool.query(
       `UPDATE users SET "${col}" = $1 WHERE id = $2`,
       [JSON.stringify(payload), userId]
