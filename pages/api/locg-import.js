@@ -53,10 +53,14 @@ function parseIssues($) {
   return issues;
 }
 
+const AJAX_HEADERS = { "X-Requested-With": "XMLHttpRequest" };
+
 // Fetch the series list for a list type (list=2 collection, list=3 wishlist)
 async function fetchSeriesList(impit, cheerio, listType, userId) {
   const url = `${BASE}/comic/get_comics?list=${listType}&user_id=${userId}`;
-  const json = await impit.fetch(url).then(r => r.json());
+  const res = await impit.fetch(url, { headers: AJAX_HEADERS });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const json = await res.json();
   const $ = cheerio.load(json.list || "");
   return parseSeries($);
 }
@@ -65,7 +69,9 @@ async function fetchSeriesList(impit, cheerio, listType, userId) {
 async function fetchSeriesIssues(impit, cheerio, listType, seriesId, userId) {
   const url = `${BASE}/comic/get_comics?list=${listType}&series_id=${seriesId}&user_id=${userId}`;
   try {
-    const json = await impit.fetch(url).then(r => r.json());
+    const res = await impit.fetch(url, { headers: AJAX_HEADERS });
+    if (!res.ok) return [];
+    const json = await res.json();
     const $ = cheerio.load(json.list || "");
     return parseIssues($);
   } catch {
