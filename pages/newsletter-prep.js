@@ -104,6 +104,12 @@ function ReleasesTab({ selected, onToggle }) {
             >
               Select All
             </button>
+            <button
+              onClick={() => releases.forEach((r) => { if (selected.has(r.name)) onToggle(r.name); })}
+              style={btn("#666")}
+            >
+              Deselect All
+            </button>
           </>
         )}
         {releases && (
@@ -436,7 +442,9 @@ function BestsellersTab({ selected, onToggle }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
+  function load() {
+    setLoading(true);
+    setError(null);
     fetch("/api/newsletter/bestsellers")
       .then((r) => r.json())
       .then((d) => {
@@ -448,71 +456,101 @@ function BestsellersTab({ selected, onToggle }) {
         setError(e.message);
         setLoading(false);
       });
-  }, []);
+  }
 
-  if (loading) return <Loading />;
-  if (error) return (
-    <div style={{ fontFamily: "Oswald, sans-serif", padding: "16px" }}>
-      <Err msg={error} />
-      <a href="https://bleedingcool.com/tag/bestseller-list/" target="_blank" rel="noreferrer" style={{ color: "#cc1f00" }}>
-        View Bleeding Cool directly →
-      </a>
-    </div>
-  );
+  useEffect(() => { load(); }, []);
 
   return (
     <div>
-      <div style={{ marginBottom: "12px", fontFamily: "Oswald, sans-serif", fontSize: "13px", color: "#666" }}>
-        Source:{" "}
-        <a href={data.articleUrl} target="_blank" rel="noreferrer" style={{ color: "#cc1f00" }}>
-          {data.title || "Bleeding Cool Bestseller List"}
-        </a>
-        {data.pubDate && (
-          <span style={{ marginLeft: "10px" }}>
-            {new Date(data.pubDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-          </span>
-        )}
-        {data.warning && (
-          <span style={{ marginLeft: "10px", color: "#cc1f00" }}>{data.warning}</span>
+      <div style={{ display: "flex", gap: "10px", alignItems: "center", marginBottom: "14px", flexWrap: "wrap" }}>
+        <button onClick={load} style={btn("#cc1f00")}>
+          Load Latest
+        </button>
+        {data && !loading && (
+          <>
+            <button
+              onClick={() => data.items.forEach((item) => { if (!selected.has(item)) onToggle(item); })}
+              style={btn("#1a1a1a")}
+            >
+              Select All
+            </button>
+            <button
+              onClick={() => data.items.forEach((item) => { if (selected.has(item)) onToggle(item); })}
+              style={btn("#666")}
+            >
+              Deselect All
+            </button>
+            <span style={{ fontFamily: "Oswald, sans-serif", fontSize: "13px", color: "#666" }}>
+              {data.items.length} titles
+            </span>
+          </>
         )}
       </div>
-      {data.items.length === 0 ? (
-        <Err msg="No list items parsed — open the article directly." />
-      ) : (
-        <div style={{ overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "Oswald, sans-serif", fontSize: "14px" }}>
-            <thead>
-              <tr style={{ background: "#1a1a1a", color: "#ffe066" }}>
-                <th style={TH}>✓</th>
-                <th style={TH}>Rank</th>
-                <th style={{ ...TH, textAlign: "left" }}>Title</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.items.map((item, i) => {
-                const isSelected = selected.has(item);
-                return (
-                  <tr
-                    key={i}
-                    onClick={() => onToggle(item)}
-                    style={{
-                      background: isSelected ? "#fff9d0" : i % 2 === 0 ? "#fffdf4" : "#f5f0e4",
-                      cursor: "pointer",
-                    }}
-                  >
-                    <td style={{ ...TD, textAlign: "center" }}>
-                      <input type="checkbox" checked={isSelected} readOnly style={{ cursor: "pointer" }} />
-                    </td>
-                    <td style={{ ...TD, textAlign: "center", fontWeight: "bold", color: i < 3 ? "#cc1f00" : "#1a1a1a" }}>
-                      {i + 1}
-                    </td>
-                    <td style={TD}>{item}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+
+      {loading && <Loading />}
+      {error && (
+        <div style={{ fontFamily: "Oswald, sans-serif", padding: "16px" }}>
+          <Err msg={error} />
+          <a href="https://bleedingcool.com/tag/bestseller-list/" target="_blank" rel="noreferrer" style={{ color: "#cc1f00" }}>
+            View Bleeding Cool directly →
+          </a>
         </div>
+      )}
+      {data && !loading && (
+        <>
+          <div style={{ marginBottom: "12px", fontFamily: "Oswald, sans-serif", fontSize: "13px", color: "#666" }}>
+            Source:{" "}
+            <a href={data.articleUrl} target="_blank" rel="noreferrer" style={{ color: "#cc1f00" }}>
+              {data.title || "Bleeding Cool Bestseller List"}
+            </a>
+            {data.pubDate && (
+              <span style={{ marginLeft: "10px" }}>
+                {new Date(data.pubDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+              </span>
+            )}
+            {data.warning && (
+              <span style={{ marginLeft: "10px", color: "#cc1f00" }}>{data.warning}</span>
+            )}
+          </div>
+          {data.items.length === 0 ? (
+            <Err msg="No list items parsed — open the article directly." />
+          ) : (
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "Oswald, sans-serif", fontSize: "14px" }}>
+                <thead>
+                  <tr style={{ background: "#1a1a1a", color: "#ffe066" }}>
+                    <th style={TH}>✓</th>
+                    <th style={TH}>Rank</th>
+                    <th style={{ ...TH, textAlign: "left" }}>Title</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.items.map((item, i) => {
+                    const isSelected = selected.has(item);
+                    return (
+                      <tr
+                        key={i}
+                        onClick={() => onToggle(item)}
+                        style={{
+                          background: isSelected ? "#fff9d0" : i % 2 === 0 ? "#fffdf4" : "#f5f0e4",
+                          cursor: "pointer",
+                        }}
+                      >
+                        <td style={{ ...TD, textAlign: "center" }}>
+                          <input type="checkbox" checked={isSelected} readOnly style={{ cursor: "pointer" }} />
+                        </td>
+                        <td style={{ ...TD, textAlign: "center", fontWeight: "bold", color: i < 3 ? "#cc1f00" : "#1a1a1a" }}>
+                          {i + 1}
+                        </td>
+                        <td style={TD}>{item}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
