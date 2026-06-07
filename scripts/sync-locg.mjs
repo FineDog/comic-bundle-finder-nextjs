@@ -81,9 +81,27 @@ function parseIssues($) {
   return issues;
 }
 
+const AJAX_HEADERS = { "X-Requested-With": "XMLHttpRequest" };
+
+async function warmUpSession(impit, slug) {
+  // Visit a public page first so LOCG sets its session cookie.
+  // The /comic/get_comics API endpoint returns HTML instead of JSON
+  // when no session cookie is present.
+  const url = `${BASE}/profile/${slug}/collection`;
+  try {
+    const res = await impit.fetch(url);
+    console.log(`  Session warm-up: ${url} → ${res.status}`);
+  } catch (e) {
+    // Non-fatal — the API calls may still work on some hosts
+    console.log(`  Session warm-up failed (${e.message}), proceeding anyway…`);
+  }
+}
+
 async function fetchSeriesList(impit, listType, locgUserId) {
   const url = `${BASE}/comic/get_comics?list=${listType}&user_id=${locgUserId}`;
-  const json = await impit.fetch(url).then(r => r.json());
+  const res = await impit.fetch(url, { headers: AJAX_HEADERS });
+  if (!res.ok) throw new Error(`HTTP ${res.status} from ${url}`);
+  const json = await res.json();
   const $ = cheerio.load(json.list || "");
   return parseSeries($);
 }
@@ -91,7 +109,9 @@ async function fetchSeriesList(impit, listType, locgUserId) {
 async function fetchSeriesIssues(impit, listType, seriesId, locgUserId) {
   const url = `${BASE}/comic/get_comics?list=${listType}&series_id=${seriesId}&user_id=${locgUserId}`;
   try {
-    const json = await impit.fetch(url).then(r => r.json());
+    const res = await impit.fetch(url, { headers: AJAX_HEADERS });
+    if (!res.ok) return [];
+    const json = await res.json();
     const $ = cheerio.load(json.list || "");
     return parseIssues($);
   } catch {
@@ -148,6 +168,8 @@ async function syncUser(pool, impit, dbUserId, locgUsername, envLocgUserId) {
   }
 
   console.log(`  LOCG user ID: ${locgUserId} (source: ${idSource})`);
+
+  await warmUpSession(impit, slug);
 
   const [wishSeries, collSeries] = await Promise.all([
     fetchSeriesList(impit, 3, locgUserId).catch(e => { console.error(`  Wish series fetch failed: ${e.message}`); return []; }),
