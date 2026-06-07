@@ -99,18 +99,12 @@ function useDropZone(onFile) {
 
 // ── Saved summary ─────────────────────────────────────────────────────────────
 
-function SavedSummary({ saved, label, drop, accept, uploadingMsg, onImport }) {
+function SavedSummary({ saved, label, drop, accept, uploadingMsg }) {
   const [showDrop, setShowDrop] = useState(false);
   const hasSaved = saved?.items?.length > 0;
 
   if (!hasSaved && !uploadingMsg) return null;
-  // No existing data yet — show only the status/loading message
   if (!hasSaved) return <div className="upload-msg">{uploadingMsg}</div>;
-
-  // Has existing data — show message as a banner without hiding the rest
-  const isLoading = uploadingMsg === "Starting sync…";
-  const isSuccess = !!uploadingMsg && uploadingMsg.startsWith("Sync started");
-  const isError = !!uploadingMsg && !isLoading && !isSuccess;
 
   const wishCount = saved.items.length;
   const collCount = saved.collectionItems?.length || 0;
@@ -125,31 +119,21 @@ function SavedSummary({ saved, label, drop, accept, uploadingMsg, onImport }) {
 
   return (
     <div>
-      {uploadingMsg && (
-        <div className={`upload-msg${isError ? " upload-msg-error" : isSuccess ? " upload-msg-success" : ""}`} style={{ marginBottom: "0.75rem" }}>
-          {uploadingMsg}
-        </div>
-      )}
+      {uploadingMsg && <div className="upload-msg" style={{ marginBottom: "0.75rem" }}>{uploadingMsg}</div>}
       <div className="saved-summary">
         <span>{countText}</span>
-        <div style={{ display: "flex", gap: "0.5rem" }}>
-          {onImport && !isLoading && <button className="btn-edit" onClick={onImport}>Refresh from LOCG</button>}
-          <button className="btn-edit" onClick={() => setShowDrop(v => !v)}>{onImport ? "Update File" : "Update"}</button>
-        </div>
+        <button className="btn-edit" onClick={() => setShowDrop(v => !v)}>Update</button>
       </div>
-      {/* Show drop zone when explicitly opened, or automatically on error */}
-      {(showDrop || isError) && (
-        <div>
-          <div
-            className={`drop-zone${drop.isDragging ? " dragging" : ""}`}
-            onDragOver={drop.onDragOver} onDragLeave={drop.onDragLeave}
-            onDrop={e => { drop.onDrop(e); setShowDrop(false); }}
-            onClick={() => drop.ref.current?.click()}
-          >
-            <div className="drop-zone-label">Drop new file here, or click to browse</div>
-            <input ref={drop.ref} type="file" accept={accept} style={{ display: "none" }}
-              onChange={e => { drop.onFileSelected(e); setShowDrop(false); }} />
-          </div>
+      {showDrop && (
+        <div
+          className={`drop-zone${drop.isDragging ? " dragging" : ""}`}
+          onDragOver={drop.onDragOver} onDragLeave={drop.onDragLeave}
+          onDrop={e => { drop.onDrop(e); setShowDrop(false); }}
+          onClick={() => drop.ref.current?.click()}
+        >
+          <div className="drop-zone-label">Drop new file here, or click to browse</div>
+          <input ref={drop.ref} type="file" accept={accept} style={{ display: "none" }}
+            onChange={e => { drop.onFileSelected(e); setShowDrop(false); }} />
         </div>
       )}
       <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginTop: "0.6rem" }}>
@@ -219,11 +203,8 @@ export default function Account() {
   const [digestEnabled, setDigestEnabled] = useState(false);
   const [digestLastSent, setDigestLastSent] = useState(null);
 
-  // LOCG state — { items, updatedAt, username } or null
+  // LOCG state — { items, collectionItems, updatedAt } or null
   const [locgSaved, setLocgSaved] = useState(null);
-  const [locgUsername, setLocgUsername] = useState("");
-  const [savedUsername, setSavedUsername] = useState("");
-  const [editingUsername, setEditingUsername] = useState(false);
   const [locgUploading, setLocgUploading] = useState("");
 
   // CLZ state — { items, updatedAt } or null
@@ -239,10 +220,7 @@ export default function Account() {
     fetch("/api/user/lists")
       .then(r => r.json())
       .then(data => {
-        if (data.locg?.items?.length) {
-          setLocgSaved(data.locg);
-          if (data.locg.username) setSavedUsername(data.locg.username);
-        }
+        if (data.locg?.items?.length) setLocgSaved(data.locg);
         if (data.clz?.items?.length)    setClzSaved(data.clz);
         if (data.manual?.items?.length) setPlainSaved(data.manual);
         setDigestEnabled(data.digest_enabled ?? false);
@@ -278,9 +256,9 @@ export default function Account() {
       const r = await parseLOCGFile(file);
       if (!r.count) { setLocgUploading("No wish list items found. Make sure this is your LOCG export."); return; }
       const updatedAt = new Date().toISOString();
-      setLocgSaved({ items: r.issues, collectionItems: r.collectionIssues, updatedAt, username: savedUsername });
+      setLocgSaved({ items: r.issues, collectionItems: r.collectionIssues, updatedAt });
       setLocgUploading("");
-      saveList("locg", r.issues, { username: savedUsername, collectionItems: r.collectionIssues });
+      saveList("locg", r.issues, { collectionItems: r.collectionIssues });
     } catch { setLocgUploading("Could not read that file."); }
   }
 
@@ -307,16 +285,6 @@ export default function Account() {
       setPlainUploading("");
       saveList("manual", r.issues);
     } catch { setPlainUploading("Could not read that file."); }
-  }
-
-  async function handleLOCGImport() {
-    setLocgUploading("Starting sync…");
-    try {
-      const res = await fetch("/api/locg-trigger", { method: "POST" });
-      const data = await res.json();
-      if (!res.ok) { setLocgUploading(data.error || "Could not start sync."); return; }
-      setLocgUploading(data.message || "Sync started — refresh this page in about a minute.");
-    } catch { setLocgUploading("Could not connect. Try uploading your export file instead."); }
   }
 
   const locgDrop = useDropZone(handleLOCGFile);
@@ -491,48 +459,19 @@ export default function Account() {
         {/* ── League of Comic Geeks ── */}
         <div className="panel">
           <div className="caption">League of Comic Geeks</div>
-
           {locgSaved?.items?.length ? (
-            <SavedSummary saved={locgSaved} label="wish list" drop={locgDrop} accept=".xlsx,.xls,.csv" uploadingMsg={locgUploading} onImport={savedUsername ? handleLOCGImport : undefined} />
-          ) : !savedUsername && !editingUsername ? (
-            <>
-              <p className="placeholder-msg" style={{marginBottom:"0.85rem"}}>Enter your LOCG username to quickly import your wish list into the bundle search.</p>
-              <button className="btn-save" onClick={() => setEditingUsername(true)}>Connect Account</button>
-            </>
-          ) : editingUsername ? (
-            <div className="input-row">
-              <input
-                type="text"
-                placeholder="LOCG username"
-                value={locgUsername}
-                onChange={e => setLocgUsername(e.target.value)}
-                onKeyDown={e => { if (e.key === "Enter" && locgUsername.trim()) { setSavedUsername(locgUsername.trim()); setEditingUsername(false); }}}
-                autoFocus
-              />
-              <button className="btn-save" onClick={() => { if (locgUsername.trim()) { setSavedUsername(locgUsername.trim()); setEditingUsername(false); }}}>Save</button>
-              {savedUsername && <button className="btn-edit" onClick={() => setEditingUsername(false)}>Cancel</button>}
-            </div>
+            <SavedSummary saved={locgSaved} label="wish list" drop={locgDrop} accept=".xlsx,.xls,.csv" uploadingMsg={locgUploading} />
           ) : (
             <>
-              <div style={{display:"flex",alignItems:"center",gap:"0.75rem",marginBottom:"1rem",flexWrap:"wrap"}}>
-                <span className="username-display">@{savedUsername}</span>
-                <button className="btn-edit" onClick={() => { setLocgUsername(savedUsername); setEditingUsername(true); }}>Edit</button>
-              </div>
-              <button className="btn-save" style={{marginBottom:"0.5rem"}} onClick={handleLOCGImport}>
-                Import from LOCG →
-              </button>
-              {locgUploading && <div className="upload-msg" style={{marginBottom:"0.75rem"}}>{locgUploading}</div>}
-              <div style={{margin:"0.85rem 0 0.5rem",fontSize:"0.82rem",color:"#888"}}>— or export and upload manually —</div>
               <ul className="steps">
                 <li>
                   <span className="step-num">1</span>
                   <span>
-                    <a className="btn-external" href={`https://leagueofcomicgeeks.com/profile/${savedUsername}/import-comics`} target="_blank" rel="noopener noreferrer">
-                      Open my LOCG Export Page ↗
-                    </a>
+                    <a className="btn-external" href="https://leagueofcomicgeeks.com" target="_blank" rel="noopener noreferrer">Log in to LOCG ↗</a>
+                    {" "}and go to your profile page.
                   </span>
                 </li>
-                <li><span className="step-num">2</span><span>Click <strong>Export</strong> and download the file.</span></li>
+                <li><span className="step-num">2</span><span>Click <strong>Settings</strong> → <strong>Export Comics</strong> and download the file.</span></li>
                 <li><span className="step-num">3</span><span>Drop the file below.</span></li>
               </ul>
               <div
@@ -543,6 +482,7 @@ export default function Account() {
                 <div className="drop-zone-label">Drop your LOCG export here, or click to browse</div>
                 <input ref={locgDrop.ref} type="file" accept=".xlsx,.xls,.csv" style={{display:"none"}} onChange={locgDrop.onFileSelected} />
               </div>
+              {locgUploading && <div className="upload-msg">{locgUploading}</div>}
             </>
           )}
         </div>
