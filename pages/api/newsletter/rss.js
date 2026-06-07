@@ -1,6 +1,11 @@
 const FEEDS = [
-  { name: "CBR", url: "https://www.cbr.com/feed/" },
-  { name: "Bleeding Cool", url: "https://bleedingcool.com/feed/" },
+  { name: "CBR",           url: "https://www.cbr.com/feed/category/comics/" },
+  { name: "Bleeding Cool", url: "https://bleedingcool.com/comics/feed/" },
+  { name: "AIPT",          url: "https://aiptcomics.com/feed/" },
+  { name: "THR",           url: "https://www.hollywoodreporter.com/c/heat-vision/feed/" },
+  { name: "ICv2",          url: "https://icv2.com/articles/comics.rss" },
+  { name: "Comics Beat",   url: "https://www.comicsbeat.com/feed/" },
+  // Comic Frontier (comicfrontier.com) omitted — Beehiiv newsletter, no public RSS feed.
 ];
 
 function parseRSS(xml, sourceName) {
@@ -49,16 +54,16 @@ export default async function handler(req, res) {
       })
     );
 
-    // Interleave sources rather than dump one then the other
-    const [a, b] = results;
+    // Round-robin interleave: one item from each feed in turn
     const interleaved = [];
-    const max = Math.max(a.length, b.length);
+    const max = Math.max(...results.map((r) => r.length));
     for (let i = 0; i < max; i++) {
-      if (a[i]) interleaved.push(a[i]);
-      if (b[i]) interleaved.push(b[i]);
+      for (const feed of results) {
+        if (feed[i]) interleaved.push(feed[i]);
+      }
     }
 
-    res.status(200).json({ items: interleaved.slice(0, 40) });
+    res.status(200).json({ items: interleaved.slice(0, 60) });
   } catch (err) {
     console.error("RSS error:", err);
     res.status(500).json({ error: err.message });
