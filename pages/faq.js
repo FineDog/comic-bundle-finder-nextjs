@@ -30,6 +30,7 @@ export default function Faq({ frontmatter, html }) {
         .nav-link{font-size:0.78rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#003399;text-decoration:none}
         .nav-link:hover{text-decoration:underline}
         .nav-sep{color:#aaa;font-size:0.78rem}
+        .faq h1{font-family:'Bangers',cursive;font-size:2.2rem;letter-spacing:3px;color:#1a1a1a;margin:2.5rem 0 0.6rem;padding-top:2rem;border-top:3px solid #1a1a1a}
         .faq h2{font-family:'Bangers',cursive;font-size:1.5rem;letter-spacing:2px;color:#cc1f00;margin:1.75rem 0 0.6rem;padding-top:1.5rem;border-top:2px dashed #ddd}
         .faq h2:first-child{margin-top:0;padding-top:0;border-top:none}
         .faq p{font-size:1rem;font-weight:400;line-height:1.85;color:#333;margin-bottom:0.85rem}
