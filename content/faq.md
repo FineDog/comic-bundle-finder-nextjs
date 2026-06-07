@@ -38,7 +38,7 @@ A few possible reasons:
 
 Yes, links to eBay listings use the eBay Partner Network. If you buy through a link, we may earn a small commission at no extra cost to you. This helps keep the site running.
 
-### Premium Features ###
+# Premium Features
 
 ## Do I need an account to search?
 Nope. Basic searching is free and works without signing in. An account is only needed for Premium features.
