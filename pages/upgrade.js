@@ -237,17 +237,18 @@ export default function Upgrade() {
           <div className="faq-q">Do I need an account to search?</div>
           <div className="faq-a">Nope. Basic searching is free and works without signing in. An account is only needed for Premium features.</div>
 
+          <div className="faq-q">What files can I upload?</div>
+          <div className="faq-a">If you use League of Comic Geeks or CLZ, you can export your collection and upload the file here. Both sites keep your collection and your want list in one file, which we can use to populate your searches or to analyze for collection gaps.</div>
+          <div className="faq-a">You can also upload a plain .xlsx, .csv, or .txt file with one issue per line. It works best if you format the issue as &ldquo;[Series Name] [Issue Number] [Publication Year]&rdquo;.</div>
+
+          <div className="faq-q">What does the Gap Analyzer do?</div>
+          <div className="faq-a">It will run through your collection list and check for gaps of a certain size (default is 5). For example, if you have issues #3, #5, and #9&ndash;11 of a 20-issue series, it will detect that you are missing issues #1&ndash;2, #4, and #6&ndash;8. It will detect leading gaps (issues #1&ndash;2) because every series starts with #1 (well, <em>almost</em> every series), but it won&rsquo;t detect issues #12&ndash;20, because it&rsquo;s only trying to fill gaps and a series could be infinitely long.</div>
+
           <div className="faq-q">Can I cancel anytime?</div>
           <div className="faq-a">Yes. Cancel from your account page and you keep Premium access until the end of your billing period. No questions asked.</div>
 
           <div className="faq-q">What&rsquo;s the difference between monthly and annual?</div>
           <div className="faq-a">Same features either way — annual is just $36 upfront instead of $5/month, which works out to $3/month. You save $24 over the year.</div>
-
-          <div className="faq-q">Why is the Gap Analyzer premium?</div>
-          <div className="faq-a">It parses your entire collection file and runs eBay searches on every gap — significantly heavier on resources than a manual search.</div>
-
-          <div className="faq-q">What file formats does upload support?</div>
-          <div className="faq-a">League of Comic Geeks exports (.xlsx), CLZ exports (.csv), and plain text lists (.txt).</div>
         </div>
 
         <SiteFooter />
