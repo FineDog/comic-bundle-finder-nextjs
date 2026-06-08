@@ -63,7 +63,12 @@ async function metronFetch(url) {
     const res = await fetch(url, { headers: HEADERS });
 
     if (res.status === 429) {
-      const retryAfter = parseInt(res.headers.get("retry-after") || "60", 10);
+      // Retry-After can be integer seconds OR a date string (both valid per HTTP spec).
+      // parseInt of a date string ("Fri, 06 Jun 2026 19:20:00 GMT") returns NaN, and
+      // sleep(NaN) fires immediately in JS — which would cause unthrottled hammering.
+      // Enforce a 60 s minimum to be safe regardless of header format.
+      const raw = parseInt(res.headers.get("retry-after") || "0", 10);
+      const retryAfter = (Number.isFinite(raw) && raw > 0) ? raw : 60;
       console.log(`\n  429 rate limited. Waiting ${retryAfter}s (attempt ${attempt}/3)...`);
       await sleep(retryAfter * 1000 + 1000);
       continue;
@@ -73,6 +78,13 @@ async function metronFetch(url) {
       console.log(`\n  ${res.status} server error. Waiting 10s (attempt ${attempt}/3)...`);
       await sleep(10000);
       continue;
+    }
+
+    // Stop immediately on auth failure — retrying a 401/403 will never succeed
+    // and wastes quota (or hammers a disabled account).
+    if (res.status === 401 || res.status === 403) {
+      console.error(`\n  ${res.status} auth error — check credentials. Aborting.`);
+      process.exit(1);
     }
 
     // Check remaining quota proactively — pause if critically low
@@ -86,7 +98,11 @@ async function metronFetch(url) {
     await sleep(REQUEST_DELAY_MS);
     return res;
   }
-  return null; // exhausted retries
+  // All retries exhausted — pause before returning so the outer loop doesn't
+  // immediately fire the next request with no delay.
+  console.log(`\n  All retries exhausted for ${url}. Pausing ${REQUEST_DELAY_MS}ms before continuing.`);
+  await sleep(REQUEST_DELAY_MS);
+  return null;
 }
 
 // ── Load existing data ────────────────────────────────────────────────────────
