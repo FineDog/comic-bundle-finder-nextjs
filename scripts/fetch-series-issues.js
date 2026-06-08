@@ -1,3 +1,10 @@
+// ⚠️  ONE-OFF LOCAL SCRIPT — DO NOT RUN FROM VERCEL OR ANY CI/CD AUTOMATION ⚠️
+//
+// This script makes live Metron API calls. It may only be run manually from a
+// local machine with a stable IP. Running it from Vercel (rotating IPs) or any
+// automated job other than the designated GitHub Actions workflows violates
+// Metron's ToS and can result in a permanent account ban.
+//
 // Generic script to fetch all issues for a Metron series and write them to data/<output>.
 //
 // Usage:
@@ -36,7 +43,7 @@ async function fetchPage(seriesId, page) {
   const auth = Buffer.from(`${METRON_USERNAME}:${METRON_PASSWORD}`).toString("base64");
   const res = await fetch(
     `https://metron.cloud/api/issue/?series_id=${seriesId}&page=${page}`,
-    { headers: { Authorization: `Basic ${auth}` } }
+    { headers: { Authorization: `Basic ${auth}`, "User-Agent": "ComicBundleFinder/1.0" } }
   );
   if (!res.ok) throw new Error(`Metron API ${res.status}: ${await res.text()}`);
   return res.json();

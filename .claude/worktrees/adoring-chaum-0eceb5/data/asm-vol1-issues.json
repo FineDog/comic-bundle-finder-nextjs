@@ -1,0 +1,2654 @@
+[
+  {
+    "number": "-1",
+    "issueName": "The Amazing Spider-Man #-1 (1997)",
+    "coverDate": "1997-07-01",
+    "image": "https://static.metron.cloud/media/issue/2025/02/10/Amazing_Spider-man_Flashback_1-00fc.jpg"
+  },
+  {
+    "number": "1",
+    "issueName": "The Amazing Spider-Man #1 (1963)",
+    "coverDate": "1963-03-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/14/asm-v1-1.jpg"
+  },
+  {
+    "number": "2",
+    "issueName": "The Amazing Spider-Man #2 (1963)",
+    "coverDate": "1963-05-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/14/asm-v1-2.jpg"
+  },
+  {
+    "number": "3",
+    "issueName": "The Amazing Spider-Man #3 (1963)",
+    "coverDate": "1963-07-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/14/asm-v1-3.jpg"
+  },
+  {
+    "number": "4",
+    "issueName": "The Amazing Spider-Man #4 (1963)",
+    "coverDate": "1963-09-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/14/asm-v1-4.jpg"
+  },
+  {
+    "number": "5",
+    "issueName": "The Amazing Spider-Man #5 (1963)",
+    "coverDate": "1963-10-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/14/asm-v1-5.jpg"
+  },
+  {
+    "number": "6",
+    "issueName": "The Amazing Spider-Man #6 (1963)",
+    "coverDate": "1963-11-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/14/asm-v1-6.jpg"
+  },
+  {
+    "number": "7",
+    "issueName": "The Amazing Spider-Man #7 (1963)",
+    "coverDate": "1963-12-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/14/asm-v1-7.jpg"
+  },
+  {
+    "number": "8",
+    "issueName": "The Amazing Spider-Man #8 (1964)",
+    "coverDate": "1964-01-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/14/asm-v1-8.jpg"
+  },
+  {
+    "number": "9",
+    "issueName": "The Amazing Spider-Man #9 (1964)",
+    "coverDate": "1964-02-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/14/asm-v1-9.jpg"
+  },
+  {
+    "number": "10",
+    "issueName": "The Amazing Spider-Man #10 (1964)",
+    "coverDate": "1964-03-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/14/asm-v1-10.jpg"
+  },
+  {
+    "number": "11",
+    "issueName": "The Amazing Spider-Man #11 (1964)",
+    "coverDate": "1964-04-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/14/asm-v1-11.jpg"
+  },
+  {
+    "number": "12",
+    "issueName": "The Amazing Spider-Man #12 (1964)",
+    "coverDate": "1964-05-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/14/asm-v1-12.jpg"
+  },
+  {
+    "number": "13",
+    "issueName": "The Amazing Spider-Man #13 (1964)",
+    "coverDate": "1964-06-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/14/asm-v1-13.jpg"
+  },
+  {
+    "number": "14",
+    "issueName": "The Amazing Spider-Man #14 (1964)",
+    "coverDate": "1964-07-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/14/asm-v1-14.jpg"
+  },
+  {
+    "number": "15",
+    "issueName": "The Amazing Spider-Man #15 (1964)",
+    "coverDate": "1964-08-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/14/asm-v1-15.jpg"
+  },
+  {
+    "number": "16",
+    "issueName": "The Amazing Spider-Man #16 (1964)",
+    "coverDate": "1964-09-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/14/asm-v1-16.jpg"
+  },
+  {
+    "number": "17",
+    "issueName": "The Amazing Spider-Man #17 (1964)",
+    "coverDate": "1964-10-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/14/asm-v1-17.jpg"
+  },
+  {
+    "number": "18",
+    "issueName": "The Amazing Spider-Man #18 (1964)",
+    "coverDate": "1964-11-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/14/asm-v1-18.jpg"
+  },
+  {
+    "number": "19",
+    "issueName": "The Amazing Spider-Man #19 (1964)",
+    "coverDate": "1964-12-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/14/asm-v1-19.jpg"
+  },
+  {
+    "number": "20",
+    "issueName": "The Amazing Spider-Man #20 (1965)",
+    "coverDate": "1965-01-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/14/asm-v1-20.jpg"
+  },
+  {
+    "number": "21",
+    "issueName": "The Amazing Spider-Man #21 (1965)",
+    "coverDate": "1965-02-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/14/asm-v1-21.jpg"
+  },
+  {
+    "number": "22",
+    "issueName": "The Amazing Spider-Man #22 (1965)",
+    "coverDate": "1965-03-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/14/asm-v1-22.jpg"
+  },
+  {
+    "number": "23",
+    "issueName": "The Amazing Spider-Man #23 (1965)",
+    "coverDate": "1965-04-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/14/asm-v1-23.jpg"
+  },
+  {
+    "number": "24",
+    "issueName": "The Amazing Spider-Man #24 (1965)",
+    "coverDate": "1965-05-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/14/asm-v1-24.jpg"
+  },
+  {
+    "number": "25",
+    "issueName": "The Amazing Spider-Man #25 (1965)",
+    "coverDate": "1965-06-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/14/asm-v1-25.jpg"
+  },
+  {
+    "number": "26",
+    "issueName": "The Amazing Spider-Man #26 (1965)",
+    "coverDate": "1965-07-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/14/asm-v1-26.jpg"
+  },
+  {
+    "number": "27",
+    "issueName": "The Amazing Spider-Man #27 (1965)",
+    "coverDate": "1965-08-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/14/asm-v1-27.jpg"
+  },
+  {
+    "number": "28",
+    "issueName": "The Amazing Spider-Man #28 (1965)",
+    "coverDate": "1965-09-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/14/asm-v1-28.jpg"
+  },
+  {
+    "number": "29",
+    "issueName": "The Amazing Spider-Man #29 (1965)",
+    "coverDate": "1965-10-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/14/asm-v1-29.jpg"
+  },
+  {
+    "number": "30",
+    "issueName": "The Amazing Spider-Man #30 (1965)",
+    "coverDate": "1965-11-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/14/asm-v1-30.jpg"
+  },
+  {
+    "number": "31",
+    "issueName": "The Amazing Spider-Man #31 (1965)",
+    "coverDate": "1965-12-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/14/asm-v1-31.jpg"
+  },
+  {
+    "number": "32",
+    "issueName": "The Amazing Spider-Man #32 (1966)",
+    "coverDate": "1966-01-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/14/asm-v1-32.jpg"
+  },
+  {
+    "number": "33",
+    "issueName": "The Amazing Spider-Man #33 (1966)",
+    "coverDate": "1966-02-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/14/asm-v1-33.jpg"
+  },
+  {
+    "number": "34",
+    "issueName": "The Amazing Spider-Man #34 (1966)",
+    "coverDate": "1966-03-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/14/asm-v1-34.jpg"
+  },
+  {
+    "number": "35",
+    "issueName": "The Amazing Spider-Man #35 (1966)",
+    "coverDate": "1966-04-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/14/asm-v1-35.jpg"
+  },
+  {
+    "number": "36",
+    "issueName": "The Amazing Spider-Man #36 (1966)",
+    "coverDate": "1966-05-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/14/asm-v1-36.jpg"
+  },
+  {
+    "number": "37",
+    "issueName": "The Amazing Spider-Man #37 (1966)",
+    "coverDate": "1966-06-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/14/asm-v1-37.jpg"
+  },
+  {
+    "number": "38",
+    "issueName": "The Amazing Spider-Man #38 (1966)",
+    "coverDate": "1966-07-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/14/asm-v1-38.jpg"
+  },
+  {
+    "number": "39",
+    "issueName": "The Amazing Spider-Man #39 (1966)",
+    "coverDate": "1966-08-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/15/asm-v1-39.jpg"
+  },
+  {
+    "number": "40",
+    "issueName": "The Amazing Spider-Man #40 (1966)",
+    "coverDate": "1966-09-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/15/asm-v1-40.jpg"
+  },
+  {
+    "number": "41",
+    "issueName": "The Amazing Spider-Man #41 (1966)",
+    "coverDate": "1966-10-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/15/asm-v1-41.jpg"
+  },
+  {
+    "number": "42",
+    "issueName": "The Amazing Spider-Man #42 (1966)",
+    "coverDate": "1966-11-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/15/asm-v1-42.jpg"
+  },
+  {
+    "number": "43",
+    "issueName": "The Amazing Spider-Man #43 (1966)",
+    "coverDate": "1966-12-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/15/asm-v1-43.jpg"
+  },
+  {
+    "number": "44",
+    "issueName": "The Amazing Spider-Man #44 (1967)",
+    "coverDate": "1967-01-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/15/asm-v1-44.jpg"
+  },
+  {
+    "number": "45",
+    "issueName": "The Amazing Spider-Man #45 (1967)",
+    "coverDate": "1967-02-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/15/asm-v1-45.jpg"
+  },
+  {
+    "number": "46",
+    "issueName": "The Amazing Spider-Man #46 (1967)",
+    "coverDate": "1967-03-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/15/asm-v1-46.jpg"
+  },
+  {
+    "number": "47",
+    "issueName": "The Amazing Spider-Man #47 (1967)",
+    "coverDate": "1967-04-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/15/asm-v1-47.jpg"
+  },
+  {
+    "number": "48",
+    "issueName": "The Amazing Spider-Man #48 (1967)",
+    "coverDate": "1967-05-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/15/asm-v1-48.jpg"
+  },
+  {
+    "number": "49",
+    "issueName": "The Amazing Spider-Man #49 (1967)",
+    "coverDate": "1967-06-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/15/asm-v1-49.jpg"
+  },
+  {
+    "number": "50",
+    "issueName": "The Amazing Spider-Man #50 (1967)",
+    "coverDate": "1967-07-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/15/asm-v1-50.jpg"
+  },
+  {
+    "number": "51",
+    "issueName": "The Amazing Spider-Man #51 (1967)",
+    "coverDate": "1967-08-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/15/asm-v1-51.jpg"
+  },
+  {
+    "number": "52",
+    "issueName": "The Amazing Spider-Man #52 (1967)",
+    "coverDate": "1967-09-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/15/asm-v1-52.jpg"
+  },
+  {
+    "number": "53",
+    "issueName": "The Amazing Spider-Man #53 (1967)",
+    "coverDate": "1967-10-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/15/asm-v1-53.jpg"
+  },
+  {
+    "number": "54",
+    "issueName": "The Amazing Spider-Man #54 (1967)",
+    "coverDate": "1967-11-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/15/asm-v1-54.jpg"
+  },
+  {
+    "number": "55",
+    "issueName": "The Amazing Spider-Man #55 (1967)",
+    "coverDate": "1967-12-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/15/asm-v1-55.jpg"
+  },
+  {
+    "number": "56",
+    "issueName": "The Amazing Spider-Man #56 (1968)",
+    "coverDate": "1968-01-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/15/asm-v1-56.jpg"
+  },
+  {
+    "number": "57",
+    "issueName": "The Amazing Spider-Man #57 (1968)",
+    "coverDate": "1968-02-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/15/asm-v1-57.jpg"
+  },
+  {
+    "number": "58",
+    "issueName": "The Amazing Spider-Man #58 (1968)",
+    "coverDate": "1968-03-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/15/asm-v1-58.jpg"
+  },
+  {
+    "number": "59",
+    "issueName": "The Amazing Spider-Man #59 (1968)",
+    "coverDate": "1968-04-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/15/asm-v1-59.jpg"
+  },
+  {
+    "number": "60",
+    "issueName": "The Amazing Spider-Man #60 (1968)",
+    "coverDate": "1968-05-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/15/asm-v1-60.jpg"
+  },
+  {
+    "number": "61",
+    "issueName": "The Amazing Spider-Man #61 (1968)",
+    "coverDate": "1968-06-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/15/asm-v1-61.jpg"
+  },
+  {
+    "number": "62",
+    "issueName": "The Amazing Spider-Man #62 (1968)",
+    "coverDate": "1968-07-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/15/asm-v1-62.jpg"
+  },
+  {
+    "number": "63",
+    "issueName": "The Amazing Spider-Man #63 (1968)",
+    "coverDate": "1968-08-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/15/asm-v1-63.jpg"
+  },
+  {
+    "number": "64",
+    "issueName": "The Amazing Spider-Man #64 (1968)",
+    "coverDate": "1968-09-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/15/asm-v1-64.jpg"
+  },
+  {
+    "number": "65",
+    "issueName": "The Amazing Spider-Man #65 (1968)",
+    "coverDate": "1968-10-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/15/asm-v1-65.jpg"
+  },
+  {
+    "number": "66",
+    "issueName": "The Amazing Spider-Man #66 (1968)",
+    "coverDate": "1968-11-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/15/asm-v1-66.jpg"
+  },
+  {
+    "number": "67",
+    "issueName": "The Amazing Spider-Man #67 (1968)",
+    "coverDate": "1968-12-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/15/asm-v1-67.jpg"
+  },
+  {
+    "number": "68",
+    "issueName": "The Amazing Spider-Man #68 (1969)",
+    "coverDate": "1969-01-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/15/asm-v1-68.jpg"
+  },
+  {
+    "number": "69",
+    "issueName": "The Amazing Spider-Man #69 (1969)",
+    "coverDate": "1969-02-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/16/asm-v1-69.jpg"
+  },
+  {
+    "number": "70",
+    "issueName": "The Amazing Spider-Man #70 (1969)",
+    "coverDate": "1969-03-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/16/asm-v1-70.jpg"
+  },
+  {
+    "number": "71",
+    "issueName": "The Amazing Spider-Man #71 (1969)",
+    "coverDate": "1969-04-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/16/asm-v1-71.jpg"
+  },
+  {
+    "number": "72",
+    "issueName": "The Amazing Spider-Man #72 (1969)",
+    "coverDate": "1969-05-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/16/asm-v1-72.jpg"
+  },
+  {
+    "number": "73",
+    "issueName": "The Amazing Spider-Man #73 (1969)",
+    "coverDate": "1969-06-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/16/asm-v1-73.jpg"
+  },
+  {
+    "number": "74",
+    "issueName": "The Amazing Spider-Man #74 (1969)",
+    "coverDate": "1969-07-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/16/asm-v1-74.jpg"
+  },
+  {
+    "number": "75",
+    "issueName": "The Amazing Spider-Man #75 (1969)",
+    "coverDate": "1969-08-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/16/asm-v1-75.jpg"
+  },
+  {
+    "number": "76",
+    "issueName": "The Amazing Spider-Man #76 (1969)",
+    "coverDate": "1969-09-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/16/asm-v1-76.jpg"
+  },
+  {
+    "number": "77",
+    "issueName": "The Amazing Spider-Man #77 (1969)",
+    "coverDate": "1969-10-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/16/asm-v1-77.jpg"
+  },
+  {
+    "number": "78",
+    "issueName": "The Amazing Spider-Man #78 (1969)",
+    "coverDate": "1969-11-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/16/asm-v1-78.jpg"
+  },
+  {
+    "number": "79",
+    "issueName": "The Amazing Spider-Man #79 (1969)",
+    "coverDate": "1969-12-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/16/asm-v1-79.jpg"
+  },
+  {
+    "number": "80",
+    "issueName": "The Amazing Spider-Man #80 (1970)",
+    "coverDate": "1970-01-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/16/asm-v1-80.jpg"
+  },
+  {
+    "number": "81",
+    "issueName": "The Amazing Spider-Man #81 (1970)",
+    "coverDate": "1970-02-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/16/asm-v1-81.jpg"
+  },
+  {
+    "number": "82",
+    "issueName": "The Amazing Spider-Man #82 (1970)",
+    "coverDate": "1970-03-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/16/asm-v1-82.jpg"
+  },
+  {
+    "number": "83",
+    "issueName": "The Amazing Spider-Man #83 (1970)",
+    "coverDate": "1970-04-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/16/asm-v1-83.jpg"
+  },
+  {
+    "number": "84",
+    "issueName": "The Amazing Spider-Man #84 (1970)",
+    "coverDate": "1970-05-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/16/asm-v1-84.jpg"
+  },
+  {
+    "number": "85",
+    "issueName": "The Amazing Spider-Man #85 (1970)",
+    "coverDate": "1970-06-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/16/asm-v1-85.jpg"
+  },
+  {
+    "number": "86",
+    "issueName": "The Amazing Spider-Man #86 (1970)",
+    "coverDate": "1970-07-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/16/asm-v1-86.jpg"
+  },
+  {
+    "number": "87",
+    "issueName": "The Amazing Spider-Man #87 (1970)",
+    "coverDate": "1970-08-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/16/asm-v1-87.jpg"
+  },
+  {
+    "number": "88",
+    "issueName": "The Amazing Spider-Man #88 (1970)",
+    "coverDate": "1970-09-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/16/asm-v1-88.jpg"
+  },
+  {
+    "number": "89",
+    "issueName": "The Amazing Spider-Man #89 (1970)",
+    "coverDate": "1970-10-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/16/asm-v1-89.jpg"
+  },
+  {
+    "number": "90",
+    "issueName": "The Amazing Spider-Man #90 (1970)",
+    "coverDate": "1970-11-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/16/asm-v1-90.jpg"
+  },
+  {
+    "number": "91",
+    "issueName": "The Amazing Spider-Man #91 (1970)",
+    "coverDate": "1970-12-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/16/asm-v1-91.jpg"
+  },
+  {
+    "number": "92",
+    "issueName": "The Amazing Spider-Man #92 (1971)",
+    "coverDate": "1971-01-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/16/asm-v1-92.jpg"
+  },
+  {
+    "number": "93",
+    "issueName": "The Amazing Spider-Man #93 (1971)",
+    "coverDate": "1971-02-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/16/asm-v1-93.jpg"
+  },
+  {
+    "number": "94",
+    "issueName": "The Amazing Spider-Man #94 (1971)",
+    "coverDate": "1971-03-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/16/asm-v1-94.jpg"
+  },
+  {
+    "number": "95",
+    "issueName": "The Amazing Spider-Man #95 (1971)",
+    "coverDate": "1971-04-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/16/asm-v1-95.jpg"
+  },
+  {
+    "number": "96",
+    "issueName": "The Amazing Spider-Man #96 (1971)",
+    "coverDate": "1971-05-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/16/asm-v1-96.jpg"
+  },
+  {
+    "number": "97",
+    "issueName": "The Amazing Spider-Man #97 (1971)",
+    "coverDate": "1971-06-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/16/asm-v1-97.jpg"
+  },
+  {
+    "number": "98",
+    "issueName": "The Amazing Spider-Man #98 (1971)",
+    "coverDate": "1971-07-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/16/asm-v1-98.jpg"
+  },
+  {
+    "number": "99",
+    "issueName": "The Amazing Spider-Man #99 (1971)",
+    "coverDate": "1971-08-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/16/asm-v1-99.jpg"
+  },
+  {
+    "number": "100",
+    "issueName": "The Amazing Spider-Man #100 (1971)",
+    "coverDate": "1971-09-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/16/asm-v1-100.jpg"
+  },
+  {
+    "number": "101",
+    "issueName": "The Amazing Spider-Man #101 (1971)",
+    "coverDate": "1971-10-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/26/asm-101.jpg"
+  },
+  {
+    "number": "102",
+    "issueName": "The Amazing Spider-Man #102 (1971)",
+    "coverDate": "1971-11-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/26/asm-102.jpg"
+  },
+  {
+    "number": "103",
+    "issueName": "The Amazing Spider-Man #103 (1971)",
+    "coverDate": "1971-12-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/26/asm-103.jpg"
+  },
+  {
+    "number": "104",
+    "issueName": "The Amazing Spider-Man #104 (1972)",
+    "coverDate": "1972-01-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/26/asm-104.jpg"
+  },
+  {
+    "number": "105",
+    "issueName": "The Amazing Spider-Man #105 (1972)",
+    "coverDate": "1972-02-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/26/asm-105.jpg"
+  },
+  {
+    "number": "106",
+    "issueName": "The Amazing Spider-Man #106 (1972)",
+    "coverDate": "1972-03-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/26/asm-106.jpg"
+  },
+  {
+    "number": "107",
+    "issueName": "The Amazing Spider-Man #107 (1972)",
+    "coverDate": "1972-04-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/26/asm-107.jpg"
+  },
+  {
+    "number": "108",
+    "issueName": "The Amazing Spider-Man #108 (1972)",
+    "coverDate": "1972-05-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/26/asm-108.jpg"
+  },
+  {
+    "number": "109",
+    "issueName": "The Amazing Spider-Man #109 (1972)",
+    "coverDate": "1972-06-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/26/asm-109.jpg"
+  },
+  {
+    "number": "110",
+    "issueName": "The Amazing Spider-Man #110 (1972)",
+    "coverDate": "1972-07-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/26/asm-110.jpg"
+  },
+  {
+    "number": "111",
+    "issueName": "The Amazing Spider-Man #111 (1972)",
+    "coverDate": "1972-08-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/26/asm-111.jpg"
+  },
+  {
+    "number": "112",
+    "issueName": "The Amazing Spider-Man #112 (1972)",
+    "coverDate": "1972-09-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/26/asm-112.jpg"
+  },
+  {
+    "number": "113",
+    "issueName": "The Amazing Spider-Man #113 (1972)",
+    "coverDate": "1972-10-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/26/asm-113.jpg"
+  },
+  {
+    "number": "114",
+    "issueName": "The Amazing Spider-Man #114 (1972)",
+    "coverDate": "1972-11-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/26/asm-114.jpg"
+  },
+  {
+    "number": "115",
+    "issueName": "The Amazing Spider-Man #115 (1972)",
+    "coverDate": "1972-12-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/26/asm-115.jpg"
+  },
+  {
+    "number": "116",
+    "issueName": "The Amazing Spider-Man #116 (1973)",
+    "coverDate": "1973-01-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/26/asm-116.jpg"
+  },
+  {
+    "number": "117",
+    "issueName": "The Amazing Spider-Man #117 (1973)",
+    "coverDate": "1973-02-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/26/asm-117.jpg"
+  },
+  {
+    "number": "118",
+    "issueName": "The Amazing Spider-Man #118 (1973)",
+    "coverDate": "1973-03-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/26/asm-118.jpg"
+  },
+  {
+    "number": "119",
+    "issueName": "The Amazing Spider-Man #119 (1973)",
+    "coverDate": "1973-04-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/26/asm-119.jpg"
+  },
+  {
+    "number": "120",
+    "issueName": "The Amazing Spider-Man #120 (1973)",
+    "coverDate": "1973-05-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/26/asm-120.jpg"
+  },
+  {
+    "number": "121",
+    "issueName": "The Amazing Spider-Man #121 (1973)",
+    "coverDate": "1973-06-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/26/asm-121.jpg"
+  },
+  {
+    "number": "122",
+    "issueName": "The Amazing Spider-Man #122 (1973)",
+    "coverDate": "1973-07-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/26/asm-122.jpg"
+  },
+  {
+    "number": "123",
+    "issueName": "The Amazing Spider-Man #123 (1973)",
+    "coverDate": "1973-08-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/26/asm-123.jpg"
+  },
+  {
+    "number": "124",
+    "issueName": "The Amazing Spider-Man #124 (1973)",
+    "coverDate": "1973-09-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/26/asm-124.jpg"
+  },
+  {
+    "number": "125",
+    "issueName": "The Amazing Spider-Man #125 (1973)",
+    "coverDate": "1973-10-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/26/asm-125.jpg"
+  },
+  {
+    "number": "126",
+    "issueName": "The Amazing Spider-Man #126 (1973)",
+    "coverDate": "1973-11-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/26/asm-126.jpg"
+  },
+  {
+    "number": "127",
+    "issueName": "The Amazing Spider-Man #127 (1973)",
+    "coverDate": "1973-12-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/26/asm-127.jpg"
+  },
+  {
+    "number": "128",
+    "issueName": "The Amazing Spider-Man #128 (1974)",
+    "coverDate": "1974-01-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/26/asm-128.jpg"
+  },
+  {
+    "number": "129",
+    "issueName": "The Amazing Spider-Man #129 (1974)",
+    "coverDate": "1974-02-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/26/asm-129.jpg"
+  },
+  {
+    "number": "130",
+    "issueName": "The Amazing Spider-Man #130 (1974)",
+    "coverDate": "1974-03-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/26/asm-130.jpg"
+  },
+  {
+    "number": "131",
+    "issueName": "The Amazing Spider-Man #131 (1974)",
+    "coverDate": "1974-04-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/26/asm-131.jpg"
+  },
+  {
+    "number": "132",
+    "issueName": "The Amazing Spider-Man #132 (1974)",
+    "coverDate": "1974-05-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/26/asm-132.jpg"
+  },
+  {
+    "number": "133",
+    "issueName": "The Amazing Spider-Man #133 (1974)",
+    "coverDate": "1974-06-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/26/asm-133.jpg"
+  },
+  {
+    "number": "134",
+    "issueName": "The Amazing Spider-Man #134 (1974)",
+    "coverDate": "1974-07-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/26/asm-134.jpg"
+  },
+  {
+    "number": "135",
+    "issueName": "The Amazing Spider-Man #135 (1974)",
+    "coverDate": "1974-08-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/26/asm-135.jpg"
+  },
+  {
+    "number": "136",
+    "issueName": "The Amazing Spider-Man #136 (1974)",
+    "coverDate": "1974-09-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/26/asm-136.jpg"
+  },
+  {
+    "number": "137",
+    "issueName": "The Amazing Spider-Man #137 (1974)",
+    "coverDate": "1974-10-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/26/asm-137.jpg"
+  },
+  {
+    "number": "138",
+    "issueName": "The Amazing Spider-Man #138 (1974)",
+    "coverDate": "1974-11-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/26/asm-138.jpg"
+  },
+  {
+    "number": "139",
+    "issueName": "The Amazing Spider-Man #139 (1974)",
+    "coverDate": "1974-12-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/26/asm-139.jpg"
+  },
+  {
+    "number": "140",
+    "issueName": "The Amazing Spider-Man #140 (1975)",
+    "coverDate": "1975-01-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/26/asm-140.jpg"
+  },
+  {
+    "number": "141",
+    "issueName": "The Amazing Spider-Man #141 (1975)",
+    "coverDate": "1975-02-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/27/asm-141.jpg"
+  },
+  {
+    "number": "142",
+    "issueName": "The Amazing Spider-Man #142 (1975)",
+    "coverDate": "1975-03-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/27/asm-142.jpg"
+  },
+  {
+    "number": "143",
+    "issueName": "The Amazing Spider-Man #143 (1975)",
+    "coverDate": "1975-04-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/27/asm-143.jpg"
+  },
+  {
+    "number": "144",
+    "issueName": "The Amazing Spider-Man #144 (1975)",
+    "coverDate": "1975-05-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/27/asm-144.jpg"
+  },
+  {
+    "number": "145",
+    "issueName": "The Amazing Spider-Man #145 (1975)",
+    "coverDate": "1975-06-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/27/asm-145.jpg"
+  },
+  {
+    "number": "146",
+    "issueName": "The Amazing Spider-Man #146 (1975)",
+    "coverDate": "1975-07-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/27/asm-146.jpg"
+  },
+  {
+    "number": "147",
+    "issueName": "The Amazing Spider-Man #147 (1975)",
+    "coverDate": "1975-08-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/27/asm-147.jpg"
+  },
+  {
+    "number": "148",
+    "issueName": "The Amazing Spider-Man #148 (1975)",
+    "coverDate": "1975-09-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/27/asm-148.jpg"
+  },
+  {
+    "number": "149",
+    "issueName": "The Amazing Spider-Man #149 (1975)",
+    "coverDate": "1975-10-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/27/asm-149.jpg"
+  },
+  {
+    "number": "150",
+    "issueName": "The Amazing Spider-Man #150 (1975)",
+    "coverDate": "1975-11-01",
+    "image": "https://static.metron.cloud/media/issue/2019/11/27/asm-150.jpg"
+  },
+  {
+    "number": "151",
+    "issueName": "The Amazing Spider-Man #151 (1975)",
+    "coverDate": "1975-12-01",
+    "image": "https://static.metron.cloud/media/issue/2019/12/02/asm-151.jpg"
+  },
+  {
+    "number": "152",
+    "issueName": "The Amazing Spider-Man #152 (1976)",
+    "coverDate": "1976-01-01",
+    "image": "https://static.metron.cloud/media/issue/2019/12/02/asm-152.jpg"
+  },
+  {
+    "number": "153",
+    "issueName": "The Amazing Spider-Man #153 (1976)",
+    "coverDate": "1976-02-01",
+    "image": "https://static.metron.cloud/media/issue/2019/12/02/asm-153.jpg"
+  },
+  {
+    "number": "154",
+    "issueName": "The Amazing Spider-Man #154 (1976)",
+    "coverDate": "1976-03-01",
+    "image": "https://static.metron.cloud/media/issue/2019/12/02/asm-154.jpg"
+  },
+  {
+    "number": "155",
+    "issueName": "The Amazing Spider-Man #155 (1976)",
+    "coverDate": "1976-04-01",
+    "image": "https://static.metron.cloud/media/issue/2019/12/02/asm-155.jpg"
+  },
+  {
+    "number": "156",
+    "issueName": "The Amazing Spider-Man #156 (1976)",
+    "coverDate": "1976-05-01",
+    "image": "https://static.metron.cloud/media/issue/2019/12/02/asm-156.jpg"
+  },
+  {
+    "number": "157",
+    "issueName": "The Amazing Spider-Man #157 (1976)",
+    "coverDate": "1976-06-01",
+    "image": "https://static.metron.cloud/media/issue/2019/12/02/asm-157.jpg"
+  },
+  {
+    "number": "158",
+    "issueName": "The Amazing Spider-Man #158 (1976)",
+    "coverDate": "1976-07-01",
+    "image": "https://static.metron.cloud/media/issue/2019/12/02/asm-158.jpg"
+  },
+  {
+    "number": "159",
+    "issueName": "The Amazing Spider-Man #159 (1976)",
+    "coverDate": "1976-08-01",
+    "image": "https://static.metron.cloud/media/issue/2019/12/02/asm-159.jpg"
+  },
+  {
+    "number": "160",
+    "issueName": "The Amazing Spider-Man #160 (1976)",
+    "coverDate": "1976-09-01",
+    "image": "https://static.metron.cloud/media/issue/2019/12/02/amazing-spider-man-160.jpg"
+  },
+  {
+    "number": "161",
+    "issueName": "The Amazing Spider-Man #161 (1976)",
+    "coverDate": "1976-10-01",
+    "image": "https://static.metron.cloud/media/issue/2020/01/06/asm-v1-161.jpg"
+  },
+  {
+    "number": "162",
+    "issueName": "The Amazing Spider-Man #162 (1976)",
+    "coverDate": "1976-11-01",
+    "image": "https://static.metron.cloud/media/issue/2020/01/06/asm-v1-162.jpg"
+  },
+  {
+    "number": "163",
+    "issueName": "The Amazing Spider-Man #163 (1976)",
+    "coverDate": "1976-12-01",
+    "image": "https://static.metron.cloud/media/issue/2020/01/06/asm-v1-163.jpg"
+  },
+  {
+    "number": "164",
+    "issueName": "The Amazing Spider-Man #164 (1977)",
+    "coverDate": "1977-01-01",
+    "image": "https://static.metron.cloud/media/issue/2020/01/06/asm-v1-164.jpg"
+  },
+  {
+    "number": "165",
+    "issueName": "The Amazing Spider-Man #165 (1977)",
+    "coverDate": "1977-02-01",
+    "image": "https://static.metron.cloud/media/issue/2020/01/06/asm-v1-165.jpg"
+  },
+  {
+    "number": "166",
+    "issueName": "The Amazing Spider-Man #166 (1977)",
+    "coverDate": "1977-03-01",
+    "image": "https://static.metron.cloud/media/issue/2020/01/06/asm-v1-166.jpg"
+  },
+  {
+    "number": "167",
+    "issueName": "The Amazing Spider-Man #167 (1977)",
+    "coverDate": "1977-04-01",
+    "image": "https://static.metron.cloud/media/issue/2020/01/06/asm-v1-167.jpg"
+  },
+  {
+    "number": "168",
+    "issueName": "The Amazing Spider-Man #168 (1977)",
+    "coverDate": "1977-05-01",
+    "image": "https://static.metron.cloud/media/issue/2020/01/06/asm-v1-168.jpg"
+  },
+  {
+    "number": "169",
+    "issueName": "The Amazing Spider-Man #169 (1977)",
+    "coverDate": "1977-06-01",
+    "image": "https://static.metron.cloud/media/issue/2020/01/06/asm-v1-169.jpg"
+  },
+  {
+    "number": "170",
+    "issueName": "The Amazing Spider-Man #170 (1977)",
+    "coverDate": "1977-07-01",
+    "image": "https://static.metron.cloud/media/issue/2020/01/06/asm-v1-170.jpg"
+  },
+  {
+    "number": "171",
+    "issueName": "The Amazing Spider-Man #171 (1977)",
+    "coverDate": "1977-08-01",
+    "image": "https://static.metron.cloud/media/issue/2020/01/06/asm-v1-171.jpg"
+  },
+  {
+    "number": "172",
+    "issueName": "The Amazing Spider-Man #172 (1977)",
+    "coverDate": "1977-09-01",
+    "image": "https://static.metron.cloud/media/issue/2020/01/06/asm-v1-172.jpg"
+  },
+  {
+    "number": "173",
+    "issueName": "The Amazing Spider-Man #173 (1977)",
+    "coverDate": "1977-10-01",
+    "image": "https://static.metron.cloud/media/issue/2020/01/06/asm-v1-173.jpg"
+  },
+  {
+    "number": "174",
+    "issueName": "The Amazing Spider-Man #174 (1977)",
+    "coverDate": "1977-11-01",
+    "image": "https://static.metron.cloud/media/issue/2020/01/06/asm-v1-174.jpg"
+  },
+  {
+    "number": "175",
+    "issueName": "The Amazing Spider-Man #175 (1977)",
+    "coverDate": "1977-12-01",
+    "image": "https://static.metron.cloud/media/issue/2020/01/06/asm-v1-175.jpg"
+  },
+  {
+    "number": "176",
+    "issueName": "The Amazing Spider-Man #176 (1978)",
+    "coverDate": "1978-01-01",
+    "image": "https://static.metron.cloud/media/issue/2020/01/06/asm-v1-176.jpg"
+  },
+  {
+    "number": "177",
+    "issueName": "The Amazing Spider-Man #177 (1978)",
+    "coverDate": "1978-02-01",
+    "image": "https://static.metron.cloud/media/issue/2020/01/06/asm-v1-177.jpg"
+  },
+  {
+    "number": "178",
+    "issueName": "The Amazing Spider-Man #178 (1978)",
+    "coverDate": "1978-03-01",
+    "image": "https://static.metron.cloud/media/issue/2020/01/06/asm-v1-178.jpg"
+  },
+  {
+    "number": "179",
+    "issueName": "The Amazing Spider-Man #179 (1978)",
+    "coverDate": "1978-04-01",
+    "image": "https://static.metron.cloud/media/issue/2020/01/06/asm-v1-179.jpg"
+  },
+  {
+    "number": "180",
+    "issueName": "The Amazing Spider-Man #180 (1978)",
+    "coverDate": "1978-05-01",
+    "image": "https://static.metron.cloud/media/issue/2020/01/06/asm-v1-180.jpg"
+  },
+  {
+    "number": "181",
+    "issueName": "The Amazing Spider-Man #181 (1978)",
+    "coverDate": "1978-06-01",
+    "image": "https://static.metron.cloud/media/issue/2020/01/06/asm-v1-181.jpg"
+  },
+  {
+    "number": "182",
+    "issueName": "The Amazing Spider-Man #182 (1978)",
+    "coverDate": "1978-07-01",
+    "image": "https://static.metron.cloud/media/issue/2020/01/06/asm-v1-182.jpg"
+  },
+  {
+    "number": "183",
+    "issueName": "The Amazing Spider-Man #183 (1978)",
+    "coverDate": "1978-08-01",
+    "image": "https://static.metron.cloud/media/issue/2020/01/06/asm-v1-183.jpg"
+  },
+  {
+    "number": "184",
+    "issueName": "The Amazing Spider-Man #184 (1978)",
+    "coverDate": "1978-09-01",
+    "image": "https://static.metron.cloud/media/issue/2020/01/06/asm-v1-184.jpg"
+  },
+  {
+    "number": "185",
+    "issueName": "The Amazing Spider-Man #185 (1978)",
+    "coverDate": "1978-10-01",
+    "image": "https://static.metron.cloud/media/issue/2020/02/07/asm-v1-185.jpg"
+  },
+  {
+    "number": "186",
+    "issueName": "The Amazing Spider-Man #186 (1978)",
+    "coverDate": "1978-11-01",
+    "image": "https://static.metron.cloud/media/issue/2020/02/07/asm-v1-186.jpg"
+  },
+  {
+    "number": "187",
+    "issueName": "The Amazing Spider-Man #187 (1978)",
+    "coverDate": "1978-12-01",
+    "image": "https://static.metron.cloud/media/issue/2020/02/07/asm-v1-187.jpg"
+  },
+  {
+    "number": "188",
+    "issueName": "The Amazing Spider-Man #188 (1979)",
+    "coverDate": "1979-01-01",
+    "image": "https://static.metron.cloud/media/issue/2020/02/07/asm-v1-188.jpg"
+  },
+  {
+    "number": "189",
+    "issueName": "The Amazing Spider-Man #189 (1979)",
+    "coverDate": "1979-02-01",
+    "image": "https://static.metron.cloud/media/issue/2020/02/07/asm-v1-189.jpg"
+  },
+  {
+    "number": "190",
+    "issueName": "The Amazing Spider-Man #190 (1979)",
+    "coverDate": "1979-03-01",
+    "image": "https://static.metron.cloud/media/issue/2020/02/07/asm-v1-190.jpg"
+  },
+  {
+    "number": "191",
+    "issueName": "The Amazing Spider-Man #191 (1979)",
+    "coverDate": "1979-04-01",
+    "image": "https://static.metron.cloud/media/issue/2020/02/07/asm-v1-191.jpg"
+  },
+  {
+    "number": "192",
+    "issueName": "The Amazing Spider-Man #192 (1979)",
+    "coverDate": "1979-05-01",
+    "image": "https://static.metron.cloud/media/issue/2020/02/07/asm-v1-192.jpg"
+  },
+  {
+    "number": "193",
+    "issueName": "The Amazing Spider-Man #193 (1979)",
+    "coverDate": "1979-06-01",
+    "image": "https://static.metron.cloud/media/issue/2020/02/07/asm-v1-193.jpg"
+  },
+  {
+    "number": "194",
+    "issueName": "The Amazing Spider-Man #194 (1979)",
+    "coverDate": "1979-07-01",
+    "image": "https://static.metron.cloud/media/issue/2020/02/07/asm-v1-194.jpg"
+  },
+  {
+    "number": "195",
+    "issueName": "The Amazing Spider-Man #195 (1979)",
+    "coverDate": "1979-08-01",
+    "image": "https://static.metron.cloud/media/issue/2020/02/07/asm-v1-195.jpg"
+  },
+  {
+    "number": "196",
+    "issueName": "The Amazing Spider-Man #196 (1979)",
+    "coverDate": "1979-09-01",
+    "image": "https://static.metron.cloud/media/issue/2020/02/07/asm-v1-196.jpg"
+  },
+  {
+    "number": "197",
+    "issueName": "The Amazing Spider-Man #197 (1979)",
+    "coverDate": "1979-10-01",
+    "image": "https://static.metron.cloud/media/issue/2020/02/07/asm-v1-197.jpg"
+  },
+  {
+    "number": "198",
+    "issueName": "The Amazing Spider-Man #198 (1979)",
+    "coverDate": "1979-11-01",
+    "image": "https://static.metron.cloud/media/issue/2020/02/07/asm-v1-198.jpg"
+  },
+  {
+    "number": "199",
+    "issueName": "The Amazing Spider-Man #199 (1979)",
+    "coverDate": "1979-12-01",
+    "image": "https://static.metron.cloud/media/issue/2020/02/07/asm-v1-199.jpg"
+  },
+  {
+    "number": "200",
+    "issueName": "The Amazing Spider-Man #200 (1980)",
+    "coverDate": "1980-01-01",
+    "image": "https://static.metron.cloud/media/issue/2020/02/07/asm-v1-200.jpg"
+  },
+  {
+    "number": "201",
+    "issueName": "The Amazing Spider-Man #201 (1980)",
+    "coverDate": "1980-02-01",
+    "image": "https://static.metron.cloud/media/issue/2020/02/07/asm-v1-201.jpg"
+  },
+  {
+    "number": "202",
+    "issueName": "The Amazing Spider-Man #202 (1980)",
+    "coverDate": "1980-03-01",
+    "image": "https://static.metron.cloud/media/issue/2020/02/07/asm-v1-202.jpg"
+  },
+  {
+    "number": "203",
+    "issueName": "The Amazing Spider-Man #203 (1980)",
+    "coverDate": "1980-04-01",
+    "image": "https://static.metron.cloud/media/issue/2020/02/07/asm-v1-203.jpg"
+  },
+  {
+    "number": "204",
+    "issueName": "The Amazing Spider-Man #204 (1980)",
+    "coverDate": "1980-05-01",
+    "image": "https://static.metron.cloud/media/issue/2020/02/07/asm-v1-204.jpg"
+  },
+  {
+    "number": "205",
+    "issueName": "The Amazing Spider-Man #205 (1980)",
+    "coverDate": "1980-06-01",
+    "image": "https://static.metron.cloud/media/issue/2020/02/07/asm-v1-205.jpg"
+  },
+  {
+    "number": "206",
+    "issueName": "The Amazing Spider-Man #206 (1980)",
+    "coverDate": "1980-07-01",
+    "image": "https://static.metron.cloud/media/issue/2020/02/07/asm-v1-206.jpg"
+  },
+  {
+    "number": "207",
+    "issueName": "The Amazing Spider-Man #207 (1980)",
+    "coverDate": "1980-08-01",
+    "image": "https://static.metron.cloud/media/issue/2020/02/07/asm-v1-207.jpg"
+  },
+  {
+    "number": "208",
+    "issueName": "The Amazing Spider-Man #208 (1980)",
+    "coverDate": "1980-09-01",
+    "image": "https://static.metron.cloud/media/issue/2020/02/07/asm-v1-208.jpg"
+  },
+  {
+    "number": "209",
+    "issueName": "The Amazing Spider-Man #209 (1980)",
+    "coverDate": "1980-10-01",
+    "image": "https://static.metron.cloud/media/issue/2020/02/08/asm-v1-209.jpg"
+  },
+  {
+    "number": "210",
+    "issueName": "The Amazing Spider-Man #210 (1980)",
+    "coverDate": "1980-11-01",
+    "image": "https://static.metron.cloud/media/issue/2020/02/08/asm-v1-210.jpg"
+  },
+  {
+    "number": "211",
+    "issueName": "The Amazing Spider-Man #211 (1980)",
+    "coverDate": "1980-12-01",
+    "image": "https://static.metron.cloud/media/issue/2020/02/08/asm-v1-211.jpg"
+  },
+  {
+    "number": "212",
+    "issueName": "The Amazing Spider-Man #212 (1981)",
+    "coverDate": "1981-01-01",
+    "image": "https://static.metron.cloud/media/issue/2020/02/08/asm-v1-212.jpg"
+  },
+  {
+    "number": "213",
+    "issueName": "The Amazing Spider-Man #213 (1981)",
+    "coverDate": "1981-02-01",
+    "image": "https://static.metron.cloud/media/issue/2020/02/08/asm-v1-213.jpg"
+  },
+  {
+    "number": "214",
+    "issueName": "The Amazing Spider-Man #214 (1981)",
+    "coverDate": "1981-03-01",
+    "image": "https://static.metron.cloud/media/issue/2020/02/08/asm-v1-214.jpg"
+  },
+  {
+    "number": "215",
+    "issueName": "The Amazing Spider-Man #215 (1981)",
+    "coverDate": "1981-04-01",
+    "image": "https://static.metron.cloud/media/issue/2020/02/08/asm-v1-215.jpg"
+  },
+  {
+    "number": "216",
+    "issueName": "The Amazing Spider-Man #216 (1981)",
+    "coverDate": "1981-05-01",
+    "image": "https://static.metron.cloud/media/issue/2020/02/08/asm-v1-216.jpg"
+  },
+  {
+    "number": "217",
+    "issueName": "The Amazing Spider-Man #217 (1981)",
+    "coverDate": "1981-06-01",
+    "image": "https://static.metron.cloud/media/issue/2020/02/08/asm-v1-217.jpg"
+  },
+  {
+    "number": "218",
+    "issueName": "The Amazing Spider-Man #218 (1981)",
+    "coverDate": "1981-07-01",
+    "image": "https://static.metron.cloud/media/issue/2020/02/08/asm-v1-218.jpg"
+  },
+  {
+    "number": "219",
+    "issueName": "The Amazing Spider-Man #219 (1981)",
+    "coverDate": "1981-08-01",
+    "image": "https://static.metron.cloud/media/issue/2020/02/08/asm-v1-219.jpg"
+  },
+  {
+    "number": "220",
+    "issueName": "The Amazing Spider-Man #220 (1981)",
+    "coverDate": "1981-09-01",
+    "image": "https://static.metron.cloud/media/issue/2020/02/08/asm-v1-220.jpg"
+  },
+  {
+    "number": "221",
+    "issueName": "The Amazing Spider-Man #221 (1981)",
+    "coverDate": "1981-10-01",
+    "image": "https://static.metron.cloud/media/issue/2020/02/08/asm-v1-221.jpg"
+  },
+  {
+    "number": "222",
+    "issueName": "The Amazing Spider-Man #222 (1981)",
+    "coverDate": "1981-11-01",
+    "image": "https://static.metron.cloud/media/issue/2020/02/08/asm-v1-222.jpg"
+  },
+  {
+    "number": "223",
+    "issueName": "The Amazing Spider-Man #223 (1981)",
+    "coverDate": "1981-12-01",
+    "image": "https://static.metron.cloud/media/issue/2020/02/08/asm-v1-223.jpg"
+  },
+  {
+    "number": "224",
+    "issueName": "The Amazing Spider-Man #224 (1982)",
+    "coverDate": "1982-01-01",
+    "image": "https://static.metron.cloud/media/issue/2020/02/08/asm-v1-224.jpg"
+  },
+  {
+    "number": "225",
+    "issueName": "The Amazing Spider-Man #225 (1982)",
+    "coverDate": "1982-02-01",
+    "image": "https://static.metron.cloud/media/issue/2020/02/08/asm-v1-225.jpg"
+  },
+  {
+    "number": "226",
+    "issueName": "The Amazing Spider-Man #226 (1982)",
+    "coverDate": "1982-03-01",
+    "image": "https://static.metron.cloud/media/issue/2020/02/08/asm-v1-226.jpg"
+  },
+  {
+    "number": "227",
+    "issueName": "The Amazing Spider-Man #227 (1982)",
+    "coverDate": "1982-04-01",
+    "image": "https://static.metron.cloud/media/issue/2020/02/08/asm-v1-227.jpg"
+  },
+  {
+    "number": "228",
+    "issueName": "The Amazing Spider-Man #228 (1982)",
+    "coverDate": "1982-05-01",
+    "image": "https://static.metron.cloud/media/issue/2020/02/08/asm-v1-228.jpg"
+  },
+  {
+    "number": "229",
+    "issueName": "The Amazing Spider-Man #229 (1982)",
+    "coverDate": "1982-06-01",
+    "image": "https://static.metron.cloud/media/issue/2020/02/08/asm-v1-229.jpg"
+  },
+  {
+    "number": "230",
+    "issueName": "The Amazing Spider-Man #230 (1982)",
+    "coverDate": "1982-07-01",
+    "image": "https://static.metron.cloud/media/issue/2020/02/08/asm-v1-230.jpg"
+  },
+  {
+    "number": "231",
+    "issueName": "The Amazing Spider-Man #231 (1982)",
+    "coverDate": "1982-08-01",
+    "image": "https://static.metron.cloud/media/issue/2020/02/08/asm-v1-231.jpg"
+  },
+  {
+    "number": "232",
+    "issueName": "The Amazing Spider-Man #232 (1982)",
+    "coverDate": "1982-09-01",
+    "image": "https://static.metron.cloud/media/issue/2020/02/08/asm-v1-232.jpg"
+  },
+  {
+    "number": "233",
+    "issueName": "The Amazing Spider-Man #233 (1982)",
+    "coverDate": "1982-10-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/25/asm-v1-233.jpg"
+  },
+  {
+    "number": "234",
+    "issueName": "The Amazing Spider-Man #234 (1982)",
+    "coverDate": "1982-11-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/25/asm-v1-234.jpg"
+  },
+  {
+    "number": "235",
+    "issueName": "The Amazing Spider-Man #235 (1982)",
+    "coverDate": "1982-12-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/25/asm-v1-235.jpg"
+  },
+  {
+    "number": "236",
+    "issueName": "The Amazing Spider-Man #236 (1983)",
+    "coverDate": "1983-01-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/25/asm-v1-236.jpg"
+  },
+  {
+    "number": "237",
+    "issueName": "The Amazing Spider-Man #237 (1983)",
+    "coverDate": "1983-02-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/25/asm-v1-237.jpg"
+  },
+  {
+    "number": "238",
+    "issueName": "The Amazing Spider-Man #238 (1983)",
+    "coverDate": "1983-03-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/25/asm-v1-238.jpg"
+  },
+  {
+    "number": "239",
+    "issueName": "The Amazing Spider-Man #239 (1983)",
+    "coverDate": "1983-04-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/25/asm-v1-239.jpg"
+  },
+  {
+    "number": "240",
+    "issueName": "The Amazing Spider-Man #240 (1983)",
+    "coverDate": "1983-05-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/25/asm-v1-240.jpg"
+  },
+  {
+    "number": "241",
+    "issueName": "The Amazing Spider-Man #241 (1983)",
+    "coverDate": "1983-06-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/25/asm-v1-241.jpg"
+  },
+  {
+    "number": "242",
+    "issueName": "The Amazing Spider-Man #242 (1983)",
+    "coverDate": "1983-07-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/25/asm-v1-242.jpg"
+  },
+  {
+    "number": "243",
+    "issueName": "The Amazing Spider-Man #243 (1983)",
+    "coverDate": "1983-08-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/25/asm-v1-243.jpg"
+  },
+  {
+    "number": "244",
+    "issueName": "The Amazing Spider-Man #244 (1983)",
+    "coverDate": "1983-09-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/25/asm-v1-244.jpg"
+  },
+  {
+    "number": "245",
+    "issueName": "The Amazing Spider-Man #245 (1983)",
+    "coverDate": "1983-10-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/25/asm-v1-245.jpg"
+  },
+  {
+    "number": "246",
+    "issueName": "The Amazing Spider-Man #246 (1983)",
+    "coverDate": "1983-11-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/25/asm-v1-246.jpg"
+  },
+  {
+    "number": "247",
+    "issueName": "The Amazing Spider-Man #247 (1983)",
+    "coverDate": "1983-12-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/25/asm-v1-247.jpg"
+  },
+  {
+    "number": "248",
+    "issueName": "The Amazing Spider-Man #248 (1984)",
+    "coverDate": "1984-01-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/25/asm-v1-248.jpg"
+  },
+  {
+    "number": "249",
+    "issueName": "The Amazing Spider-Man #249 (1984)",
+    "coverDate": "1984-02-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/25/asm-v1-249.jpg"
+  },
+  {
+    "number": "250",
+    "issueName": "The Amazing Spider-Man #250 (1984)",
+    "coverDate": "1984-03-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/25/asm-v1-250.jpg"
+  },
+  {
+    "number": "251",
+    "issueName": "The Amazing Spider-Man #251 (1984)",
+    "coverDate": "1984-04-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/25/asm-v1-251.jpg"
+  },
+  {
+    "number": "252",
+    "issueName": "The Amazing Spider-Man #252 (1984)",
+    "coverDate": "1984-05-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/25/asm-v1-252.jpg"
+  },
+  {
+    "number": "253",
+    "issueName": "The Amazing Spider-Man #253 (1984)",
+    "coverDate": "1984-06-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/25/asm-v1-253.jpg"
+  },
+  {
+    "number": "254",
+    "issueName": "The Amazing Spider-Man #254 (1984)",
+    "coverDate": "1984-07-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/25/asm-v1-254.jpg"
+  },
+  {
+    "number": "255",
+    "issueName": "The Amazing Spider-Man #255 (1984)",
+    "coverDate": "1984-08-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/25/asm-v1-255.jpg"
+  },
+  {
+    "number": "256",
+    "issueName": "The Amazing Spider-Man #256 (1984)",
+    "coverDate": "1984-09-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/25/asm-v1-256.jpg"
+  },
+  {
+    "number": "257",
+    "issueName": "The Amazing Spider-Man #257 (1984)",
+    "coverDate": "1984-10-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/25/asm-v1-257.jpg"
+  },
+  {
+    "number": "258",
+    "issueName": "The Amazing Spider-Man #258 (1984)",
+    "coverDate": "1984-11-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/25/asm-v1-258.jpg"
+  },
+  {
+    "number": "259",
+    "issueName": "The Amazing Spider-Man #259 (1984)",
+    "coverDate": "1984-12-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/25/asm-v1-259.jpg"
+  },
+  {
+    "number": "260",
+    "issueName": "The Amazing Spider-Man #260 (1985)",
+    "coverDate": "1985-01-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/25/asm-v1-260.jpg"
+  },
+  {
+    "number": "261",
+    "issueName": "The Amazing Spider-Man #261 (1985)",
+    "coverDate": "1985-02-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/25/asm-v1-261.jpg"
+  },
+  {
+    "number": "262",
+    "issueName": "The Amazing Spider-Man #262 (1985)",
+    "coverDate": "1985-03-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/25/asm-v1-262.jpg"
+  },
+  {
+    "number": "263",
+    "issueName": "The Amazing Spider-Man #263 (1985)",
+    "coverDate": "1985-04-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/25/asm-v1-263.jpg"
+  },
+  {
+    "number": "264",
+    "issueName": "The Amazing Spider-Man #264 (1985)",
+    "coverDate": "1985-05-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/25/asm-v1-264.jpg"
+  },
+  {
+    "number": "265",
+    "issueName": "The Amazing Spider-Man #265 (1985)",
+    "coverDate": "1985-06-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/25/asm-v1-265.jpg"
+  },
+  {
+    "number": "266",
+    "issueName": "The Amazing Spider-Man #266 (1985)",
+    "coverDate": "1985-07-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/25/asm-v1-266.jpg"
+  },
+  {
+    "number": "267",
+    "issueName": "The Amazing Spider-Man #267 (1985)",
+    "coverDate": "1985-08-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/25/asm-v1-267.jpg"
+  },
+  {
+    "number": "268",
+    "issueName": "The Amazing Spider-Man #268 (1985)",
+    "coverDate": "1985-09-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/25/asm-v1-268.jpg"
+  },
+  {
+    "number": "269",
+    "issueName": "The Amazing Spider-Man #269 (1985)",
+    "coverDate": "1985-10-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/25/asm-v1-269.jpg"
+  },
+  {
+    "number": "270",
+    "issueName": "The Amazing Spider-Man #270 (1985)",
+    "coverDate": "1985-11-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/25/asm-v1-270.jpg"
+  },
+  {
+    "number": "271",
+    "issueName": "The Amazing Spider-Man #271 (1985)",
+    "coverDate": "1985-12-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/25/asm-v1-271.jpg"
+  },
+  {
+    "number": "272",
+    "issueName": "The Amazing Spider-Man #272 (1986)",
+    "coverDate": "1986-01-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/25/asm-v1-272.jpg"
+  },
+  {
+    "number": "273",
+    "issueName": "The Amazing Spider-Man #273 (1986)",
+    "coverDate": "1986-02-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/26/asm-v1-273.jpg"
+  },
+  {
+    "number": "274",
+    "issueName": "The Amazing Spider-Man #274 (1986)",
+    "coverDate": "1986-03-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/26/asm-v1-274.jpg"
+  },
+  {
+    "number": "275",
+    "issueName": "The Amazing Spider-Man #275 (1986)",
+    "coverDate": "1986-04-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/26/asm-v1-275.jpg"
+  },
+  {
+    "number": "276",
+    "issueName": "The Amazing Spider-Man #276 (1986)",
+    "coverDate": "1986-05-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/26/asm-v1-276.jpg"
+  },
+  {
+    "number": "277",
+    "issueName": "The Amazing Spider-Man #277 (1986)",
+    "coverDate": "1986-06-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/26/asm-v1-277.jpg"
+  },
+  {
+    "number": "278",
+    "issueName": "The Amazing Spider-Man #278 (1986)",
+    "coverDate": "1986-07-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/26/asm-v1-278.jpg"
+  },
+  {
+    "number": "279",
+    "issueName": "The Amazing Spider-Man #279 (1986)",
+    "coverDate": "1986-08-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/26/asm-v1-279.jpg"
+  },
+  {
+    "number": "280",
+    "issueName": "The Amazing Spider-Man #280 (1986)",
+    "coverDate": "1986-09-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/26/asm-v1-280.jpg"
+  },
+  {
+    "number": "281",
+    "issueName": "The Amazing Spider-Man #281 (1986)",
+    "coverDate": "1986-10-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/26/asm-v1-281.jpg"
+  },
+  {
+    "number": "282",
+    "issueName": "The Amazing Spider-Man #282 (1986)",
+    "coverDate": "1986-11-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/26/asm-v1-282.jpg"
+  },
+  {
+    "number": "283",
+    "issueName": "The Amazing Spider-Man #283 (1986)",
+    "coverDate": "1986-12-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/26/asm-v1-283.jpg"
+  },
+  {
+    "number": "284",
+    "issueName": "The Amazing Spider-Man #284 (1987)",
+    "coverDate": "1987-01-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/26/asm-v1-284.jpg"
+  },
+  {
+    "number": "285",
+    "issueName": "The Amazing Spider-Man #285 (1987)",
+    "coverDate": "1987-02-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/26/asm-v1-285.jpg"
+  },
+  {
+    "number": "286",
+    "issueName": "The Amazing Spider-Man #286 (1987)",
+    "coverDate": "1987-03-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/26/asm-v1-286.jpg"
+  },
+  {
+    "number": "287",
+    "issueName": "The Amazing Spider-Man #287 (1987)",
+    "coverDate": "1987-04-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/26/asm-v1-287.jpg"
+  },
+  {
+    "number": "288",
+    "issueName": "The Amazing Spider-Man #288 (1987)",
+    "coverDate": "1987-05-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/26/asm-v1-288.jpg"
+  },
+  {
+    "number": "289",
+    "issueName": "The Amazing Spider-Man #289 (1987)",
+    "coverDate": "1987-06-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/26/asm-v1-289.jpg"
+  },
+  {
+    "number": "290",
+    "issueName": "The Amazing Spider-Man #290 (1987)",
+    "coverDate": "1987-07-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/26/asm-v1-290.jpg"
+  },
+  {
+    "number": "291",
+    "issueName": "The Amazing Spider-Man #291 (1987)",
+    "coverDate": "1987-08-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/26/asm-v1-291.jpg"
+  },
+  {
+    "number": "292",
+    "issueName": "The Amazing Spider-Man #292 (1987)",
+    "coverDate": "1987-09-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/26/asm-v1-292.jpg"
+  },
+  {
+    "number": "293",
+    "issueName": "The Amazing Spider-Man #293 (1987)",
+    "coverDate": "1987-10-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/26/asm-v1-293.jpg"
+  },
+  {
+    "number": "294",
+    "issueName": "The Amazing Spider-Man #294 (1987)",
+    "coverDate": "1987-11-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/26/asm-v1-294.jpg"
+  },
+  {
+    "number": "295",
+    "issueName": "The Amazing Spider-Man #295 (1987)",
+    "coverDate": "1987-12-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/26/asm-v1-295.jpg"
+  },
+  {
+    "number": "296",
+    "issueName": "The Amazing Spider-Man #296 (1988)",
+    "coverDate": "1988-01-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/26/asm-v1-296.jpg"
+  },
+  {
+    "number": "297",
+    "issueName": "The Amazing Spider-Man #297 (1988)",
+    "coverDate": "1988-02-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/26/asm-v1-297.jpg"
+  },
+  {
+    "number": "298",
+    "issueName": "The Amazing Spider-Man #298 (1988)",
+    "coverDate": "1988-03-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/26/asm-v1-298.jpg"
+  },
+  {
+    "number": "299",
+    "issueName": "The Amazing Spider-Man #299 (1988)",
+    "coverDate": "1988-04-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/26/asm-v1-299.jpg"
+  },
+  {
+    "number": "300",
+    "issueName": "The Amazing Spider-Man #300 (1988)",
+    "coverDate": "1988-05-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/26/asm-v1-300.jpg"
+  },
+  {
+    "number": "301",
+    "issueName": "The Amazing Spider-Man #301 (1988)",
+    "coverDate": "1988-06-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/26/asm-v1-301.jpg"
+  },
+  {
+    "number": "302",
+    "issueName": "The Amazing Spider-Man #302 (1988)",
+    "coverDate": "1988-07-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/26/asm-v1-302.jpg"
+  },
+  {
+    "number": "303",
+    "issueName": "The Amazing Spider-Man #303 (1988)",
+    "coverDate": "1988-08-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/26/asm-v1-303.jpg"
+  },
+  {
+    "number": "304",
+    "issueName": "The Amazing Spider-Man #304 (1988)",
+    "coverDate": "1988-09-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/26/asm-v1-304.jpg"
+  },
+  {
+    "number": "305",
+    "issueName": "The Amazing Spider-Man #305 (1988)",
+    "coverDate": "1988-09-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/26/asm-v1-305.jpg"
+  },
+  {
+    "number": "306",
+    "issueName": "The Amazing Spider-Man #306 (1988)",
+    "coverDate": "1988-10-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/26/asm-v1-306.jpg"
+  },
+  {
+    "number": "307",
+    "issueName": "The Amazing Spider-Man #307 (1988)",
+    "coverDate": "1988-10-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/26/asm-v1-307.jpg"
+  },
+  {
+    "number": "308",
+    "issueName": "The Amazing Spider-Man #308 (1988)",
+    "coverDate": "1988-11-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/26/asm-v1-308.jpg"
+  },
+  {
+    "number": "309",
+    "issueName": "The Amazing Spider-Man #309 (1988)",
+    "coverDate": "1988-11-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/26/asm-v1-309.jpg"
+  },
+  {
+    "number": "310",
+    "issueName": "The Amazing Spider-Man #310 (1988)",
+    "coverDate": "1988-12-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/26/asm-v1-310.jpg"
+  },
+  {
+    "number": "311",
+    "issueName": "The Amazing Spider-Man #311 (1989)",
+    "coverDate": "1989-01-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/26/asm-v1-311.jpg"
+  },
+  {
+    "number": "312",
+    "issueName": "The Amazing Spider-Man #312 (1989)",
+    "coverDate": "1989-02-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/26/asm-v1-312.jpg"
+  },
+  {
+    "number": "313",
+    "issueName": "The Amazing Spider-Man #313 (1989)",
+    "coverDate": "1989-03-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/26/asm-v1-313.jpg"
+  },
+  {
+    "number": "314",
+    "issueName": "The Amazing Spider-Man #314 (1989)",
+    "coverDate": "1989-04-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/26/asm-v1-314.jpg"
+  },
+  {
+    "number": "315",
+    "issueName": "The Amazing Spider-Man #315 (1989)",
+    "coverDate": "1989-05-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/26/asm-v1-315.jpg"
+  },
+  {
+    "number": "316",
+    "issueName": "The Amazing Spider-Man #316 (1989)",
+    "coverDate": "1989-06-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/26/asm-v1-316.jpg"
+  },
+  {
+    "number": "317",
+    "issueName": "The Amazing Spider-Man #317 (1989)",
+    "coverDate": "1989-07-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/26/asm-v1-317.jpg"
+  },
+  {
+    "number": "318",
+    "issueName": "The Amazing Spider-Man #318 (1989)",
+    "coverDate": "1989-08-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/26/asm-v1-318.jpg"
+  },
+  {
+    "number": "319",
+    "issueName": "The Amazing Spider-Man #319 (1989)",
+    "coverDate": "1989-09-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/26/asm-v1-319.jpg"
+  },
+  {
+    "number": "320",
+    "issueName": "The Amazing Spider-Man #320 (1989)",
+    "coverDate": "1989-09-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/26/asm-v1-320.jpg"
+  },
+  {
+    "number": "321",
+    "issueName": "The Amazing Spider-Man #321 (1989)",
+    "coverDate": "1989-10-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/26/asm-v1-321.jpg"
+  },
+  {
+    "number": "322",
+    "issueName": "The Amazing Spider-Man #322 (1989)",
+    "coverDate": "1989-10-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/26/asm-v1-322.jpg"
+  },
+  {
+    "number": "323",
+    "issueName": "The Amazing Spider-Man #323 (1989)",
+    "coverDate": "1989-11-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/26/asm-v1-323.jpg"
+  },
+  {
+    "number": "324",
+    "issueName": "The Amazing Spider-Man #324 (1989)",
+    "coverDate": "1989-11-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/27/asm-v1-324.jpg"
+  },
+  {
+    "number": "325",
+    "issueName": "The Amazing Spider-Man #325 (1989)",
+    "coverDate": "1989-11-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/27/asm-v1-325.jpg"
+  },
+  {
+    "number": "326",
+    "issueName": "The Amazing Spider-Man #326 (1989)",
+    "coverDate": "1989-12-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/27/asm-v1-326.jpg"
+  },
+  {
+    "number": "327",
+    "issueName": "The Amazing Spider-Man #327 (1989)",
+    "coverDate": "1989-12-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/27/asm-v1-327.jpg"
+  },
+  {
+    "number": "328",
+    "issueName": "The Amazing Spider-Man #328 (1990)",
+    "coverDate": "1990-01-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/27/asm-v1-328.jpg"
+  },
+  {
+    "number": "329",
+    "issueName": "The Amazing Spider-Man #329 (1990)",
+    "coverDate": "1990-02-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/27/asm-v1-329.jpg"
+  },
+  {
+    "number": "330",
+    "issueName": "The Amazing Spider-Man #330 (1990)",
+    "coverDate": "1990-03-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/27/asm-v1-330.jpg"
+  },
+  {
+    "number": "331",
+    "issueName": "The Amazing Spider-Man #331 (1990)",
+    "coverDate": "1990-04-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/27/asm-v1-331.jpg"
+  },
+  {
+    "number": "332",
+    "issueName": "The Amazing Spider-Man #332 (1990)",
+    "coverDate": "1990-05-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/27/asm-v1-332.jpg"
+  },
+  {
+    "number": "333",
+    "issueName": "The Amazing Spider-Man #333 (1990)",
+    "coverDate": "1990-06-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/27/asm-v1-333.jpg"
+  },
+  {
+    "number": "334",
+    "issueName": "The Amazing Spider-Man #334 (1990)",
+    "coverDate": "1990-07-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/27/asm-v1-334.jpg"
+  },
+  {
+    "number": "335",
+    "issueName": "The Amazing Spider-Man #335 (1990)",
+    "coverDate": "1990-07-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/27/asm-v1-335.jpg"
+  },
+  {
+    "number": "336",
+    "issueName": "The Amazing Spider-Man #336 (1990)",
+    "coverDate": "1990-08-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/27/asm-v1-336.jpg"
+  },
+  {
+    "number": "337",
+    "issueName": "The Amazing Spider-Man #337 (1990)",
+    "coverDate": "1990-08-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/27/asm-v1-337.jpg"
+  },
+  {
+    "number": "338",
+    "issueName": "The Amazing Spider-Man #338 (1990)",
+    "coverDate": "1990-09-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/27/asm-v1-338.jpg"
+  },
+  {
+    "number": "339",
+    "issueName": "The Amazing Spider-Man #339 (1990)",
+    "coverDate": "1990-09-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/27/asm-v1-339.jpg"
+  },
+  {
+    "number": "340",
+    "issueName": "The Amazing Spider-Man #340 (1990)",
+    "coverDate": "1990-10-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/27/asm-v1-340.jpg"
+  },
+  {
+    "number": "341",
+    "issueName": "The Amazing Spider-Man #341 (1990)",
+    "coverDate": "1990-11-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/27/asm-v1-341.jpg"
+  },
+  {
+    "number": "342",
+    "issueName": "The Amazing Spider-Man #342 (1990)",
+    "coverDate": "1990-12-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/27/asm-v1-342.jpg"
+  },
+  {
+    "number": "343",
+    "issueName": "The Amazing Spider-Man #343 (1991)",
+    "coverDate": "1991-01-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/27/asm-v1-343.jpg"
+  },
+  {
+    "number": "344",
+    "issueName": "The Amazing Spider-Man #344 (1991)",
+    "coverDate": "1991-02-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/27/asm-v1-344.jpg"
+  },
+  {
+    "number": "345",
+    "issueName": "The Amazing Spider-Man #345 (1991)",
+    "coverDate": "1991-03-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/27/asm-v1-345.jpg"
+  },
+  {
+    "number": "346",
+    "issueName": "The Amazing Spider-Man #346 (1991)",
+    "coverDate": "1991-04-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/27/asm-v1-346.jpg"
+  },
+  {
+    "number": "347",
+    "issueName": "The Amazing Spider-Man #347 (1991)",
+    "coverDate": "1991-05-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/27/asm-v1-347.jpg"
+  },
+  {
+    "number": "348",
+    "issueName": "The Amazing Spider-Man #348 (1991)",
+    "coverDate": "1991-06-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/27/asm-v1-348.jpg"
+  },
+  {
+    "number": "349",
+    "issueName": "The Amazing Spider-Man #349 (1991)",
+    "coverDate": "1991-07-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/27/asm-v1-349.jpg"
+  },
+  {
+    "number": "350",
+    "issueName": "The Amazing Spider-Man #350 (1991)",
+    "coverDate": "1991-08-01",
+    "image": "https://static.metron.cloud/media/issue/2020/04/27/asm-v1-350.jpg"
+  },
+  {
+    "number": "351",
+    "issueName": "The Amazing Spider-Man #351 (1991)",
+    "coverDate": "1991-09-01",
+    "image": "https://static.metron.cloud/media/issue/2020/05/04/asm-v1-351.jpg"
+  },
+  {
+    "number": "352",
+    "issueName": "The Amazing Spider-Man #352 (1991)",
+    "coverDate": "1991-10-01",
+    "image": "https://static.metron.cloud/media/issue/2020/05/04/asm-v1-352.jpg"
+  },
+  {
+    "number": "353",
+    "issueName": "The Amazing Spider-Man #353 (1991)",
+    "coverDate": "1991-11-01",
+    "image": "https://static.metron.cloud/media/issue/2020/05/04/asm-v1-353.jpg"
+  },
+  {
+    "number": "354",
+    "issueName": "The Amazing Spider-Man #354 (1991)",
+    "coverDate": "1991-11-01",
+    "image": "https://static.metron.cloud/media/issue/2020/05/04/asm-v1-354.jpg"
+  },
+  {
+    "number": "355",
+    "issueName": "The Amazing Spider-Man #355 (1991)",
+    "coverDate": "1991-12-01",
+    "image": "https://static.metron.cloud/media/issue/2020/05/04/asm-v1-355.jpg"
+  },
+  {
+    "number": "356",
+    "issueName": "The Amazing Spider-Man #356 (1991)",
+    "coverDate": "1991-12-01",
+    "image": "https://static.metron.cloud/media/issue/2020/05/04/asm-v1-356.jpg"
+  },
+  {
+    "number": "357",
+    "issueName": "The Amazing Spider-Man #357 (1992)",
+    "coverDate": "1992-01-01",
+    "image": "https://static.metron.cloud/media/issue/2020/05/04/asm-v1-357.jpg"
+  },
+  {
+    "number": "358",
+    "issueName": "The Amazing Spider-Man #358 (1992)",
+    "coverDate": "1992-01-01",
+    "image": "https://static.metron.cloud/media/issue/2020/05/04/asm-v1-358.jpg"
+  },
+  {
+    "number": "359",
+    "issueName": "The Amazing Spider-Man #359 (1992)",
+    "coverDate": "1992-02-01",
+    "image": "https://static.metron.cloud/media/issue/2020/05/04/asm-v1-359.jpg"
+  },
+  {
+    "number": "360",
+    "issueName": "The Amazing Spider-Man #360 (1992)",
+    "coverDate": "1992-03-01",
+    "image": "https://static.metron.cloud/media/issue/2020/05/04/asm-v1-360.jpg"
+  },
+  {
+    "number": "361",
+    "issueName": "The Amazing Spider-Man #361 (1992)",
+    "coverDate": "1992-04-01",
+    "image": "https://static.metron.cloud/media/issue/2020/05/04/asm-v1-361.jpg"
+  },
+  {
+    "number": "362",
+    "issueName": "The Amazing Spider-Man #362 (1992)",
+    "coverDate": "1992-05-01",
+    "image": "https://static.metron.cloud/media/issue/2020/05/04/asm-v1-362.jpg"
+  },
+  {
+    "number": "363",
+    "issueName": "The Amazing Spider-Man #363 (1992)",
+    "coverDate": "1992-06-01",
+    "image": "https://static.metron.cloud/media/issue/2020/05/04/asm-v1-363a.jpg"
+  },
+  {
+    "number": "364",
+    "issueName": "The Amazing Spider-Man #364 (1992)",
+    "coverDate": "1992-07-01",
+    "image": "https://static.metron.cloud/media/issue/2020/05/04/asm-v1-364.jpg"
+  },
+  {
+    "number": "365",
+    "issueName": "The Amazing Spider-Man #365 (1992)",
+    "coverDate": "1992-08-01",
+    "image": "https://static.metron.cloud/media/issue/2020/05/04/asm-v1-365.jpg"
+  },
+  {
+    "number": "366",
+    "issueName": "The Amazing Spider-Man #366 (1992)",
+    "coverDate": "1992-09-01",
+    "image": "https://static.metron.cloud/media/issue/2020/05/04/asm-v1-366.jpg"
+  },
+  {
+    "number": "367",
+    "issueName": "The Amazing Spider-Man #367 (1992)",
+    "coverDate": "1992-10-01",
+    "image": "https://static.metron.cloud/media/issue/2020/05/04/asm-v1-367.jpg"
+  },
+  {
+    "number": "368",
+    "issueName": "The Amazing Spider-Man #368 (1992)",
+    "coverDate": "1992-11-01",
+    "image": "https://static.metron.cloud/media/issue/2020/05/04/asm-v1-368.jpg"
+  },
+  {
+    "number": "369",
+    "issueName": "The Amazing Spider-Man #369 (1992)",
+    "coverDate": "1992-11-01",
+    "image": "https://static.metron.cloud/media/issue/2020/05/04/asm-v1-369.jpg"
+  },
+  {
+    "number": "370",
+    "issueName": "The Amazing Spider-Man #370 (1992)",
+    "coverDate": "1992-12-01",
+    "image": "https://static.metron.cloud/media/issue/2020/05/04/asm-v1-370.jpg"
+  },
+  {
+    "number": "371",
+    "issueName": "The Amazing Spider-Man #371 (1992)",
+    "coverDate": "1992-12-01",
+    "image": "https://static.metron.cloud/media/issue/2020/05/04/asm-v1-371.jpg"
+  },
+  {
+    "number": "372",
+    "issueName": "The Amazing Spider-Man #372 (1993)",
+    "coverDate": "1993-01-01",
+    "image": "https://static.metron.cloud/media/issue/2020/05/04/asm-v1-372.jpg"
+  },
+  {
+    "number": "373",
+    "issueName": "The Amazing Spider-Man #373 (1993)",
+    "coverDate": "1993-01-01",
+    "image": "https://static.metron.cloud/media/issue/2020/05/04/asm-v1-373.jpg"
+  },
+  {
+    "number": "374",
+    "issueName": "The Amazing Spider-Man #374 (1993)",
+    "coverDate": "1993-02-01",
+    "image": "https://static.metron.cloud/media/issue/2020/05/04/asm-v1-374.jpg"
+  },
+  {
+    "number": "375",
+    "issueName": "The Amazing Spider-Man #375 (1993)",
+    "coverDate": "1993-03-01",
+    "image": "https://static.metron.cloud/media/issue/2020/05/04/asm-v1-375.jpg"
+  },
+  {
+    "number": "376",
+    "issueName": "The Amazing Spider-Man #376 (1993)",
+    "coverDate": "1993-04-01",
+    "image": "https://static.metron.cloud/media/issue/2020/05/04/asm-v1-376.jpg"
+  },
+  {
+    "number": "377",
+    "issueName": "The Amazing Spider-Man #377 (1993)",
+    "coverDate": "1993-05-01",
+    "image": "https://static.metron.cloud/media/issue/2020/05/04/asm-v1-377.jpg"
+  },
+  {
+    "number": "378",
+    "issueName": "The Amazing Spider-Man #378 (1993)",
+    "coverDate": "1993-06-01",
+    "image": "https://static.metron.cloud/media/issue/2020/05/04/asm-v1-378.jpg"
+  },
+  {
+    "number": "379",
+    "issueName": "The Amazing Spider-Man #379 (1993)",
+    "coverDate": "1993-07-01",
+    "image": "https://static.metron.cloud/media/issue/2020/05/04/asm-v1-379.jpg"
+  },
+  {
+    "number": "380",
+    "issueName": "The Amazing Spider-Man #380 (1993)",
+    "coverDate": "1993-08-01",
+    "image": "https://static.metron.cloud/media/issue/2020/05/04/asm-v1-380.jpg"
+  },
+  {
+    "number": "381",
+    "issueName": "The Amazing Spider-Man #381 (1993)",
+    "coverDate": "1993-09-01",
+    "image": "https://static.metron.cloud/media/issue/2020/05/04/asm-v1-381.jpg"
+  },
+  {
+    "number": "382",
+    "issueName": "The Amazing Spider-Man #382 (1993)",
+    "coverDate": "1993-10-01",
+    "image": "https://static.metron.cloud/media/issue/2020/05/04/asm-v1-382.jpg"
+  },
+  {
+    "number": "383",
+    "issueName": "The Amazing Spider-Man #383 (1993)",
+    "coverDate": "1993-11-01",
+    "image": "https://static.metron.cloud/media/issue/2020/05/04/asm-v1-383.jpg"
+  },
+  {
+    "number": "384",
+    "issueName": "The Amazing Spider-Man #384 (1993)",
+    "coverDate": "1993-12-01",
+    "image": "https://static.metron.cloud/media/issue/2020/05/04/asm-v1-384.jpg"
+  },
+  {
+    "number": "385",
+    "issueName": "The Amazing Spider-Man #385 (1994)",
+    "coverDate": "1994-01-01",
+    "image": "https://static.metron.cloud/media/issue/2020/05/04/asm-v1-385.jpg"
+  },
+  {
+    "number": "386",
+    "issueName": "The Amazing Spider-Man #386 (1994)",
+    "coverDate": "1994-02-01",
+    "image": "https://static.metron.cloud/media/issue/2020/05/04/asm-v1-386.jpg"
+  },
+  {
+    "number": "387",
+    "issueName": "The Amazing Spider-Man #387 (1994)",
+    "coverDate": "1994-03-01",
+    "image": "https://static.metron.cloud/media/issue/2020/05/04/asm-v1-387.jpg"
+  },
+  {
+    "number": "388",
+    "issueName": "The Amazing Spider-Man #388 (1994)",
+    "coverDate": "1994-04-01",
+    "image": "https://static.metron.cloud/media/issue/2020/05/04/asm-v1-388.jpg"
+  },
+  {
+    "number": "389",
+    "issueName": "The Amazing Spider-Man #389 (1994)",
+    "coverDate": "1994-05-01",
+    "image": "https://static.metron.cloud/media/issue/2020/05/04/asm-v1-389.jpg"
+  },
+  {
+    "number": "390",
+    "issueName": "The Amazing Spider-Man #390 (1994)",
+    "coverDate": "1994-06-01",
+    "image": "https://static.metron.cloud/media/issue/2020/05/04/asm-v1-390.jpg"
+  },
+  {
+    "number": "391",
+    "issueName": "The Amazing Spider-Man #391 (1994)",
+    "coverDate": "1994-07-01",
+    "image": "https://static.metron.cloud/media/issue/2020/09/06/asm-v1-391.jpg"
+  },
+  {
+    "number": "392",
+    "issueName": "The Amazing Spider-Man #392 (1994)",
+    "coverDate": "1994-08-01",
+    "image": "https://static.metron.cloud/media/issue/2020/09/06/asm-v1-392.jpg"
+  },
+  {
+    "number": "393",
+    "issueName": "The Amazing Spider-Man #393 (1994)",
+    "coverDate": "1994-09-01",
+    "image": "https://static.metron.cloud/media/issue/2020/09/06/asm-v1-393.jpg"
+  },
+  {
+    "number": "394",
+    "issueName": "The Amazing Spider-Man #394 (1994)",
+    "coverDate": "1994-10-01",
+    "image": "https://static.metron.cloud/media/issue/2020/09/06/asm-v1-394.jpg"
+  },
+  {
+    "number": "395",
+    "issueName": "The Amazing Spider-Man #395 (1994)",
+    "coverDate": "1994-11-01",
+    "image": "https://static.metron.cloud/media/issue/2020/09/06/asm-v1-395.jpg"
+  },
+  {
+    "number": "396",
+    "issueName": "The Amazing Spider-Man #396 (1994)",
+    "coverDate": "1994-12-01",
+    "image": "https://static.metron.cloud/media/issue/2020/09/06/asm-v1-396.jpg"
+  },
+  {
+    "number": "397",
+    "issueName": "The Amazing Spider-Man #397 (1995)",
+    "coverDate": "1995-01-01",
+    "image": "https://static.metron.cloud/media/issue/2020/09/06/asm-v1-397.jpg"
+  },
+  {
+    "number": "398",
+    "issueName": "The Amazing Spider-Man #398 (1995)",
+    "coverDate": "1995-02-01",
+    "image": "https://static.metron.cloud/media/issue/2020/09/06/asm-v1-398.jpg"
+  },
+  {
+    "number": "399",
+    "issueName": "The Amazing Spider-Man #399 (1995)",
+    "coverDate": "1995-03-01",
+    "image": "https://static.metron.cloud/media/issue/2020/09/06/asm-v1-399.jpg"
+  },
+  {
+    "number": "400",
+    "issueName": "The Amazing Spider-Man #400 (1995)",
+    "coverDate": "1995-04-01",
+    "image": "https://static.metron.cloud/media/issue/2020/09/06/asm-v1-400.jpg"
+  },
+  {
+    "number": "401",
+    "issueName": "The Amazing Spider-Man #401 (1995)",
+    "coverDate": "1995-05-01",
+    "image": "https://static.metron.cloud/media/issue/2020/09/06/asm-v1-401.jpg"
+  },
+  {
+    "number": "402",
+    "issueName": "The Amazing Spider-Man #402 (1995)",
+    "coverDate": "1995-06-01",
+    "image": "https://static.metron.cloud/media/issue/2020/09/06/asm-v1-402.jpg"
+  },
+  {
+    "number": "403",
+    "issueName": "The Amazing Spider-Man #403 (1995)",
+    "coverDate": "1995-07-01",
+    "image": "https://static.metron.cloud/media/issue/2020/09/06/asm-v1-403.jpg"
+  },
+  {
+    "number": "404",
+    "issueName": "The Amazing Spider-Man #404 (1995)",
+    "coverDate": "1995-08-01",
+    "image": "https://static.metron.cloud/media/issue/2020/09/06/asm-v1-404.jpg"
+  },
+  {
+    "number": "405",
+    "issueName": "The Amazing Spider-Man #405 (1995)",
+    "coverDate": "1995-09-01",
+    "image": "https://static.metron.cloud/media/issue/2020/09/06/asm-v1-405.jpg"
+  },
+  {
+    "number": "406",
+    "issueName": "The Amazing Spider-Man #406 (1995)",
+    "coverDate": "1995-10-01",
+    "image": "https://static.metron.cloud/media/issue/2020/09/06/asm-v1-406.jpg"
+  },
+  {
+    "number": "407",
+    "issueName": "The Amazing Spider-Man #407 (1996)",
+    "coverDate": "1996-01-01",
+    "image": "https://static.metron.cloud/media/issue/2020/09/06/asm-v1-407.jpg"
+  },
+  {
+    "number": "408",
+    "issueName": "The Amazing Spider-Man #408 (1996)",
+    "coverDate": "1996-02-01",
+    "image": "https://static.metron.cloud/media/issue/2020/09/06/asm-v1-408.jpg"
+  },
+  {
+    "number": "409",
+    "issueName": "The Amazing Spider-Man #409 (1996)",
+    "coverDate": "1996-03-01",
+    "image": "https://static.metron.cloud/media/issue/2020/09/06/asm-v1-409.jpg"
+  },
+  {
+    "number": "410",
+    "issueName": "The Amazing Spider-Man #410 (1996)",
+    "coverDate": "1996-04-01",
+    "image": "https://static.metron.cloud/media/issue/2020/09/06/asm-v1-410.jpg"
+  },
+  {
+    "number": "411",
+    "issueName": "The Amazing Spider-Man #411 (1996)",
+    "coverDate": "1996-05-01",
+    "image": "https://static.metron.cloud/media/issue/2020/09/06/asm-v1-411.jpg"
+  },
+  {
+    "number": "412",
+    "issueName": "The Amazing Spider-Man #412 (1996)",
+    "coverDate": "1996-06-01",
+    "image": "https://static.metron.cloud/media/issue/2020/09/06/asm-v1-412.jpg"
+  },
+  {
+    "number": "413",
+    "issueName": "The Amazing Spider-Man #413 (1996)",
+    "coverDate": "1996-07-01",
+    "image": "https://static.metron.cloud/media/issue/2020/09/06/asm-v1-413.jpg"
+  },
+  {
+    "number": "414",
+    "issueName": "The Amazing Spider-Man #414 (1996)",
+    "coverDate": "1996-08-01",
+    "image": "https://static.metron.cloud/media/issue/2020/09/06/asm-v1-414.jpg"
+  },
+  {
+    "number": "415",
+    "issueName": "The Amazing Spider-Man #415 (1996)",
+    "coverDate": "1996-09-01",
+    "image": "https://static.metron.cloud/media/issue/2020/09/06/asm-v1-415.jpg"
+  },
+  {
+    "number": "416",
+    "issueName": "The Amazing Spider-Man #416 (1996)",
+    "coverDate": "1996-10-01",
+    "image": "https://static.metron.cloud/media/issue/2020/09/06/asm-v1-416.jpg"
+  },
+  {
+    "number": "417",
+    "issueName": "The Amazing Spider-Man #417 (1996)",
+    "coverDate": "1996-11-01",
+    "image": "https://static.metron.cloud/media/issue/2020/09/06/asm-v1-417.jpg"
+  },
+  {
+    "number": "418",
+    "issueName": "The Amazing Spider-Man #418 (1996)",
+    "coverDate": "1996-12-01",
+    "image": "https://static.metron.cloud/media/issue/2020/09/07/asm-v1-418.jpg"
+  },
+  {
+    "number": "419",
+    "issueName": "The Amazing Spider-Man #419 (1997)",
+    "coverDate": "1997-01-01",
+    "image": "https://static.metron.cloud/media/issue/2020/09/07/asm-v1-419.jpg"
+  },
+  {
+    "number": "420",
+    "issueName": "The Amazing Spider-Man #420 (1997)",
+    "coverDate": "1997-02-01",
+    "image": "https://static.metron.cloud/media/issue/2020/09/07/asm-v1-420.jpg"
+  },
+  {
+    "number": "421",
+    "issueName": "The Amazing Spider-Man #421 (1997)",
+    "coverDate": "1997-03-01",
+    "image": "https://static.metron.cloud/media/issue/2020/09/07/asm-v1-421.jpg"
+  },
+  {
+    "number": "422",
+    "issueName": "The Amazing Spider-Man #422 (1997)",
+    "coverDate": "1997-04-01",
+    "image": "https://static.metron.cloud/media/issue/2020/09/07/asm-v1-422.jpg"
+  },
+  {
+    "number": "423",
+    "issueName": "The Amazing Spider-Man #423 (1997)",
+    "coverDate": "1997-05-01",
+    "image": "https://static.metron.cloud/media/issue/2020/09/07/asm-v1-423.jpg"
+  },
+  {
+    "number": "424",
+    "issueName": "The Amazing Spider-Man #424 (1997)",
+    "coverDate": "1997-06-01",
+    "image": "https://static.metron.cloud/media/issue/2020/09/07/asm-v1-424.jpg"
+  },
+  {
+    "number": "425",
+    "issueName": "The Amazing Spider-Man #425 (1997)",
+    "coverDate": "1997-08-01",
+    "image": "https://static.metron.cloud/media/issue/2020/09/07/asm-v1-425.jpg"
+  },
+  {
+    "number": "426",
+    "issueName": "The Amazing Spider-Man #426 (1997)",
+    "coverDate": "1997-09-01",
+    "image": "https://static.metron.cloud/media/issue/2020/09/07/asm-v1-426.jpg"
+  },
+  {
+    "number": "427",
+    "issueName": "The Amazing Spider-Man #427 (1997)",
+    "coverDate": "1997-10-01",
+    "image": "https://static.metron.cloud/media/issue/2020/09/07/asm-v1-427.jpg"
+  },
+  {
+    "number": "428",
+    "issueName": "The Amazing Spider-Man #428 (1997)",
+    "coverDate": "1997-11-01",
+    "image": "https://static.metron.cloud/media/issue/2020/09/07/asm-v1-428.jpg"
+  },
+  {
+    "number": "429",
+    "issueName": "The Amazing Spider-Man #429 (1997)",
+    "coverDate": "1997-12-01",
+    "image": "https://static.metron.cloud/media/issue/2020/09/07/asm-v1-429.jpg"
+  },
+  {
+    "number": "430",
+    "issueName": "The Amazing Spider-Man #430 (1998)",
+    "coverDate": "1998-01-01",
+    "image": "https://static.metron.cloud/media/issue/2020/09/07/asm-v1-430.jpg"
+  },
+  {
+    "number": "431",
+    "issueName": "The Amazing Spider-Man #431 (1998)",
+    "coverDate": "1998-02-01",
+    "image": "https://static.metron.cloud/media/issue/2020/09/07/asm-v1-431.jpg"
+  },
+  {
+    "number": "432",
+    "issueName": "The Amazing Spider-Man #432 (1998)",
+    "coverDate": "1998-03-01",
+    "image": "https://static.metron.cloud/media/issue/2020/09/07/asm-v1-432.jpg"
+  },
+  {
+    "number": "433",
+    "issueName": "The Amazing Spider-Man #433 (1998)",
+    "coverDate": "1998-04-01",
+    "image": "https://static.metron.cloud/media/issue/2020/09/07/asm-v1-433.jpg"
+  },
+  {
+    "number": "434",
+    "issueName": "The Amazing Spider-Man #434 (1998)",
+    "coverDate": "1998-05-01",
+    "image": "https://static.metron.cloud/media/issue/2020/09/07/asm-v1-434.jpg"
+  },
+  {
+    "number": "435",
+    "issueName": "The Amazing Spider-Man #435 (1998)",
+    "coverDate": "1998-06-01",
+    "image": "https://static.metron.cloud/media/issue/2020/09/07/asm-v1-435.jpg"
+  },
+  {
+    "number": "436",
+    "issueName": "The Amazing Spider-Man #436 (1998)",
+    "coverDate": "1998-07-01",
+    "image": "https://static.metron.cloud/media/issue/2020/09/07/asm-v1-436.jpg"
+  },
+  {
+    "number": "437",
+    "issueName": "The Amazing Spider-Man #437 (1998)",
+    "coverDate": "1998-08-01",
+    "image": "https://static.metron.cloud/media/issue/2020/09/07/asm-v1-437.jpg"
+  },
+  {
+    "number": "438",
+    "issueName": "The Amazing Spider-Man #438 (1998)",
+    "coverDate": "1998-09-01",
+    "image": "https://static.metron.cloud/media/issue/2020/09/07/asm-v1-438.jpg"
+  },
+  {
+    "number": "439",
+    "issueName": "The Amazing Spider-Man #439 (1998)",
+    "coverDate": "1998-09-01",
+    "image": "https://static.metron.cloud/media/issue/2020/09/07/asm-v1-439.jpg"
+  },
+  {
+    "number": "440",
+    "issueName": "The Amazing Spider-Man #440 (1998)",
+    "coverDate": "1998-10-01",
+    "image": "https://static.metron.cloud/media/issue/2020/09/07/asm-v1-440.jpg"
+  },
+  {
+    "number": "441",
+    "issueName": "The Amazing Spider-Man #441 (1998)",
+    "coverDate": "1998-11-01",
+    "image": "https://static.metron.cloud/media/issue/2020/09/07/asm-v1-441.jpg"
+  }
+]

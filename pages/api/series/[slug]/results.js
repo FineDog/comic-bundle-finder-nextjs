@@ -10,10 +10,16 @@
 //   Fetches the issue list from Metron via getMetronIssuesCached (7-day Blob TTL),
 //   then fetches eBay results live with a 1-hour Blob cache keyed by start+count.
 //
+// ⚠️  KNOWN GOLDEN RULE RISK: getMetronIssuesCached falls back to a live Metron
+//   fetch on a Blob cache miss. This runs on Vercel's rotating IPs. In practice,
+//   the 7-day TTL makes cache misses rare (only on first visit to a new series).
+//   A full fix would pre-populate issue lists via GitHub Actions. Tracked as a
+//   future improvement — do not add any other live Metron calls to this route.
+//
 // IMPORTANT — Blob operation budget:
 //   All cache reads use plain fetch() to the public CDN URL (bandwidth only, not an
-//   Advanced Operation).  Only put() is called on a cache miss (Simple Operation).
-//   list() and head() are never used here.
+//   Advanced Operation).  put() is called on a cache miss — it is an Advanced Operation
+//   but fires at most once per series slice per hour.  list() and head() are never used.
 
 import fs from "fs";
 import path from "path";

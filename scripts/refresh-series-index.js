@@ -34,15 +34,15 @@ if (!USERNAME || !PASSWORD) {
 }
 
 const AUTH = Buffer.from(`${USERNAME}:${PASSWORD}`).toString("base64");
+// User-Agent is required by Metron ToS. Do NOT use a browser UA or omit this header.
 const HEADERS = {
   Authorization: `Basic ${AUTH}`,
+  "User-Agent": "ComicBundleFinder/1.0",
 };
 
 // 3.5 seconds between requests ≈ 17 req/min (under the 20/min burst limit)
 const REQUEST_DELAY_MS = 3500;
-// Pause this long if X-RateLimit-Remaining is critically low
-const RATE_LIMIT_PAUSE_MS = 65000;
-// How many remaining requests triggers a precautionary pause
+// How many remaining requests in either window triggers a precautionary pause
 const RATE_LIMIT_LOW_THRESHOLD = 3;
 
 function sleep(ms) {
@@ -59,13 +59,18 @@ async function metronFetch(url) {
     const res = await fetch(url, { headers: HEADERS });
 
     if (res.status === 429) {
-      // Retry-After can be integer seconds OR a date string (both valid per HTTP spec).
-      // parseInt of a date string returns NaN, and sleep(NaN) fires immediately in JS —
-      // which would cause unthrottled hammering. Enforce a 60 s minimum to be safe.
-      const raw = parseInt(res.headers.get("retry-after") || "0", 10);
-      const retryAfter = (Number.isFinite(raw) && raw > 0) ? raw : 60;
-      console.log(`\n  429 rate limited. Waiting ${retryAfter}s (attempt ${attempt}/3)...`);
-      await sleep(retryAfter * 1000 + 1000);
+      // Use the burst-reset timestamp for a precise wait; fall back to Retry-After;
+      // enforce a 60 s floor in all cases.
+      // NOTE: Retry-After can be a date string — parseInt of that returns NaN,
+      //       and sleep(NaN) fires immediately. Always guard with isFinite().
+      const burstReset = parseInt(res.headers.get("X-RateLimit-Burst-Reset") ?? "0", 10);
+      const rawRetry  = parseInt(res.headers.get("retry-after")              ?? "0", 10);
+      const now       = Math.floor(Date.now() / 1000);
+      const fromReset = Number.isFinite(burstReset) && burstReset > now ? burstReset - now + 2 : 0;
+      const fromRetry = Number.isFinite(rawRetry)   && rawRetry > 0    ? rawRetry              : 0;
+      const waitSec   = Math.max(fromReset, fromRetry, 60);
+      console.log(`\n  429 rate limited. Waiting ${waitSec}s (attempt ${attempt}/3)...`);
+      await sleep(waitSec * 1000);
       continue;
     }
 
@@ -81,11 +86,24 @@ async function metronFetch(url) {
       process.exit(1);
     }
 
-    // Check remaining quota proactively — pause if critically low
-    const remaining = parseInt(res.headers.get("X-RateLimit-Remaining") ?? "999", 10);
-    if (remaining <= RATE_LIMIT_LOW_THRESHOLD) {
-      console.log(`\n  Rate limit low (${remaining} remaining). Pausing ${RATE_LIMIT_PAUSE_MS / 1000}s...`);
-      await sleep(RATE_LIMIT_PAUSE_MS);
+    // Proactively check both rate-limit windows.
+    // Correct header names: X-RateLimit-Burst-Remaining (per-minute) and
+    // X-RateLimit-Sustained-Remaining (per-day). The old "X-RateLimit-Remaining"
+    // header does not exist — reading it always returned null → 999 → never paused.
+    const burstRemaining     = parseInt(res.headers.get("X-RateLimit-Burst-Remaining")     ?? "999", 10);
+    const sustainedRemaining = parseInt(res.headers.get("X-RateLimit-Sustained-Remaining") ?? "999", 10);
+    if (burstRemaining <= RATE_LIMIT_LOW_THRESHOLD) {
+      const resetTs  = parseInt(res.headers.get("X-RateLimit-Burst-Reset") ?? "0", 10);
+      const now      = Math.floor(Date.now() / 1000);
+      const waitSec  = Math.max(resetTs > now ? resetTs - now + 2 : 65, 65);
+      console.log(`\n  Burst limit low (${burstRemaining} remaining). Pausing ${waitSec}s...`);
+      await sleep(waitSec * 1000);
+    } else if (sustainedRemaining <= RATE_LIMIT_LOW_THRESHOLD) {
+      const resetTs  = parseInt(res.headers.get("X-RateLimit-Sustained-Reset") ?? "0", 10);
+      const now      = Math.floor(Date.now() / 1000);
+      const waitSec  = Math.max(resetTs > now ? resetTs - now + 2 : 65, 65);
+      console.log(`\n  Daily limit low (${sustainedRemaining} remaining). Pausing ${waitSec}s...`);
+      await sleep(waitSec * 1000);
     }
 
     // Polite delay after every successful Metron response

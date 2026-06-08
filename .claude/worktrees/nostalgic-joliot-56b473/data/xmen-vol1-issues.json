@@ -1,0 +1,848 @@
+[
+  {
+    "number": "1",
+    "issueName": "The X-Men #1 (1963)",
+    "coverDate": "1963-09-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/09/xmen-v1-1.jpg"
+  },
+  {
+    "number": "2",
+    "issueName": "The X-Men #2 (1963)",
+    "coverDate": "1963-11-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/09/xmen-v1-2.jpg"
+  },
+  {
+    "number": "3",
+    "issueName": "The X-Men #3 (1964)",
+    "coverDate": "1964-01-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/09/xmen-v1-3.jpg"
+  },
+  {
+    "number": "4",
+    "issueName": "The X-Men #4 (1964)",
+    "coverDate": "1964-03-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/09/xmen-v1-4.jpg"
+  },
+  {
+    "number": "5",
+    "issueName": "The X-Men #5 (1964)",
+    "coverDate": "1964-05-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/09/xmen-v1-5.jpg"
+  },
+  {
+    "number": "6",
+    "issueName": "The X-Men #6 (1964)",
+    "coverDate": "1964-07-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/09/xmen-v1-6.jpg"
+  },
+  {
+    "number": "7",
+    "issueName": "The X-Men #7 (1964)",
+    "coverDate": "1964-09-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/09/xmen-v1-7.jpg"
+  },
+  {
+    "number": "8",
+    "issueName": "The X-Men #8 (1964)",
+    "coverDate": "1964-11-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/09/xmen-v1-8.jpg"
+  },
+  {
+    "number": "9",
+    "issueName": "The X-Men #9 (1965)",
+    "coverDate": "1965-01-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/09/xmen-v1-9.jpg"
+  },
+  {
+    "number": "10",
+    "issueName": "The X-Men #10 (1965)",
+    "coverDate": "1965-03-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/09/xmen-v1-10.jpg"
+  },
+  {
+    "number": "11",
+    "issueName": "The X-Men #11 (1965)",
+    "coverDate": "1965-05-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/09/xmen-v1-11.jpg"
+  },
+  {
+    "number": "12",
+    "issueName": "The X-Men #12 (1965)",
+    "coverDate": "1965-07-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/09/xmen-v1-12.jpg"
+  },
+  {
+    "number": "13",
+    "issueName": "The X-Men #13 (1965)",
+    "coverDate": "1965-09-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/09/xmen-v1-13.jpg"
+  },
+  {
+    "number": "14",
+    "issueName": "The X-Men #14 (1965)",
+    "coverDate": "1965-11-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/09/xmen-v1-14.jpg"
+  },
+  {
+    "number": "15",
+    "issueName": "The X-Men #15 (1965)",
+    "coverDate": "1965-12-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/09/xmen-v1-15.jpg"
+  },
+  {
+    "number": "16",
+    "issueName": "The X-Men #16 (1966)",
+    "coverDate": "1966-01-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/09/xmen-v1-16.jpg"
+  },
+  {
+    "number": "17",
+    "issueName": "The X-Men #17 (1966)",
+    "coverDate": "1966-02-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/09/xmen-v1-17.jpg"
+  },
+  {
+    "number": "18",
+    "issueName": "The X-Men #18 (1966)",
+    "coverDate": "1966-03-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/09/xmen-v1-18.jpg"
+  },
+  {
+    "number": "19",
+    "issueName": "The X-Men #19 (1966)",
+    "coverDate": "1966-04-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/09/xmen-v1-19.jpg"
+  },
+  {
+    "number": "20",
+    "issueName": "The X-Men #20 (1966)",
+    "coverDate": "1966-05-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/09/xmen-v1-20.jpg"
+  },
+  {
+    "number": "21",
+    "issueName": "The X-Men #21 (1966)",
+    "coverDate": "1966-06-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/09/xmen-v1-21.jpg"
+  },
+  {
+    "number": "22",
+    "issueName": "The X-Men #22 (1966)",
+    "coverDate": "1966-07-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/09/xmen-v1-22.jpg"
+  },
+  {
+    "number": "23",
+    "issueName": "The X-Men #23 (1966)",
+    "coverDate": "1966-08-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/09/xmen-v1-23.jpg"
+  },
+  {
+    "number": "24",
+    "issueName": "The X-Men #24 (1966)",
+    "coverDate": "1966-09-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/09/xmen-v1-24.jpg"
+  },
+  {
+    "number": "25",
+    "issueName": "The X-Men #25 (1966)",
+    "coverDate": "1966-10-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/09/xmen-v1-25.jpg"
+  },
+  {
+    "number": "26",
+    "issueName": "The X-Men #26 (1966)",
+    "coverDate": "1966-11-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/09/xmen-v1-26.jpg"
+  },
+  {
+    "number": "27",
+    "issueName": "The X-Men #27 (1966)",
+    "coverDate": "1966-12-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/09/xmen-v1-27.jpg"
+  },
+  {
+    "number": "28",
+    "issueName": "The X-Men #28 (1967)",
+    "coverDate": "1967-01-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/09/xmen-v1-28.jpg"
+  },
+  {
+    "number": "29",
+    "issueName": "The X-Men #29 (1967)",
+    "coverDate": "1967-02-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/09/xmen-v1-29.jpg"
+  },
+  {
+    "number": "30",
+    "issueName": "The X-Men #30 (1967)",
+    "coverDate": "1967-03-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/09/xmen-v1-30.jpg"
+  },
+  {
+    "number": "31",
+    "issueName": "The X-Men #31 (1967)",
+    "coverDate": "1967-04-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/09/xmen-v1-31.jpg"
+  },
+  {
+    "number": "32",
+    "issueName": "The X-Men #32 (1967)",
+    "coverDate": "1967-05-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/09/xmen-v1-32.jpg"
+  },
+  {
+    "number": "33",
+    "issueName": "The X-Men #33 (1967)",
+    "coverDate": "1967-06-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/09/xmen-v1-33.jpg"
+  },
+  {
+    "number": "34",
+    "issueName": "The X-Men #34 (1967)",
+    "coverDate": "1967-07-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/09/xmen-v1-34.jpg"
+  },
+  {
+    "number": "35",
+    "issueName": "The X-Men #35 (1967)",
+    "coverDate": "1967-08-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/09/xmen-v1-35.jpg"
+  },
+  {
+    "number": "36",
+    "issueName": "The X-Men #36 (1967)",
+    "coverDate": "1967-09-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/09/xmen-v1-36.jpg"
+  },
+  {
+    "number": "37",
+    "issueName": "The X-Men #37 (1967)",
+    "coverDate": "1967-10-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/09/xmen-v1-37.jpg"
+  },
+  {
+    "number": "38",
+    "issueName": "The X-Men #38 (1967)",
+    "coverDate": "1967-11-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/09/xmen-v1-38.jpg"
+  },
+  {
+    "number": "39",
+    "issueName": "The X-Men #39 (1967)",
+    "coverDate": "1967-12-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/09/xmen-v1-39.jpg"
+  },
+  {
+    "number": "40",
+    "issueName": "The X-Men #40 (1968)",
+    "coverDate": "1968-01-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/09/xmen-v1-40.jpg"
+  },
+  {
+    "number": "41",
+    "issueName": "The X-Men #41 (1968)",
+    "coverDate": "1968-02-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/09/xmen-v1-41.jpg"
+  },
+  {
+    "number": "42",
+    "issueName": "The X-Men #42 (1968)",
+    "coverDate": "1968-03-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/09/xmen-v1-42.jpg"
+  },
+  {
+    "number": "43",
+    "issueName": "The X-Men #43 (1968)",
+    "coverDate": "1968-04-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/09/xmen-v1-43.jpg"
+  },
+  {
+    "number": "44",
+    "issueName": "The X-Men #44 (1968)",
+    "coverDate": "1968-05-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/09/xmen-v1-44.jpg"
+  },
+  {
+    "number": "45",
+    "issueName": "The X-Men #45 (1968)",
+    "coverDate": "1968-06-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/09/xmen-v1-45.jpg"
+  },
+  {
+    "number": "46",
+    "issueName": "The X-Men #46 (1968)",
+    "coverDate": "1968-07-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/09/xmen-v1-46.jpg"
+  },
+  {
+    "number": "47",
+    "issueName": "The X-Men #47 (1968)",
+    "coverDate": "1968-08-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/09/xmen-v1-47.jpg"
+  },
+  {
+    "number": "48",
+    "issueName": "The X-Men #48 (1968)",
+    "coverDate": "1968-09-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/09/xmen-v1-48.jpg"
+  },
+  {
+    "number": "49",
+    "issueName": "The X-Men #49 (1968)",
+    "coverDate": "1968-10-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/10/xmen-v1-49.jpg"
+  },
+  {
+    "number": "50",
+    "issueName": "The X-Men #50 (1968)",
+    "coverDate": "1968-11-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/10/xmen-v1-50.jpg"
+  },
+  {
+    "number": "51",
+    "issueName": "The X-Men #51 (1968)",
+    "coverDate": "1968-12-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/10/xmen-v1-51.jpg"
+  },
+  {
+    "number": "52",
+    "issueName": "The X-Men #52 (1969)",
+    "coverDate": "1969-01-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/10/xmen-v1-52.jpg"
+  },
+  {
+    "number": "53",
+    "issueName": "The X-Men #53 (1969)",
+    "coverDate": "1969-02-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/10/xmen-v1-53.jpg"
+  },
+  {
+    "number": "54",
+    "issueName": "The X-Men #54 (1969)",
+    "coverDate": "1969-03-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/10/xmen-v1-54.jpg"
+  },
+  {
+    "number": "55",
+    "issueName": "The X-Men #55 (1969)",
+    "coverDate": "1969-04-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/10/xmen-v1-55.jpg"
+  },
+  {
+    "number": "56",
+    "issueName": "The X-Men #56 (1969)",
+    "coverDate": "1969-05-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/10/xmen-v1-56.jpg"
+  },
+  {
+    "number": "57",
+    "issueName": "The X-Men #57 (1969)",
+    "coverDate": "1969-06-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/10/xmen-v1-57.jpg"
+  },
+  {
+    "number": "58",
+    "issueName": "The X-Men #58 (1969)",
+    "coverDate": "1969-07-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/10/xmen-v1-58.jpg"
+  },
+  {
+    "number": "59",
+    "issueName": "The X-Men #59 (1969)",
+    "coverDate": "1969-08-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/10/xmen-v1-59.jpg"
+  },
+  {
+    "number": "60",
+    "issueName": "The X-Men #60 (1969)",
+    "coverDate": "1969-09-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/10/xmen-v1-60.jpg"
+  },
+  {
+    "number": "61",
+    "issueName": "The X-Men #61 (1969)",
+    "coverDate": "1969-10-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/10/xmen-v1-61.jpg"
+  },
+  {
+    "number": "62",
+    "issueName": "The X-Men #62 (1969)",
+    "coverDate": "1969-11-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/10/xmen-v1-62.jpg"
+  },
+  {
+    "number": "63",
+    "issueName": "The X-Men #63 (1969)",
+    "coverDate": "1969-12-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/10/xmen-v1-63.jpg"
+  },
+  {
+    "number": "64",
+    "issueName": "The X-Men #64 (1970)",
+    "coverDate": "1970-01-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/10/xmen-v1-64.jpg"
+  },
+  {
+    "number": "65",
+    "issueName": "The X-Men #65 (1970)",
+    "coverDate": "1970-02-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/10/xmen-v1-65.jpg"
+  },
+  {
+    "number": "66",
+    "issueName": "The X-Men #66 (1970)",
+    "coverDate": "1970-03-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/10/xmen-v1-66.jpg"
+  },
+  {
+    "number": "67",
+    "issueName": "The X-Men #67 (1970)",
+    "coverDate": "1970-12-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/10/xmen-v1-67.jpg"
+  },
+  {
+    "number": "68",
+    "issueName": "The X-Men #68 (1971)",
+    "coverDate": "1971-02-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/10/xmen-v1-68.jpg"
+  },
+  {
+    "number": "69",
+    "issueName": "The X-Men #69 (1971)",
+    "coverDate": "1971-04-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/10/xmen-v1-69.jpg"
+  },
+  {
+    "number": "70",
+    "issueName": "The X-Men #70 (1971)",
+    "coverDate": "1971-06-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/10/xmen-v1-70.jpg"
+  },
+  {
+    "number": "71",
+    "issueName": "The X-Men #71 (1971)",
+    "coverDate": "1971-08-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/10/xmen-v1-71.jpg"
+  },
+  {
+    "number": "72",
+    "issueName": "The X-Men #72 (1971)",
+    "coverDate": "1971-10-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/10/xmen-v1-72.jpg"
+  },
+  {
+    "number": "73",
+    "issueName": "The X-Men #73 (1971)",
+    "coverDate": "1971-12-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/10/xmen-v1-73.jpg"
+  },
+  {
+    "number": "74",
+    "issueName": "The X-Men #74 (1972)",
+    "coverDate": "1972-02-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/10/xmen-v1-74.jpg"
+  },
+  {
+    "number": "75",
+    "issueName": "The X-Men #75 (1972)",
+    "coverDate": "1972-04-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/10/xmen-v1-75.jpg"
+  },
+  {
+    "number": "76",
+    "issueName": "The X-Men #76 (1972)",
+    "coverDate": "1972-06-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/10/xmen-v1-76.jpg"
+  },
+  {
+    "number": "77",
+    "issueName": "The X-Men #77 (1972)",
+    "coverDate": "1972-08-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/10/xmen-v1-77.jpg"
+  },
+  {
+    "number": "78",
+    "issueName": "The X-Men #78 (1972)",
+    "coverDate": "1972-10-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/10/xmen-v1-78.jpg"
+  },
+  {
+    "number": "79",
+    "issueName": "The X-Men #79 (1972)",
+    "coverDate": "1972-12-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/10/xmen-v1-79.jpg"
+  },
+  {
+    "number": "80",
+    "issueName": "The X-Men #80 (1973)",
+    "coverDate": "1973-02-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/10/xmen-v1-80.jpg"
+  },
+  {
+    "number": "81",
+    "issueName": "The X-Men #81 (1973)",
+    "coverDate": "1973-04-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/10/xmen-v1-81.jpg"
+  },
+  {
+    "number": "82",
+    "issueName": "The X-Men #82 (1973)",
+    "coverDate": "1973-06-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/10/xmen-v1-82.jpg"
+  },
+  {
+    "number": "83",
+    "issueName": "The X-Men #83 (1973)",
+    "coverDate": "1973-08-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/10/xmen-v1-83.jpg"
+  },
+  {
+    "number": "84",
+    "issueName": "The X-Men #84 (1973)",
+    "coverDate": "1973-10-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/10/xmen-v1-84.jpg"
+  },
+  {
+    "number": "85",
+    "issueName": "The X-Men #85 (1973)",
+    "coverDate": "1973-12-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/10/xmen-v1-85.jpg"
+  },
+  {
+    "number": "86",
+    "issueName": "The X-Men #86 (1974)",
+    "coverDate": "1974-02-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/10/xmen-v1-86.jpg"
+  },
+  {
+    "number": "87",
+    "issueName": "The X-Men #87 (1974)",
+    "coverDate": "1974-04-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/10/xmen-v1-87.jpg"
+  },
+  {
+    "number": "88",
+    "issueName": "The X-Men #88 (1974)",
+    "coverDate": "1974-06-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/10/xmen-v1-88.jpg"
+  },
+  {
+    "number": "89",
+    "issueName": "The X-Men #89 (1974)",
+    "coverDate": "1974-08-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/10/xmen-v1-89.jpg"
+  },
+  {
+    "number": "90",
+    "issueName": "The X-Men #90 (1974)",
+    "coverDate": "1974-10-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/10/xmen-v1-90.jpg"
+  },
+  {
+    "number": "91",
+    "issueName": "The X-Men #91 (1974)",
+    "coverDate": "1974-12-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/10/xmen-v1-91.jpg"
+  },
+  {
+    "number": "92",
+    "issueName": "The X-Men #92 (1975)",
+    "coverDate": "1975-02-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/10/xmen-v1-92.jpg"
+  },
+  {
+    "number": "93",
+    "issueName": "The X-Men #93 (1975)",
+    "coverDate": "1975-04-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/10/xmen-v1-93.jpg"
+  },
+  {
+    "number": "94",
+    "issueName": "The X-Men #94 (1975)",
+    "coverDate": "1975-08-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/10/xmen-v1-94.jpg"
+  },
+  {
+    "number": "95",
+    "issueName": "The X-Men #95 (1975)",
+    "coverDate": "1975-10-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/10/xmen-v1-95.jpg"
+  },
+  {
+    "number": "96",
+    "issueName": "The X-Men #96 (1975)",
+    "coverDate": "1975-12-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/10/xmen-v1-96.jpg"
+  },
+  {
+    "number": "97",
+    "issueName": "The X-Men #97 (1976)",
+    "coverDate": "1976-02-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/10/xmen-v1-97.jpg"
+  },
+  {
+    "number": "98",
+    "issueName": "The X-Men #98 (1976)",
+    "coverDate": "1976-04-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/10/xmen-v1-98.jpg"
+  },
+  {
+    "number": "99",
+    "issueName": "The X-Men #99 (1976)",
+    "coverDate": "1976-06-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/10/xmen-v1-99.jpg"
+  },
+  {
+    "number": "100",
+    "issueName": "The X-Men #100 (1976)",
+    "coverDate": "1976-08-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/10/xmen-v1-100.jpg"
+  },
+  {
+    "number": "101",
+    "issueName": "The X-Men #101 (1976)",
+    "coverDate": "1976-10-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/10/xmen-v1-101.jpg"
+  },
+  {
+    "number": "102",
+    "issueName": "The X-Men #102 (1976)",
+    "coverDate": "1976-12-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/10/xmen-v1-102.jpg"
+  },
+  {
+    "number": "103",
+    "issueName": "The X-Men #103 (1977)",
+    "coverDate": "1977-02-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/10/xmen-v1-103.jpg"
+  },
+  {
+    "number": "104",
+    "issueName": "The X-Men #104 (1977)",
+    "coverDate": "1977-04-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/10/xmen-v1-104.jpg"
+  },
+  {
+    "number": "105",
+    "issueName": "The X-Men #105 (1977)",
+    "coverDate": "1977-06-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/10/xmen-v1-105.jpg"
+  },
+  {
+    "number": "106",
+    "issueName": "The X-Men #106 (1977)",
+    "coverDate": "1977-08-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/11/xmen-v1-106.jpg"
+  },
+  {
+    "number": "107",
+    "issueName": "The X-Men #107 (1977)",
+    "coverDate": "1977-10-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/11/xmen-v1-107.jpg"
+  },
+  {
+    "number": "108",
+    "issueName": "The X-Men #108 (1977)",
+    "coverDate": "1977-12-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/11/xmen-v1-108.jpg"
+  },
+  {
+    "number": "109",
+    "issueName": "The X-Men #109 (1978)",
+    "coverDate": "1978-02-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/11/xmen-v1-109.jpg"
+  },
+  {
+    "number": "110",
+    "issueName": "The X-Men #110 (1978)",
+    "coverDate": "1978-04-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/11/xmen-v1-110.jpg"
+  },
+  {
+    "number": "111",
+    "issueName": "The X-Men #111 (1978)",
+    "coverDate": "1978-06-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/11/xmen-v1-111.jpg"
+  },
+  {
+    "number": "112",
+    "issueName": "The X-Men #112 (1978)",
+    "coverDate": "1978-08-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/11/xmen-v1-112.jpg"
+  },
+  {
+    "number": "113",
+    "issueName": "The X-Men #113 (1978)",
+    "coverDate": "1978-09-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/11/xmen-v1-113.jpg"
+  },
+  {
+    "number": "114",
+    "issueName": "The X-Men #114 (1978)",
+    "coverDate": "1978-10-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/11/xmen-v1-114.jpg"
+  },
+  {
+    "number": "115",
+    "issueName": "The X-Men #115 (1978)",
+    "coverDate": "1978-11-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/11/xmen-v1-115.jpg"
+  },
+  {
+    "number": "116",
+    "issueName": "The X-Men #116 (1978)",
+    "coverDate": "1978-12-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/11/xmen-v1-116.jpg"
+  },
+  {
+    "number": "117",
+    "issueName": "The X-Men #117 (1979)",
+    "coverDate": "1979-01-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/11/xmen-v1-117.jpg"
+  },
+  {
+    "number": "118",
+    "issueName": "The X-Men #118 (1979)",
+    "coverDate": "1979-02-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/11/xmen-v1-118.jpg"
+  },
+  {
+    "number": "119",
+    "issueName": "The X-Men #119 (1979)",
+    "coverDate": "1979-03-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/11/xmen-v1-119.jpg"
+  },
+  {
+    "number": "120",
+    "issueName": "The X-Men #120 (1979)",
+    "coverDate": "1979-04-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/11/xmen-v1-120.jpg"
+  },
+  {
+    "number": "121",
+    "issueName": "The X-Men #121 (1979)",
+    "coverDate": "1979-05-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/11/xmen-v1-121.jpg"
+  },
+  {
+    "number": "122",
+    "issueName": "The X-Men #122 (1979)",
+    "coverDate": "1979-06-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/11/xmen-v1-122.jpg"
+  },
+  {
+    "number": "123",
+    "issueName": "The X-Men #123 (1979)",
+    "coverDate": "1979-07-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/11/xmen-v1-123.jpg"
+  },
+  {
+    "number": "124",
+    "issueName": "The X-Men #124 (1979)",
+    "coverDate": "1979-08-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/11/xmen-v1-124.jpg"
+  },
+  {
+    "number": "125",
+    "issueName": "The X-Men #125 (1979)",
+    "coverDate": "1979-09-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/11/xmen-v1-125.jpg"
+  },
+  {
+    "number": "126",
+    "issueName": "The X-Men #126 (1979)",
+    "coverDate": "1979-10-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/11/xmen-v1-126.jpg"
+  },
+  {
+    "number": "127",
+    "issueName": "The X-Men #127 (1979)",
+    "coverDate": "1979-11-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/11/xmen-v1-127.jpg"
+  },
+  {
+    "number": "128",
+    "issueName": "The X-Men #128 (1979)",
+    "coverDate": "1979-12-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/11/xmen-v1-128.jpg"
+  },
+  {
+    "number": "129",
+    "issueName": "The X-Men #129 (1980)",
+    "coverDate": "1980-01-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/11/xmen-v1-129.jpg"
+  },
+  {
+    "number": "130",
+    "issueName": "The X-Men #130 (1980)",
+    "coverDate": "1980-02-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/11/xmen-v1-130.jpg"
+  },
+  {
+    "number": "131",
+    "issueName": "The X-Men #131 (1980)",
+    "coverDate": "1980-03-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/11/xmen-v1-131.jpg"
+  },
+  {
+    "number": "132",
+    "issueName": "The X-Men #132 (1980)",
+    "coverDate": "1980-04-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/11/xmen-v1-132.jpg"
+  },
+  {
+    "number": "133",
+    "issueName": "The X-Men #133 (1980)",
+    "coverDate": "1980-05-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/11/xmen-v1-133.jpg"
+  },
+  {
+    "number": "134",
+    "issueName": "The X-Men #134 (1980)",
+    "coverDate": "1980-06-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/11/xmen-v1-134.jpg"
+  },
+  {
+    "number": "135",
+    "issueName": "The X-Men #135 (1980)",
+    "coverDate": "1980-07-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/11/xmen-v1-135.jpg"
+  },
+  {
+    "number": "136",
+    "issueName": "The X-Men #136 (1980)",
+    "coverDate": "1980-08-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/11/xmen-v1-136.jpg"
+  },
+  {
+    "number": "137",
+    "issueName": "The X-Men #137 (1980)",
+    "coverDate": "1980-09-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/11/xmen-v1-137.jpg"
+  },
+  {
+    "number": "138",
+    "issueName": "The X-Men #138 (1980)",
+    "coverDate": "1980-10-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/11/xmen-v1-138.jpg"
+  },
+  {
+    "number": "139",
+    "issueName": "The X-Men #139 (1980)",
+    "coverDate": "1980-11-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/11/xmen-v1-139.jpg"
+  },
+  {
+    "number": "140",
+    "issueName": "The X-Men #140 (1980)",
+    "coverDate": "1980-12-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/11/xmen-v1-140.jpg"
+  },
+  {
+    "number": "141",
+    "issueName": "The X-Men #141 (1981)",
+    "coverDate": "1981-01-01",
+    "image": "https://static.metron.cloud/media/issue/2020/10/11/xmen-v1-141.jpg"
+  }
+]
