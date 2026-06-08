@@ -95,12 +95,14 @@ async function metronFetch(url) {
       res = await fetch(url, { headers: HEADERS });
     } catch (err) {
       // Network-level failure (ECONNREFUSED, ECONNRESET, ETIMEDOUT, etc.).
-      // GitHub Actions runners can get temporarily IP-blocked by Metron — treat
-      // these like 5xx and retry rather than crashing the whole run.
+      // This likely means Metron is blocking this runner's IP. Do NOT retry —
+      // repeated connection attempts from rotating IPs is what causes account bans.
+      // Exit immediately so the problem can be reviewed manually.
       const code = err.cause?.code ?? err.code ?? err.message;
-      console.log(`\n  Network error on attempt ${attempt}/3: ${code}. Waiting 30s...`);
-      await sleep(30000);
-      continue;
+      console.error(`\n  Network error: ${code}`);
+      console.error(`  URL: ${url}`);
+      console.error(`  Metron may be blocking this runner's IP. Aborting — check manually before re-running.`);
+      process.exit(1);
     }
 
     if (res.status === 429) {
