@@ -56,7 +56,18 @@ function sleep(ms) { return new Promise((r) => setTimeout(r, ms)); }
 // Wraps fetch with rate-limit handling, retries, and polite delay.
 async function metronFetch(url) {
   for (let attempt = 1; attempt <= 3; attempt++) {
-    const res = await fetch(url, { headers: HEADERS });
+    let res;
+    try {
+      res = await fetch(url, { headers: HEADERS });
+    } catch (err) {
+      // Network-level failure (ECONNREFUSED, ECONNRESET, ETIMEDOUT, etc.).
+      // GitHub Actions runners can get temporarily IP-blocked by Metron — treat
+      // these like 5xx and retry rather than crashing the whole run.
+      const code = err.cause?.code ?? err.code ?? err.message;
+      console.log(`\n  Network error on attempt ${attempt}/3: ${code}. Waiting 30s...`);
+      await sleep(30000);
+      continue;
+    }
 
     if (res.status === 429) {
       // Use the burst-reset timestamp for a precise wait; fall back to Retry-After;
