@@ -145,6 +145,8 @@ while (nextUrl) {
       yearEnd: s.year_end || null,
       volume: s.volume || null,
       issueCount: s.issue_count || 0,
+      // modified is used by refresh-series-issues.js to skip unchanged series.
+      modified: s.modified || null,
     });
   }
 

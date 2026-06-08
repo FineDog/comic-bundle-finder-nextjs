@@ -4,7 +4,6 @@ import { useState, useEffect, useRef } from "react";
 import Head from "next/head";
 import Link from "next/link";
 import { SERIES, SERIES_GROUPS, getSeriesConfig } from "../../lib/series-config";
-import { fetchMetronSeriesMeta } from "../../lib/metron-issues";
 import SiteNav from "../../components/SiteNav";
 import SiteFooter from "../../components/SiteFooter";
 import ResultsPanel from "../../components/ResultsPanel";
@@ -458,21 +457,16 @@ export async function getStaticProps({ params }) {
     const index = loadSeriesIndex();
     const entry = index?.find((s) => s.id === metronId);
 
-    if (entry) {
-      // Fast path: read from static index (no Metron call)
-      seriesName = entry.name;
-      yearEnd = entry.yearEnd;
-      vol = entry.volume;
-      totalIssues = entry.issueCount;
-    } else {
-      // Fallback: live Metron call (used before first index build, or for very new series)
-      const meta = await fetchMetronSeriesMeta(metronId);
-      if (!meta) return { notFound: true };
-      seriesName = meta.name || meta.series || "";
-      yearEnd = meta.year_end || null;
-      vol = meta.volume || null;
-      totalIssues = meta.issue_count || 0;
+    if (!entry) {
+      // Series not in series-index.json — either a stale URL or too new for the last
+      // weekly index refresh (runs every Sunday). Never call Metron from Vercel.
+      return { notFound: true };
     }
+
+    seriesName  = entry.name;
+    yearEnd     = entry.yearEnd;
+    vol         = entry.volume;
+    totalIssues = entry.issueCount;
 
     const baseName = seriesName.replace(/\s*\(\d{4,}\)\s*$/, "").trim();
     const yearMatch = /\((\d{4})\)\s*$/.exec(seriesName.trim());
