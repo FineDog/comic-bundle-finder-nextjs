@@ -25,8 +25,12 @@ on:
     - cron: "30 6 * * *"   # 6:30 AM UTC daily (2:30 AM Eastern)
   workflow_dispatch:
     inputs:
+      offset:
+        description: "FULL RUN CHUNK: start index in arc list (leave blank for incremental or full)"
+        required: false
+        default: ""
       limit:
-        description: "Max arcs to process in Phase 2 (leave blank for all)"
+        description: "FULL RUN CHUNK: number of arcs to process (leave blank for all)"
         required: false
         default: ""
 
@@ -60,7 +64,8 @@ jobs:
         env:
           METRON_USERNAME: ${{ secrets.METRON_USERNAME }}
           METRON_PASSWORD: ${{ secrets.METRON_PASSWORD }}
-          METRON_ARC_LIMIT: ${{ github.event.inputs.limit }}
+          METRON_ARC_OFFSET: ${{ github.event.inputs.offset }}
+          METRON_ARC_LIMIT:  ${{ github.event.inputs.limit }}
         run: node scripts/refresh-arc-index.js
       - name: Commit and push arc index
         run: |
