@@ -198,13 +198,26 @@ while (nextUrl) {
 
 console.log(`\n${arcsFromMetron.length} arcs to process (${isIncremental ? "incremental delta" : "full index"}).`);
 
-// In full mode, skip arcs that already exist AND where METRON_ARC_LIMIT is set
-// (useful for test runs). Otherwise process everything that came back.
+// Chunked full-run support (METRON_ARC_OFFSET + METRON_ARC_LIMIT).
+// Allows the one-time full run to be spread across multiple GitHub Actions jobs,
+// each safely within the 5,000/day API limit and 6-hour job time limit.
+// Example:
+//   Run 1: METRON_ARC_OFFSET=0    METRON_ARC_LIMIT=1500  (arcs 0–1499)
+//   Run 2: METRON_ARC_OFFSET=1500 METRON_ARC_LIMIT=1500  (arcs 1500–2999)
+// Each chunk: ~23 (list) + 1500 × 2.5 ≈ 3,775 calls — within the 5,000/day limit.
+// Time: ~3.7 hours — within the 6-hour GitHub Actions limit.
+//
+// In incremental mode, OFFSET and LIMIT are ignored.
+const arcOffset = parseInt(process.env.METRON_ARC_OFFSET || "0", 10);
+const arcLimit  = parseInt(process.env.METRON_ARC_LIMIT  || "",  10);
+const isChunked = !isIncremental && arcLimit > 0;
+
 let toProcess = arcsFromMetron;
-const arcLimit = parseInt(process.env.METRON_ARC_LIMIT || "", 10);
-if (!isIncremental && arcLimit > 0) {
-  toProcess = arcsFromMetron.slice(0, arcLimit);
-  console.log(`  *** TEST MODE: limiting to first ${arcLimit} arcs ***`);
+if (isChunked) {
+  const off = Number.isFinite(arcOffset) && arcOffset >= 0 ? arcOffset : 0;
+  toProcess = arcsFromMetron.slice(off, off + arcLimit);
+  console.log(`  Chunked full run: processing arcs[${off}..${off + toProcess.length - 1}] (${toProcess.length} arcs).`);
+  console.log(`  Manifest will NOT be written for a partial run — write it manually after all chunks complete.`);
 }
 
 // ── Phase 2: Fetch detail + issue list for each arc ───────────────────────────
@@ -257,10 +270,21 @@ console.log("\n  done.");
 // ── Write output files ────────────────────────────────────────────────────────
 const output = Array.from(existingArcs.values()).sort((a, b) => a.name.localeCompare(b.name));
 mkdirSync(outDir, { recursive: true });
-writeFileSync(outPath,     JSON.stringify(output));
-writeFileSync(issuesPath,  JSON.stringify(existingIssues));
-writeFileSync(manifestPath, JSON.stringify({ lastRun: thisRunStart }));
+writeFileSync(outPath,    JSON.stringify(output));
+writeFileSync(issuesPath, JSON.stringify(existingIssues));
 
 console.log(`\nWrote ${output.length} arcs to arc-index.json (${toProcess.length} updated, ${output.length - toProcess.length} unchanged).`);
 console.log(`Wrote arc-issues.json (${Object.keys(existingIssues).length} arcs with issues).`);
-console.log(`Wrote arc-manifest.json (lastRun = ${thisRunStart}).`);
+
+// Write the manifest only after a COMPLETE run (incremental, or full without a limit).
+// Chunked full runs are partial by definition — writing the manifest prematurely would
+// cause the next run to skip the un-processed portion via modified_gt.
+if (!isChunked) {
+  writeFileSync(manifestPath, JSON.stringify({ lastRun: thisRunStart }));
+  console.log(`Wrote arc-manifest.json (lastRun = ${thisRunStart}).`);
+} else {
+  console.log(`\nChunked run complete. arc-manifest.json was NOT written.`);
+  console.log(`After all chunks finish, create the manifest manually to enable incremental mode:`);
+  console.log(`  echo '{"lastRun":"${thisRunStart}"}' > public/data/arc-manifest.json`);
+  console.log(`  git add public/data/arc-manifest.json && git commit -m "chore: seed arc manifest"`);
+}
