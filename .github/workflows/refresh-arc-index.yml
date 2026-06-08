@@ -27,6 +27,19 @@ jobs:
           cache: "npm"
       - name: Install dependencies
         run: npm ci
+      - name: Test Metron reachability
+        env:
+          METRON_USERNAME: ${{ secrets.METRON_USERNAME }}
+          METRON_PASSWORD: ${{ secrets.METRON_PASSWORD }}
+        run: |
+          HTTP=$(curl -s -o /dev/null -w "%{http_code}" -u "${METRON_USERNAME}:${METRON_PASSWORD}" "https://metron.cloud/api/arc/?page_size=1")
+          echo "Metron HTTP status: $HTTP"
+          if [ "$HTTP" != "200" ]; then
+            echo "Non-200 response — credentials may be wrong or IP may be blocked."
+            curl -s -u "${METRON_USERNAME}:${METRON_PASSWORD}" "https://metron.cloud/api/arc/?page_size=1" | head -c 200
+            exit 1
+          fi
+          echo "Metron reachable. Proceeding."
       - name: Fetch arc index from Metron
         env:
           METRON_USERNAME: ${{ secrets.METRON_USERNAME }}
