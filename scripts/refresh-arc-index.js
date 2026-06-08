@@ -1,20 +1,31 @@
-// Fetches all story arcs from the Metron API and writes two static files:
-//   public/data/arc-index.json  — arc metadata (id, name, slug, issueCount)
+// Fetches story arc data from the Metron API and writes static files:
+//   public/data/arc-index.json  — arc metadata (id, name, desc, slug, issueCount)
 //   public/data/arc-issues.json — arc issue lists keyed by arc ID
+//   public/data/arc-manifest.json — internal; stores lastRun timestamp for incremental runs
 //
-// Both files are committed to the repo by GitHub Actions so Vercel serves them
-// as static assets — no Vercel Blob writes, no Advanced Operations consumed.
+// Both data files are committed to the repo by GitHub Actions so Vercel serves them
+// as static assets — no live Metron calls, no Vercel Blob writes.
 //
-// Run nightly via GitHub Actions. Also runnable manually:
-//   METRON_USERNAME=x METRON_PASSWORD=y node scripts/refresh-arc-index.js
+// ── RUN MODES ────────────────────────────────────────────────────────────────
 //
-// ─── Metron API rules (DO NOT VIOLATE) ───────────────────────────────────────
+// INCREMENTAL (default after first run):
+//   Reads arc-manifest.json for the lastRun timestamp. Calls
+//   GET /api/arc/?modified_gt={lastRun} to get only arcs that changed.
+//   Fetches detail + issue list for those arcs only. Typically 0–10 arcs/day.
+//   Updates the stored data in place and writes the manifest with a new timestamp.
+//
+// FULL (first run, or when arc-manifest.json is absent):
+//   Fetches all arcs from Metron and builds the index from scratch.
+//   This is a one-time operation (~2,215 arcs × ~2 calls each ≈ several hours).
+//   After completion the manifest is written; all future runs are incremental.
+//   To force a full re-run: delete arc-manifest.json from the repo.
+//
+// ── METRON API RULES (DO NOT VIOLATE) ────────────────────────────────────────
 //   Rate limits:  20 requests/minute  ·  5,000 requests/day
 //   Concurrency:  Sequential only — NO parallel requests from this script.
 //   Delay:        REQUEST_DELAY_MS between every Metron request (default 3500ms
 //                 = ~17 req/min, safely under the 20/min burst limit).
-//   Headers:      Check X-RateLimit-Remaining before each request; pause if low.
-//   Retries:      Only on HTTP 429 (honour Retry-After header) or 5xx.
+//   Retries:      Only on HTTP 429 (honour reset timestamp) or 5xx.
 //                 Never retry 4xx errors other than 429.
 //   Source:       https://metron-project.github.io/blog/api-best-practices
 // ─────────────────────────────────────────────────────────────────────────────
@@ -39,33 +50,23 @@ const HEADERS = {
 
 // 3.5 seconds between requests ≈ 17 req/min (under the 20/min burst limit)
 const REQUEST_DELAY_MS = 3500;
-// How many remaining requests in either window triggers a precautionary pause
 const RATE_LIMIT_LOW_THRESHOLD = 3;
 
 function toSlug(name) {
-  return name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
+  return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
 }
 
-function sleep(ms) {
-  return new Promise((r) => setTimeout(r, ms));
-}
+function sleep(ms) { return new Promise((r) => setTimeout(r, ms)); }
 
-// Wraps fetch with:
-//   - 3-retry logic on 429 (honours Retry-After) or 5xx
-//   - Proactive rate-limit header check
-//   - REQUEST_DELAY_MS wait after each successful response
-// Returns the Response, or null on permanent failure.
+// Wraps fetch with rate-limit handling, retries, and polite delay.
 async function metronFetch(url) {
   for (let attempt = 1; attempt <= 3; attempt++) {
     const res = await fetch(url, { headers: HEADERS });
 
     if (res.status === 429) {
       // Use the burst-reset timestamp for a precise wait; fall back to Retry-After;
-      // enforce a 60 s floor in all cases.
-      // NOTE: Retry-After can be a date string — parseInt of that returns NaN,
+      // enforce a 60 s floor.
+      // NOTE: Retry-After can be a date string — parseInt returns NaN,
       //       and sleep(NaN) fires immediately. Always guard with isFinite().
       const burstReset = parseInt(res.headers.get("X-RateLimit-Burst-Reset") ?? "0", 10);
       const rawRetry  = parseInt(res.headers.get("retry-after")              ?? "0", 10);
@@ -84,8 +85,7 @@ async function metronFetch(url) {
       continue;
     }
 
-    // Stop immediately on auth failure — retrying a 401/403 will never succeed
-    // and wastes quota (or hammers a disabled account).
+    // Stop immediately on auth failure — retrying a disabled account wastes quota.
     if (res.status === 401 || res.status === 403) {
       console.error(`\n  ${res.status} auth error — check credentials. Aborting.`);
       process.exit(1);
@@ -93,190 +93,174 @@ async function metronFetch(url) {
 
     // Proactively check both rate-limit windows.
     // Correct header names: X-RateLimit-Burst-Remaining (per-minute) and
-    // X-RateLimit-Sustained-Remaining (per-day). The old "X-RateLimit-Remaining"
-    // header does not exist — reading it always returned null → 999 → never paused.
+    // X-RateLimit-Sustained-Remaining (per-day). "X-RateLimit-Remaining" doesn't exist.
     const burstRemaining     = parseInt(res.headers.get("X-RateLimit-Burst-Remaining")     ?? "999", 10);
     const sustainedRemaining = parseInt(res.headers.get("X-RateLimit-Sustained-Remaining") ?? "999", 10);
     if (burstRemaining <= RATE_LIMIT_LOW_THRESHOLD) {
-      const resetTs  = parseInt(res.headers.get("X-RateLimit-Burst-Reset") ?? "0", 10);
-      const now      = Math.floor(Date.now() / 1000);
-      const waitSec  = Math.max(resetTs > now ? resetTs - now + 2 : 65, 65);
+      const resetTs = parseInt(res.headers.get("X-RateLimit-Burst-Reset") ?? "0", 10);
+      const now     = Math.floor(Date.now() / 1000);
+      const waitSec = Math.max(resetTs > now ? resetTs - now + 2 : 65, 65);
       console.log(`\n  Burst limit low (${burstRemaining} remaining). Pausing ${waitSec}s...`);
       await sleep(waitSec * 1000);
     } else if (sustainedRemaining <= RATE_LIMIT_LOW_THRESHOLD) {
-      const resetTs  = parseInt(res.headers.get("X-RateLimit-Sustained-Reset") ?? "0", 10);
-      const now      = Math.floor(Date.now() / 1000);
-      const waitSec  = Math.max(resetTs > now ? resetTs - now + 2 : 65, 65);
+      const resetTs = parseInt(res.headers.get("X-RateLimit-Sustained-Reset") ?? "0", 10);
+      const now     = Math.floor(Date.now() / 1000);
+      const waitSec = Math.max(resetTs > now ? resetTs - now + 2 : 65, 65);
       console.log(`\n  Daily limit low (${sustainedRemaining} remaining). Pausing ${waitSec}s...`);
       await sleep(waitSec * 1000);
     }
 
-    // Polite delay after every successful Metron response
     await sleep(REQUEST_DELAY_MS);
     return res;
   }
-  // All retries exhausted — pause before returning so the outer loop doesn't
-  // immediately fire the next request with no delay.
-  console.log(`\n  All retries exhausted for ${url}. Pausing ${REQUEST_DELAY_MS}ms before continuing.`);
+  console.log(`\n  All retries exhausted for ${url}. Pausing before continuing.`);
   await sleep(REQUEST_DELAY_MS);
   return null;
 }
 
-// ── Load existing data ────────────────────────────────────────────────────────
-const outDir = join(process.cwd(), "public", "data");
-const outPath = join(outDir, "arc-index.json");
-const issuesPath = join(outDir, "arc-issues.json");
+// ── File paths ────────────────────────────────────────────────────────────────
+const outDir      = join(process.cwd(), "public", "data");
+const outPath     = join(outDir, "arc-index.json");
+const issuesPath  = join(outDir, "arc-issues.json");
+const manifestPath = join(outDir, "arc-manifest.json");
 
-/** @type {Map<number, { issueCount: number, modified: string }>} */
-const existing = new Map();
+// Capture run-start time before any Metron calls. Used as the new lastRun value.
+// Setting it at start (not end) ensures the next incremental run won't miss arcs
+// that were modified on Metron while this run was in progress.
+const thisRunStart = new Date().toISOString();
+
+// ── Load existing data ────────────────────────────────────────────────────────
+/** @type {Map<number, {id, name, desc, slug, issueCount}>} */
+const existingArcs = new Map();
 try {
   for (const arc of JSON.parse(readFileSync(outPath, "utf-8"))) {
-    existing.set(arc.id, { issueCount: arc.issueCount || 0, modified: arc.modified || "", desc: arc.desc || "" });
+    existingArcs.set(arc.id, arc);
   }
-  console.log(`Loaded ${existing.size} existing arcs from arc-index.json`);
+  console.log(`Loaded ${existingArcs.size} existing arcs from arc-index.json.`);
 } catch {
-  console.log("No existing arc-index.json — starting fresh.");
+  console.log("No existing arc-index.json — full run required.");
 }
 
 /** @type {Record<number, string[]>} */
-let existingIssues = {};
+const existingIssues = {};
 try {
-  existingIssues = JSON.parse(readFileSync(issuesPath, "utf-8"));
-  console.log(`Loaded arc-issues.json (${Object.keys(existingIssues).length} arcs)`);
+  Object.assign(existingIssues, JSON.parse(readFileSync(issuesPath, "utf-8")));
+  console.log(`Loaded arc-issues.json (${Object.keys(existingIssues).length} arcs with issues).`);
 } catch {
-  console.log("No existing arc-issues.json — starting fresh.");
+  console.log("No existing arc-issues.json — will build from scratch.");
 }
 
-// ── Phase 1: fetch arc list ───────────────────────────────────────────────────
-const arcs = [];
-let nextUrl = "https://metron.cloud/api/arc/?page_size=100";
+let manifest = null;
+try {
+  manifest = JSON.parse(readFileSync(manifestPath, "utf-8"));
+  console.log(`Manifest found: lastRun = ${manifest.lastRun}`);
+} catch {
+  console.log("No arc-manifest.json — this will be a full run.");
+}
+
+// ── Determine run mode ────────────────────────────────────────────────────────
+// Incremental requires both a manifest with a lastRun timestamp and an existing
+// index to merge changes into. Without those, fall back to full mode.
+const isIncremental = !!manifest?.lastRun && existingArcs.size > 0;
+
+if (isIncremental) {
+  console.log(`\nINCREMENTAL MODE — only fetching arcs modified since ${manifest.lastRun}`);
+  console.log(`Existing index has ${existingArcs.size} arcs; only changes will be fetched and merged.`);
+} else {
+  console.log(`\nFULL MODE — fetching all arcs from Metron.`);
+  console.log(`(This is a one-time operation. Future runs will be incremental.)`);
+  console.log(`Sequential requests at ${REQUEST_DELAY_MS}ms delay (~${Math.round(60000 / REQUEST_DELAY_MS)} req/min).`);
+}
+
+// ── Phase 1: Fetch arc list ───────────────────────────────────────────────────
+// Incremental: only arcs modified since lastRun (usually 0–10 per day).
+// Full: all arcs (one-time, ~23 pages).
+const arcsFromMetron = []; // Arc objects as returned by the Metron list endpoint
+let nextUrl = isIncremental
+  ? `https://metron.cloud/api/arc/?modified_gt=${encodeURIComponent(manifest.lastRun)}&page_size=100`
+  : "https://metron.cloud/api/arc/?page_size=100";
 let page = 1;
 
-console.log("\nPhase 1 — Fetching arc list from Metron...");
-
+console.log("\nFetching arc list...");
 while (nextUrl) {
   process.stdout.write(`  Page ${page}... `);
-
   const res = await metronFetch(nextUrl);
   if (!res || !res.ok) {
     console.error(`\nFailed to fetch arc list page ${page} (status ${res?.status}). Aborting.`);
     process.exit(1);
   }
-
   const data = await res.json();
-
-  for (const arc of data.results || []) {
-    arcs.push({
-      id: arc.id,
-      name: arc.name,
-      desc: existing.get(arc.id)?.desc || arc.desc || "", // preserved from previous run; overwritten in Phase 2
-      slug: `${arc.id}-${toSlug(arc.name)}`,
-      modified: arc.modified || "",
-      issueCount: existing.get(arc.id)?.issueCount || 0, // will be updated in Phase 2
-    });
-  }
-
-  console.log(`${data.results?.length ?? 0} arcs (${arcs.length} total)`);
+  arcsFromMetron.push(...(data.results || []));
+  console.log(`${data.results?.length ?? 0} arcs (${arcsFromMetron.length} total so far)`);
   nextUrl = data.next || null;
   page++;
 }
 
-// ── Phase 2: fetch issue lists for changed arcs ───────────────────────────────
-// Only re-fetches arcs whose `modified` timestamp has changed since last run.
-// Arcs that need issue list re-fetch: modified timestamp changed or issueCount missing.
-const toFetchIssues = new Set(
-  arcs
-    .filter((arc) => {
-      const prev = existing.get(arc.id);
-      return !prev || prev.modified !== arc.modified || prev.issueCount === 0;
-    })
-    .map((arc) => arc.id)
-);
+console.log(`\n${arcsFromMetron.length} arcs to process (${isIncremental ? "incremental delta" : "full index"}).`);
 
-// Arcs that need a desc fetch: missing desc (one-time backfill) or being re-fetched anyway.
-const toFetchDesc = new Set(
-  arcs
-    .filter((arc) => {
-      const prev = existing.get(arc.id);
-      return !prev?.desc || toFetchIssues.has(arc.id);
-    })
-    .map((arc) => arc.id)
-);
-
-let toProcess = arcs.filter((arc) => toFetchIssues.has(arc.id) || toFetchDesc.has(arc.id));
-
+// In full mode, skip arcs that already exist AND where METRON_ARC_LIMIT is set
+// (useful for test runs). Otherwise process everything that came back.
+let toProcess = arcsFromMetron;
 const arcLimit = parseInt(process.env.METRON_ARC_LIMIT || "", 10);
-if (arcLimit > 0) {
-  toProcess = toProcess.slice(0, arcLimit);
-  console.log(`\n  *** TEST MODE: limiting Phase 2 to first ${arcLimit} arcs ***`);
+if (!isIncremental && arcLimit > 0) {
+  toProcess = arcsFromMetron.slice(0, arcLimit);
+  console.log(`  *** TEST MODE: limiting to first ${arcLimit} arcs ***`);
 }
 
-console.log(
-  `\nPhase 2 — Processing ${toProcess.length} arcs` +
-  ` (${toFetchIssues.size} issue re-fetches, ${toFetchDesc.size} desc fetches,` +
-  ` ${arcs.length - toProcess.length} fully unchanged).`
-);
-console.log(`  Sequential requests at ${REQUEST_DELAY_MS}ms delay (~${Math.round(60000 / REQUEST_DELAY_MS)} req/min).\n`);
+// ── Phase 2: Fetch detail + issue list for each arc ───────────────────────────
+console.log(`\nFetching details and issue lists for ${toProcess.length} arcs...`);
+console.log(`Sequential requests at ${REQUEST_DELAY_MS}ms delay.\n`);
 
 for (let i = 0; i < toProcess.length; i++) {
   const arc = toProcess[i];
   process.stdout.write(`\r  [${i + 1}/${toProcess.length}] arc ${arc.id} — ${arc.name.slice(0, 40).padEnd(40)}`);
 
-  // Fetch desc if needed (one detail call per arc, skipped once all arcs have desc)
-  if (toFetchDesc.has(arc.id)) {
-    const detailRes = await metronFetch(`https://metron.cloud/api/arc/${arc.id}/`);
-    if (detailRes?.ok) {
-      try { arc.desc = (await detailRes.json()).desc || ""; } catch { /* keep existing */ }
-    }
+  const slug = `${arc.id}-${toSlug(arc.name)}`;
+
+  // Fetch arc detail for the description field
+  let desc = existingArcs.get(arc.id)?.desc || "";
+  const detailRes = await metronFetch(`https://metron.cloud/api/arc/${arc.id}/`);
+  if (detailRes?.ok) {
+    try { desc = (await detailRes.json()).desc || ""; } catch { /* keep existing */ }
   }
 
-  // Fetch issue list only if modified or missing
-  if (toFetchIssues.has(arc.id)) {
-    const allIssues = [];
-    let issueUrl = `https://metron.cloud/api/arc/${arc.id}/issue_list/?page_size=100`;
-    let count = 0;
-
-    while (issueUrl) {
-      const issueRes = await metronFetch(issueUrl);
-      if (!issueRes || !issueRes.ok) break;
-
-      let issueData;
-      try { issueData = await issueRes.json(); } catch { break; }
-
-      count = issueData.count ?? count;
-      allIssues.push(...(issueData.results || []));
-      issueUrl = issueData.next || null;
-    }
-
-    const issues = allIssues
-      .map((issue) => {
-        const series = issue.series?.name || "";
-        const num = issue.number || "";
-        if (!series || !num) return "";
-        return `${series} #${num}`;
-      })
-      .filter(Boolean);
-
-    arc.issueCount = count;
-
-    if (issues.length > 0) {
-      existingIssues[arc.id] = issues;
-    }
+  // Fetch the complete issue list for this arc (may be multiple pages)
+  const allIssues = [];
+  let issueUrl = `https://metron.cloud/api/arc/${arc.id}/issue_list/?page_size=100`;
+  let count = 0;
+  while (issueUrl) {
+    const issueRes = await metronFetch(issueUrl);
+    if (!issueRes || !issueRes.ok) break;
+    let issueData;
+    try { issueData = await issueRes.json(); } catch { break; }
+    count = issueData.count ?? count;
+    allIssues.push(...(issueData.results || []));
+    issueUrl = issueData.next || null;
   }
+
+  const issues = allIssues
+    .map((issue) => {
+      const series = issue.series?.name || "";
+      const num    = issue.number || "";
+      if (!series || !num) return "";
+      return `${series} #${num}`;
+    })
+    .filter(Boolean);
+
+  // Merge into in-memory store
+  existingArcs.set(arc.id, { id: arc.id, name: arc.name, desc, slug, issueCount: count || issues.length });
+  if (issues.length > 0) existingIssues[arc.id] = issues;
 }
 
 console.log("\n  done.");
 
 // ── Write output files ────────────────────────────────────────────────────────
-// Strip internal `modified` field — not needed by the frontend
-const output = arcs.map(({ id, name, desc, slug, issueCount }) => ({ id, name, desc, slug, issueCount }));
-output.sort((a, b) => a.name.localeCompare(b.name));
-
+const output = Array.from(existingArcs.values()).sort((a, b) => a.name.localeCompare(b.name));
 mkdirSync(outDir, { recursive: true });
-writeFileSync(outPath, JSON.stringify(output));
-writeFileSync(issuesPath, JSON.stringify(existingIssues));
+writeFileSync(outPath,     JSON.stringify(output));
+writeFileSync(issuesPath,  JSON.stringify(existingIssues));
+writeFileSync(manifestPath, JSON.stringify({ lastRun: thisRunStart }));
 
-const processed = toProcess.length;
-const skipped = arcs.length - processed;
-console.log(`\nWrote ${arcs.length} arcs to arc-index.json (${processed} updated, ${skipped} unchanged).`);
+console.log(`\nWrote ${output.length} arcs to arc-index.json (${toProcess.length} updated, ${output.length - toProcess.length} unchanged).`);
 console.log(`Wrote arc-issues.json (${Object.keys(existingIssues).length} arcs with issues).`);
+console.log(`Wrote arc-manifest.json (lastRun = ${thisRunStart}).`);

@@ -1,10 +1,18 @@
-# Fetches all series from the Metron API and commits:
-#   public/data/series-index.json — series metadata for client-side search
-#                                   and static page generation
+# Keeps series metadata current using an incremental Metron sync.
 #
-# Runs weekly (not nightly) since series metadata changes rarely and the job
-# takes ~12 minutes to paginate through ~20,000 series at the safe Metron
-# rate limit. Run manually anytime via workflow_dispatch.
+# INCREMENTAL (daily, default after first run):
+#   Reads series-manifest.json for the lastRun timestamp. Calls Metron with
+#   modified_gt={lastRun} to fetch only changed series. Typically 0–20 calls/day.
+#
+# FULL (first run, or when series-manifest.json is absent from the repo):
+#   Fetches all ~15,000+ series (~160 pages, ~10 minutes). This is a one-time
+#   operation. After completion series-manifest.json is committed and all future
+#   runs are incremental.
+#   To force a full re-run: delete series-manifest.json from the repo and trigger manually.
+#
+# Commits:
+#   public/data/series-index.json   — series metadata
+#   public/data/series-manifest.json — lastRun timestamp (internal, enables incremental)
 #
 # Required GitHub secrets:
 #   METRON_USERNAME — Metron account username
@@ -14,8 +22,8 @@ name: Refresh Series Index
 
 on:
   schedule:
-    - cron: "0 7 * * 0"   # 7:00 AM UTC every Sunday
-  workflow_dispatch:        # allow manual trigger from GitHub UI
+    - cron: "0 7 * * *"    # 7:00 AM UTC daily (was weekly — incremental runs are cheap)
+  workflow_dispatch:         # allow manual trigger from GitHub UI
 
 permissions:
   contents: write
@@ -40,5 +48,5 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add public/data/series-index.json
+          git add public/data/series-index.json public/data/series-manifest.json
           git diff --staged --quiet || (git commit -m "chore: refresh series index" && git push)

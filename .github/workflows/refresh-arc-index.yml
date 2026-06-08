@@ -1,6 +1,18 @@
-# Fetches all story arcs from the Metron API and commits:
-#   public/data/arc-index.json  — arc metadata
-#   public/data/arc-issues.json — arc issue lists (replaces Vercel Blob writes)
+# Keeps arc data current using an incremental Metron sync.
+#
+# INCREMENTAL (daily, default after first run):
+#   Reads arc-manifest.json for the lastRun timestamp. Calls Metron with
+#   modified_gt={lastRun} to fetch only changed arcs. Typically 0–10 calls/day.
+#
+# FULL (first run, or when arc-manifest.json is absent from the repo):
+#   Fetches all arcs and builds the index from scratch (one-time, ~4–6 hours).
+#   After completion arc-manifest.json is committed; future runs are incremental.
+#   To force a full re-run: delete arc-manifest.json from the repo and trigger manually.
+#
+# Commits:
+#   public/data/arc-index.json   — arc metadata
+#   public/data/arc-issues.json  — arc issue lists
+#   public/data/arc-manifest.json — lastRun timestamp (internal, enables incremental)
 #
 # Required GitHub secrets:
 #   METRON_USERNAME — Metron account username
@@ -54,5 +66,5 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add public/data/arc-index.json public/data/arc-issues.json
+          git add public/data/arc-index.json public/data/arc-issues.json public/data/arc-manifest.json
           git diff --staged --quiet || (git commit -m "chore: refresh arc index" && git push)
