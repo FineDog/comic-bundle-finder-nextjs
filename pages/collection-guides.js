@@ -44,8 +44,7 @@ export default function CollectionGuides({ arcs }) {
   // Series search — client-side against lazily loaded static index
   const [seriesQuery, setSeriesQuery] = useState("");
   const [seriesResults, setSeriesResults] = useState(null);
-  const [seriesSubmittedQuery, setSeriesSubmittedQuery] = useState("");
-  // null = not loaded, "loading" = in flight, array = ready
+  // null = not loaded, array = ready
   const [seriesIndex, setSeriesIndex] = useState(null);
   const seriesIndexLoading = useRef(false);
 
@@ -66,29 +65,20 @@ export default function CollectionGuides({ arcs }) {
       });
   }, [seriesIndex]);
 
-  function handleSeriesSearch() {
+  // Filter results as-you-type once the index is loaded and the query is 3+ chars.
+  // Also fires when the index finishes loading, handling the race where the user
+  // typed before the index arrived.
+  useEffect(() => {
     const q = seriesQuery.trim();
-    if (q.length < 3) return;
-    setSeriesSubmittedQuery(q);
-    if (!seriesIndex) {
-      // Index still loading — results will appear once it arrives via the
-      // useEffect below that re-runs search when the index becomes ready.
+    if (q.length < 3) {
+      setSeriesResults(null);
       return;
     }
+    if (!seriesIndex) return; // index still in-flight; will re-run when it arrives
     const lower = q.toLowerCase();
     const matches = seriesIndex.filter((s) => s.name.toLowerCase().includes(lower));
     setSeriesResults(aggregateByBaseName(matches));
-  }
-
-  // When the index finishes loading, re-run any pending submitted query.
-  // Handles the race where the user clicked Search before the index arrived.
-  useEffect(() => {
-    if (!seriesIndex || seriesSubmittedQuery.length < 3) return;
-    const lower = seriesSubmittedQuery.toLowerCase();
-    const pending = seriesIndex.filter((s) => s.name.toLowerCase().includes(lower));
-    setSeriesResults(aggregateByBaseName(pending));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [seriesIndex]);
+  }, [seriesQuery, seriesIndex]);
 
   // Story arc local filtering
   const matches =
@@ -248,16 +238,15 @@ export default function CollectionGuides({ arcs }) {
               type="text"
               placeholder="e.g. Spider-Man, Daredevil, X-Men..."
               value={seriesQuery}
-              onChange={(e) => setSeriesQuery(e.target.value)}
+              onChange={(e) => { setSeriesQuery(e.target.value); ensureSeriesIndex(); }}
               onFocus={ensureSeriesIndex}
-              onKeyDown={(e) => { if (e.key === "Enter") handleSeriesSearch(); }}
               autoComplete="off"
               style={{ flex: 1 }}
             />
             <button
               type="button"
               className="search-btn"
-              onClick={handleSeriesSearch}
+              onClick={ensureSeriesIndex}
             >
               Search
             </button>
@@ -270,8 +259,8 @@ export default function CollectionGuides({ arcs }) {
             </p>
           )}
 
-          {/* Loading index / searching */}
-          {seriesResults === null && seriesSubmittedQuery.length >= 3 && seriesIndex === null && (
+          {/* Loading index while user has typed enough to search */}
+          {seriesResults === null && seriesQuery.trim().length >= 3 && seriesIndex === null && (
             <p className="arc-hint">Loading series index&hellip;</p>
           )}
 
@@ -280,12 +269,12 @@ export default function CollectionGuides({ arcs }) {
             <>
               {seriesResults.length === 0 ? (
                 <p className="arc-no-results">
-                  No series found for &ldquo;{seriesSubmittedQuery}&rdquo;.
+                  No series found for &ldquo;{seriesQuery.trim()}&rdquo;.
                 </p>
               ) : (
                 <>
                   <p className="arc-hint" style={{ marginBottom: "0.5rem" }}>
-                    {seriesResults.length} series found for &ldquo;{seriesSubmittedQuery}&rdquo;
+                    {seriesResults.length} series found for &ldquo;{seriesQuery.trim()}&rdquo;
                   </p>
                   <div className="arc-results">
                     {seriesResults.map((s) => (
