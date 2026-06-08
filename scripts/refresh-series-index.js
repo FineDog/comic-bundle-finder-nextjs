@@ -36,8 +36,6 @@ if (!USERNAME || !PASSWORD) {
 const AUTH = Buffer.from(`${USERNAME}:${PASSWORD}`).toString("base64");
 const HEADERS = {
   Authorization: `Basic ${AUTH}`,
-  Accept: "application/json",
-  "User-Agent": "ComicBundleFinder/2.0",
 };
 
 // 3.5 seconds between requests ≈ 17 req/min (under the 20/min burst limit)
