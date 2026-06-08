@@ -7,19 +7,15 @@
 //   to a live eBay fetch for any issues not yet cached.
 //
 // For dynamic series (slug = "metron-{id}"):
-//   Fetches the issue list from Metron via getMetronIssuesCached (7-day Blob TTL),
-//   then fetches eBay results live with a 1-hour Blob cache keyed by start+count.
-//
-// ⚠️  KNOWN GOLDEN RULE RISK: getMetronIssuesCached falls back to a live Metron
-//   fetch on a Blob cache miss. This runs on Vercel's rotating IPs. In practice,
-//   the 7-day TTL makes cache misses rare (only on first visit to a new series).
-//   A full fix would pre-populate issue lists via GitHub Actions. Tracked as a
-//   future improvement — do not add any other live Metron calls to this route.
+//   Reads the issue list from Vercel Blob (written nightly by scripts/refresh-series-issues.js
+//   via GitHub Actions). Returns 503 with notIndexed=true if the Blob entry is missing.
+//   NEVER calls the Metron API — all Metron access is done exclusively from GitHub Actions.
+//   eBay results are fetched live with a 1-hour Blob cache keyed by start+count.
 //
 // IMPORTANT — Blob operation budget:
 //   All cache reads use plain fetch() to the public CDN URL (bandwidth only, not an
-//   Advanced Operation).  put() is called on a cache miss — it is an Advanced Operation
-//   but fires at most once per series slice per hour.  list() and head() are never used.
+//   Advanced Operation).  put() fires at most once per series slice per hour.
+//   list() and head() are never used.
 
 import fs from "fs";
 import path from "path";
@@ -81,12 +77,14 @@ export default async function handler(req, res) {
   if (metronMatch) {
     const metronId = parseInt(metronMatch[1], 10);
 
-    // Fetch issue list (7-day Blob cache, CDN read only)
-    let allIssues;
-    try {
-      allIssues = await getMetronIssuesCached(metronId);
-    } catch (e) {
-      return res.status(502).json({ error: `Could not fetch issues from Metron: ${e.message}` });
+    // Read issue list from Blob (written by nightly GitHub Actions — never calls Metron).
+    // Returns null if the series has not yet been indexed by the nightly job.
+    const allIssues = await getMetronIssuesCached(metronId);
+    if (!allIssues) {
+      return res.status(503).json({
+        error: "This series has not been indexed yet. It will be available after the next nightly update (usually within 24 hours).",
+        notIndexed: true,
+      });
     }
 
     const batchIssues = allIssues.slice(startIdx, startIdx + count);

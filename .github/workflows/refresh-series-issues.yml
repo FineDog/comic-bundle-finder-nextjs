@@ -1,0 +1,56 @@
+# Keeps the Vercel Blob issue-list cache current for all "metron-*" dynamic series.
+#
+# INCREMENTAL RUN (nightly — default):
+#   Reads a manifest from Blob to find the last run timestamp, then fetches only the
+#   series that Metron marked as modified since then. Typically 0–20 Metron calls/night.
+#   If no manifest exists (first deployment), it creates one and prints backfill instructions.
+#
+# BACKFILL RUN (manual — first time or recovery):
+#   Set the `offset` and `limit` inputs to process series-index.json in chunks.
+#   Recommended limit: 1500 per run (~3–4 hours within GitHub Actions' 6-hour limit).
+#   Run multiple times with increasing offsets until all series are covered:
+#     offset=0,    limit=1500  (chunk 1)
+#     offset=1500, limit=1500  (chunk 2)
+#     ... etc.
+#
+# Required GitHub secrets:
+#   METRON_USERNAME     — Metron account username
+#   METRON_PASSWORD     — Metron account password
+#   BLOB_READ_WRITE_TOKEN — Vercel Blob token
+
+name: Refresh Series Issues
+
+on:
+  schedule:
+    - cron: "0 8 * * *"    # 8:00 AM UTC daily (after arc refresh at 5 AM, series index at 7 AM Sunday)
+  workflow_dispatch:
+    inputs:
+      offset:
+        description: "BACKFILL: start index in series-index.json (leave blank for incremental)"
+        required: false
+        default: ""
+      limit:
+        description: "BACKFILL: number of series to process (leave blank for incremental)"
+        required: false
+        default: ""
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350       # just under 6-hour GitHub Actions limit
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "20"
+          cache: "npm"
+      - name: Install dependencies
+        run: npm ci
+      - name: Refresh series issue lists
+        env:
+          METRON_USERNAME:       ${{ secrets.METRON_USERNAME }}
+          METRON_PASSWORD:       ${{ secrets.METRON_PASSWORD }}
+          BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
+          METRON_SERIES_OFFSET:  ${{ github.event.inputs.offset }}
+          METRON_SERIES_LIMIT:   ${{ github.event.inputs.limit }}
+        run: node scripts/refresh-series-issues.js
