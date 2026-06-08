@@ -32,31 +32,13 @@ jobs:
           METRON_USERNAME: ${{ secrets.METRON_USERNAME }}
           METRON_PASSWORD: ${{ secrets.METRON_PASSWORD }}
         run: |
-          echo "=== curl test ==="
-          CURL_BODY=$(curl -s -u "${METRON_USERNAME}:${METRON_PASSWORD}" "https://metron.cloud/api/arc/?page_size=1")
-          echo "curl first 120 chars: ${CURL_BODY:0:120}"
-
-          echo "=== Node.js fetch test (same headers as script) ==="
-          node --input-type=module <<'EOF'
-          const auth = Buffer.from(`${process.env.METRON_USERNAME}:${process.env.METRON_PASSWORD}`).toString("base64");
-          const res = await fetch("https://metron.cloud/api/arc/?page_size=1", {
-            headers: { Authorization: `Basic ${auth}`, Accept: "application/json", "User-Agent": "ComicBundleFinder/2.0" }
-          });
-          const text = await res.text();
-          console.log("Node status:", res.status);
-          console.log("Node first 120 chars:", text.slice(0, 120));
-          EOF
-
-          echo "=== Node.js fetch test (no Accept / no User-Agent) ==="
-          node --input-type=module <<'EOF'
-          const auth = Buffer.from(`${process.env.METRON_USERNAME}:${process.env.METRON_PASSWORD}`).toString("base64");
-          const res = await fetch("https://metron.cloud/api/arc/?page_size=1", {
-            headers: { Authorization: `Basic ${auth}` }
-          });
-          const text = await res.text();
-          console.log("Node (bare) status:", res.status);
-          console.log("Node (bare) first 120 chars:", text.slice(0, 120));
-          EOF
+          HTTP=$(curl -s -o /dev/null -w "%{http_code}" -u "${METRON_USERNAME}:${METRON_PASSWORD}" "https://metron.cloud/api/arc/?page_size=1")
+          echo "Metron HTTP status: $HTTP"
+          if [ "$HTTP" != "200" ]; then
+            echo "Non-200 — credentials rejected or IP blocked."
+            exit 1
+          fi
+          echo "Metron reachable. Proceeding."
       - name: Fetch arc index from Metron
         env:
           METRON_USERNAME: ${{ secrets.METRON_USERNAME }}
