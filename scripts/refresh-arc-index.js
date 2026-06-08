@@ -153,7 +153,7 @@ while (nextUrl) {
 // On first run (no existing data) all arcs are processed.
 const toProcess = arcs.filter((arc) => {
   const prev = existing.get(arc.id);
-  return !prev || prev.modified !== arc.modified || prev.issueCount === 0;
+  return !prev || prev.modified !== arc.modified || prev.issueCount === 0 || !prev.desc;
 });
 
 console.log(
