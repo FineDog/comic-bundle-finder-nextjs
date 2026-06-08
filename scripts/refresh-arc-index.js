@@ -98,7 +98,7 @@ const issuesPath = join(outDir, "arc-issues.json");
 const existing = new Map();
 try {
   for (const arc of JSON.parse(readFileSync(outPath, "utf-8"))) {
-    existing.set(arc.id, { issueCount: arc.issueCount || 0, modified: arc.modified || "" });
+    existing.set(arc.id, { issueCount: arc.issueCount || 0, modified: arc.modified || "", desc: arc.desc || "" });
   }
   console.log(`Loaded ${existing.size} existing arcs from arc-index.json`);
 } catch {
@@ -136,7 +136,7 @@ while (nextUrl) {
     arcs.push({
       id: arc.id,
       name: arc.name,
-      desc: arc.desc || "",
+      desc: existing.get(arc.id)?.desc || arc.desc || "", // preserved from previous run; overwritten in Phase 2
       slug: `${arc.id}-${toSlug(arc.name)}`,
       modified: arc.modified || "",
       issueCount: existing.get(arc.id)?.issueCount || 0, // will be updated in Phase 2
@@ -165,6 +165,12 @@ console.log(`  Sequential requests at ${REQUEST_DELAY_MS}ms delay (~${Math.round
 for (let i = 0; i < toProcess.length; i++) {
   const arc = toProcess[i];
   process.stdout.write(`\r  [${i + 1}/${toProcess.length}] arc ${arc.id} — ${arc.name.slice(0, 40).padEnd(40)}`);
+
+  // Fetch arc detail for description (same pass, one extra request per changed arc)
+  const detailRes = await metronFetch(`https://metron.cloud/api/arc/${arc.id}/`);
+  if (detailRes?.ok) {
+    try { arc.desc = (await detailRes.json()).desc || ""; } catch { /* keep existing */ }
+  }
 
   const allIssues = [];
   let issueUrl = `https://metron.cloud/api/arc/${arc.id}/issue_list/?page_size=100`;
