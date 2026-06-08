@@ -6,7 +6,7 @@ import { SERIES } from "../../lib/series-config";
 import SiteNav from "../../components/SiteNav";
 import SiteFooter from "../../components/SiteFooter";
 
-// --- Matching helpers (run server-side in getServerSideProps) ---
+// --- Matching helpers ---
 
 function getBaseName(name) {
   // Strip trailing "(YYYY)" from series names like "The Amazing Spider-Man (1963)"
@@ -143,37 +143,48 @@ export default function SeriesGuidePage({ groupName, groupSlug, volumes }) {
   );
 }
 
-// --- Server-side data fetching ---
+// --- Static generation ---
+// IMPORTANT: No live Metron calls from here. All data comes from the static
+// series-index.json built nightly by scripts/refresh-series-index.js.
+// getServerSideProps (the previous implementation) ran on every page visit from
+// Vercel's rotating IPs, which violated Metron's ToS and caused account suspension.
 
-export async function getServerSideProps({ params }) {
+// Module-level cache — parsed once per serverless function instance.
+let seriesIndexCache = null;
+function loadSeriesIndex() {
+  if (seriesIndexCache) return seriesIndexCache;
+  try {
+    seriesIndexCache = JSON.parse(
+      fs.readFileSync(
+        path.join(process.cwd(), "public", "data", "series-index.json"),
+        "utf-8"
+      )
+    );
+  } catch {
+    seriesIndexCache = [];
+  }
+  return seriesIndexCache;
+}
+
+export async function getStaticPaths() {
+  // All paths are generated on-demand (blocking fallback). No paths pre-built at
+  // deploy time — the index can have 15k+ series so pre-generating all slugs at
+  // build time would be impractical.
+  return { paths: [], fallback: "blocking" };
+}
+
+export async function getStaticProps({ params }) {
   const { slug } = params;
 
   // Convert slug to a search term: "amazing-spider-man" -> "amazing spider man"
   const searchTerm = slug.replace(/-/g, " ");
   const targetNorm = normalizeName(searchTerm);
 
-  const auth = Buffer.from(
-    `${process.env.METRON_USERNAME}:${process.env.METRON_PASSWORD}`
-  ).toString("base64");
-
-  let seriesData = [];
-  try {
-    const res = await fetch(
-      `https://metron.cloud/api/series/?name=${encodeURIComponent(searchTerm)}&page_size=100`,
-      { headers: { Authorization: `Basic ${auth}` } }
-    );
-    if (res.ok) {
-      const data = await res.json();
-      // Metron uses "series" field for the title, not "name"
-      seriesData = (data.results || []).map((s) => ({ ...s, name: s.series }));
-    }
-  } catch {
-    // Metron unreachable — render empty state
-  }
+  const index = loadSeriesIndex();
 
   // Keep only series whose base name exactly matches the target (e.g., only "The Amazing
   // Spider-Man" and not "The Amazing Spider-Man: Brand New Day" or similar spin-offs)
-  const matched = seriesData.filter((s) => {
+  const matched = index.filter((s) => {
     const baseNorm = normalizeName(getBaseName(s.name));
     return baseNorm === targetNorm;
   });
@@ -191,7 +202,8 @@ export async function getServerSideProps({ params }) {
     const localConfig = localSlug ? SERIES[localSlug] : null;
 
     // Issue count: prefer local data file for configured series, else use Metron's count.
-    let issueCount = s.issue_count || 0;
+    // Note: series-index.json stores issueCount (camelCase), not issue_count.
+    let issueCount = s.issueCount || 0;
     if (localConfig) {
       try {
         const issues = JSON.parse(
@@ -199,22 +211,23 @@ export async function getServerSideProps({ params }) {
         );
         issueCount = issues.length;
       } catch {
-        issueCount = s.issue_count || 0;
+        issueCount = s.issueCount || 0;
       }
     }
 
     // Build subtitle: local config has curated text; dynamic volumes get "Vol. N · YYYY–YYYY".
+    // Note: series-index.json stores yearEnd (camelCase), not year_end.
     const year = getYearFromName(s.name);
-    const yearEnd = s.year_end || null;
+    const yearEnd = s.yearEnd || null;
     const vol = s.volume || null;
     let subtitle;
     if (localConfig) {
       subtitle = localConfig.subtitle;
     } else {
       const yearRange = year
-        ? (yearEnd && yearEnd !== year ? year + String.fromCharCode(8211) + yearEnd : String(year))
+        ? (yearEnd && yearEnd !== year ? `${year}–${yearEnd}` : String(year))
         : "";
-      subtitle = vol ? "Vol. " + vol + (yearRange ? " · " + yearRange : "") : yearRange;
+      subtitle = vol ? `Vol. ${vol}${yearRange ? ` · ${yearRange}` : ""}` : yearRange;
     }
 
     return {
@@ -237,10 +250,7 @@ export async function getServerSideProps({ params }) {
           .join(" ");
 
   return {
-    props: {
-      groupSlug: slug,
-      groupName,
-      volumes,
-    },
+    props: { groupSlug: slug, groupName, volumes },
+    revalidate: 86400, // regenerate at most once per day
   };
 }

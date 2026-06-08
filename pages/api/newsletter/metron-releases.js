@@ -18,6 +18,10 @@ function wednesdayOf(date) {
 }
 
 export default async function handler(req, res) {
+  // Metron bans Vercel's rotating IPs. This route must never run on Vercel.
+  if (process.env.VERCEL) {
+    return res.status(403).json({ error: "This route is disabled in production. Run locally only." });
+  }
   if (!process.env.METRON_USERNAME || !process.env.METRON_PASSWORD) {
     return res.status(500).json({ error: "METRON_USERNAME / METRON_PASSWORD not set in .env.local" });
   }
