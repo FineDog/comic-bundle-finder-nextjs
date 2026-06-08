@@ -40,6 +40,14 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-.vercel
-.env*
 .design-extract/
+
+# Claude Code local files
+.claude/
+.frontmatter/
+.mcp.json
+frontmatter.json
+
+# Local dev / one-off files
+newsletter.bat
+*.pdf
