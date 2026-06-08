@@ -170,7 +170,13 @@ const toFetchDesc = new Set(
     .map((arc) => arc.id)
 );
 
-const toProcess = arcs.filter((arc) => toFetchIssues.has(arc.id) || toFetchDesc.has(arc.id));
+let toProcess = arcs.filter((arc) => toFetchIssues.has(arc.id) || toFetchDesc.has(arc.id));
+
+const arcLimit = parseInt(process.env.METRON_ARC_LIMIT || "", 10);
+if (arcLimit > 0) {
+  toProcess = toProcess.slice(0, arcLimit);
+  console.log(`\n  *** TEST MODE: limiting Phase 2 to first ${arcLimit} arcs ***`);
+}
 
 console.log(
   `\nPhase 2 — Processing ${toProcess.length} arcs` +

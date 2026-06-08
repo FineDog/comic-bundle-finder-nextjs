@@ -11,7 +11,12 @@ name: Refresh Arc Index
 on:
   schedule:
     - cron: "30 6 * * *"   # 6:30 AM UTC daily (2:30 AM Eastern)
-  workflow_dispatch:         # allow manual trigger from GitHub UI
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: "Max arcs to process in Phase 2 (leave blank for all)"
+        required: false
+        default: ""
 
 permissions:
   contents: write
@@ -43,6 +48,7 @@ jobs:
         env:
           METRON_USERNAME: ${{ secrets.METRON_USERNAME }}
           METRON_PASSWORD: ${{ secrets.METRON_PASSWORD }}
+          METRON_ARC_LIMIT: ${{ github.event.inputs.limit }}
         run: node scripts/refresh-arc-index.js
       - name: Commit and push arc index
         run: |
