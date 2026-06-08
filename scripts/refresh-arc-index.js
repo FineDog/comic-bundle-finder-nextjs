@@ -150,15 +150,32 @@ while (nextUrl) {
 
 // ── Phase 2: fetch issue lists for changed arcs ───────────────────────────────
 // Only re-fetches arcs whose `modified` timestamp has changed since last run.
-// On first run (no existing data) all arcs are processed.
-const toProcess = arcs.filter((arc) => {
-  const prev = existing.get(arc.id);
-  return !prev || prev.modified !== arc.modified || prev.issueCount === 0 || !prev.desc;
-});
+// Arcs that need issue list re-fetch: modified timestamp changed or issueCount missing.
+const toFetchIssues = new Set(
+  arcs
+    .filter((arc) => {
+      const prev = existing.get(arc.id);
+      return !prev || prev.modified !== arc.modified || prev.issueCount === 0;
+    })
+    .map((arc) => arc.id)
+);
+
+// Arcs that need a desc fetch: missing desc (one-time backfill) or being re-fetched anyway.
+const toFetchDesc = new Set(
+  arcs
+    .filter((arc) => {
+      const prev = existing.get(arc.id);
+      return !prev?.desc || toFetchIssues.has(arc.id);
+    })
+    .map((arc) => arc.id)
+);
+
+const toProcess = arcs.filter((arc) => toFetchIssues.has(arc.id) || toFetchDesc.has(arc.id));
 
 console.log(
-  `\nPhase 2 — Fetching issue lists for ${toProcess.length} arcs` +
-  ` (${arcs.length - toProcess.length} unchanged, skipped).`
+  `\nPhase 2 — Processing ${toProcess.length} arcs` +
+  ` (${toFetchIssues.size} issue re-fetches, ${toFetchDesc.size} desc fetches,` +
+  ` ${arcs.length - toProcess.length} fully unchanged).`
 );
 console.log(`  Sequential requests at ${REQUEST_DELAY_MS}ms delay (~${Math.round(60000 / REQUEST_DELAY_MS)} req/min).\n`);
 
@@ -166,43 +183,46 @@ for (let i = 0; i < toProcess.length; i++) {
   const arc = toProcess[i];
   process.stdout.write(`\r  [${i + 1}/${toProcess.length}] arc ${arc.id} — ${arc.name.slice(0, 40).padEnd(40)}`);
 
-  // Fetch arc detail for description (same pass, one extra request per changed arc)
-  const detailRes = await metronFetch(`https://metron.cloud/api/arc/${arc.id}/`);
-  if (detailRes?.ok) {
-    try { arc.desc = (await detailRes.json()).desc || ""; } catch { /* keep existing */ }
+  // Fetch desc if needed (one detail call per arc, skipped once all arcs have desc)
+  if (toFetchDesc.has(arc.id)) {
+    const detailRes = await metronFetch(`https://metron.cloud/api/arc/${arc.id}/`);
+    if (detailRes?.ok) {
+      try { arc.desc = (await detailRes.json()).desc || ""; } catch { /* keep existing */ }
+    }
   }
 
-  const allIssues = [];
-  let issueUrl = `https://metron.cloud/api/arc/${arc.id}/issue_list/?page_size=100`;
-  let count = 0;
+  // Fetch issue list only if modified or missing
+  if (toFetchIssues.has(arc.id)) {
+    const allIssues = [];
+    let issueUrl = `https://metron.cloud/api/arc/${arc.id}/issue_list/?page_size=100`;
+    let count = 0;
 
-  while (issueUrl) {
-    const issueRes = await metronFetch(issueUrl);
-    if (!issueRes || !issueRes.ok) break;
+    while (issueUrl) {
+      const issueRes = await metronFetch(issueUrl);
+      if (!issueRes || !issueRes.ok) break;
 
-    let issueData;
-    try { issueData = await issueRes.json(); } catch { break; }
+      let issueData;
+      try { issueData = await issueRes.json(); } catch { break; }
 
-    count = issueData.count ?? count;
-    allIssues.push(...(issueData.results || []));
-    issueUrl = issueData.next || null;
-  }
+      count = issueData.count ?? count;
+      allIssues.push(...(issueData.results || []));
+      issueUrl = issueData.next || null;
+    }
 
-  const issues = allIssues
-    .map((issue) => {
-      const series = issue.series?.name || "";
-      const num = issue.number || "";
-      if (!series || !num) return "";
-      return `${series} #${num}`;
-    })
-    .filter(Boolean);
+    const issues = allIssues
+      .map((issue) => {
+        const series = issue.series?.name || "";
+        const num = issue.number || "";
+        if (!series || !num) return "";
+        return `${series} #${num}`;
+      })
+      .filter(Boolean);
 
-  // Update the arc entry in our array
-  arc.issueCount = count;
+    arc.issueCount = count;
 
-  // Write issue list to the in-memory map; written to disk as a single file below
-  if (issues.length > 0) {
-    existingIssues[arc.id] = issues;
+    if (issues.length > 0) {
+      existingIssues[arc.id] = issues;
+    }
   }
 }
 
