@@ -49,7 +49,8 @@ export default async function handler(req, res) {
         `https://metron.cloud/api/issue/?store_date_range_after=${after}` +
         `&store_date_range_before=${before}&page_size=100&page=${page}`;
       const r = await fetch(url, {
-        headers: { Authorization: `Basic ${auth}` },
+        // User-Agent is required by Metron ToS. Do NOT omit or use a browser UA.
+        headers: { Authorization: `Basic ${auth}`, "User-Agent": "ComicBundleFinder/1.0" },
         signal: AbortSignal.timeout(15000),
       });
       if (!r.ok) {

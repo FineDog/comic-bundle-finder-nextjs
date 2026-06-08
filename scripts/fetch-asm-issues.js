@@ -1,3 +1,10 @@
+// ⚠️  ONE-OFF LOCAL SCRIPT — DO NOT RUN FROM VERCEL OR ANY CI/CD AUTOMATION ⚠️
+//
+// This script makes live Metron API calls. It may only be run manually from a
+// local machine with a stable IP. Running it from Vercel (rotating IPs) or any
+// automated job other than the designated GitHub Actions workflows violates
+// Metron's ToS and can result in a permanent account ban.
+//
 // One-time script to fetch all Amazing Spider-Man Vol. 1 issues from Metron API
 // and write them to data/asm-vol1-issues.json.
 //
@@ -5,7 +12,7 @@
 //   node --env-file=../.env.local scripts/fetch-asm-issues.js
 //
 // Or set env vars manually:
-//   $env:METRON_USERNAME='FineDog'; $env:METRON_PASSWORD='...'; node scripts/fetch-asm-issues.js
+//   $env:METRON_USERNAME='...'; $env:METRON_PASSWORD='...'; node scripts/fetch-asm-issues.js
 
 const fs = require("fs");
 const path = require("path");
@@ -25,7 +32,7 @@ async function fetchPage(page) {
   const auth = Buffer.from(`${METRON_USERNAME}:${METRON_PASSWORD}`).toString("base64");
   const res = await fetch(
     `https://metron.cloud/api/issue/?series_id=${SERIES_ID}&page=${page}`,
-    { headers: { Authorization: `Basic ${auth}` } }
+    { headers: { Authorization: `Basic ${auth}`, "User-Agent": "ComicBundleFinder/1.0" } }
   );
   if (!res.ok) throw new Error(`Metron API ${res.status}: ${await res.text()}`);
   return res.json();

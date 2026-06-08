@@ -315,12 +315,25 @@ from a different IP. Metron treats this as a distributed attack and disables the
 
 ```js
 const REQUEST_DELAY_MS = 3500; // ~17 req/min, safely under 20/min burst limit
+// User-Agent is REQUIRED by Metron ToS. Never omit it or use a browser UA.
+const HEADERS = { Authorization: `Basic ${AUTH}`, "User-Agent": "ComicBundleFinder/1.0" };
 // After each fetch:
 await sleep(REQUEST_DELAY_MS);
-// Check headers proactively:
-const remaining = parseInt(res.headers.get("X-RateLimit-Remaining") ?? "999", 10);
-if (remaining <= 3) await sleep(65000); // pause a full minute
-// Retry only on 429 (honour Retry-After) or 5xx. Never retry other 4xx.
+// Check BOTH rate-limit windows proactively (correct header names — the API sends
+// X-RateLimit-Burst-Remaining and X-RateLimit-Sustained-Remaining, NOT the
+// non-existent "X-RateLimit-Remaining" which always returns null):
+const burstRemaining     = parseInt(res.headers.get("X-RateLimit-Burst-Remaining")     ?? "999", 10);
+const sustainedRemaining = parseInt(res.headers.get("X-RateLimit-Sustained-Remaining") ?? "999", 10);
+if (burstRemaining <= 3 || sustainedRemaining <= 3) {
+  // Use the reset timestamp for a precise wait:
+  const resetHeader = burstRemaining <= 3 ? "X-RateLimit-Burst-Reset" : "X-RateLimit-Sustained-Reset";
+  const resetTs = parseInt(res.headers.get(resetHeader) ?? "0", 10);
+  const waitSec = Math.max(resetTs - Math.floor(Date.now() / 1000) + 2, 65);
+  await sleep(waitSec * 1000);
+}
+// Retry only on 429 (use X-RateLimit-Burst-Reset for wait time) or 5xx.
+// On 401/403: process.exit(1) immediately — retrying auth failure hammers the server.
+// Never retry other 4xx.
 ```
 
 ### Architecture for arc/series data
