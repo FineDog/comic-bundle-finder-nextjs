@@ -73,5 +73,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add public/data/arc-index.json public/data/arc-issues.json public/data/arc-manifest.json
+          git add public/data/arc-index.json public/data/arc-issues.json
+          [ -f public/data/arc-manifest.json ] && git add public/data/arc-manifest.json || true
           git diff --staged --quiet || (git commit -m "chore: refresh arc index" && git push)
