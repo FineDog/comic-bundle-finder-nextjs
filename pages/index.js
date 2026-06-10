@@ -861,6 +861,9 @@ export default function Preview() {
           so if you can find one seller who has several issues you need, you save big. Comic Bundle Finder searches eBay for every
           issue on your want list, then ranks sellers by how many of your issues they carry. Paste your list, hit search, and find
           your best bundle deals in seconds.
+          <div style={{ marginTop: "0.75rem", fontSize: "0.78rem", color: "#888", lineHeight: 1.5 }}>
+            Some links on this page may be eBay Partner Network affiliate links. A small commission may be earned if you purchase through these links, at no extra cost to you. These commissions help support the site.
+          </div>
         </div>
         <div className="panel">
           <div className="caption">Enter your missing issues</div>
