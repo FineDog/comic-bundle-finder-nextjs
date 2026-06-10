@@ -21,10 +21,8 @@
 name: Refresh Series Index
 
 on:
-  # Schedule disabled until initial full backfill is complete.
-  # Re-enable by uncommenting the schedule block below.
-  # schedule:
-  #   - cron: "0 7 * * *"    # 7:00 AM UTC daily
+  schedule:
+    - cron: "0 7 * * *"    # 7:00 AM UTC daily
   workflow_dispatch:         # allow manual trigger from GitHub UI
 
 permissions:
