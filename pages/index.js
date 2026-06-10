@@ -184,16 +184,9 @@ function getFilteredSellers(rows, issueCount, filters, sortBy) {
 // one listing — these are excluded by the 2-listing bundle rule but may have
 // multiple copies available on a single listing.
 async function enrichWithQuantities(rows) {
-  const sellerListingCount = {};
-  for (const r of rows) sellerListingCount[r.seller] = (sellerListingCount[r.seller] || 0) + 1;
-
-  const targetItemIds = [
-    ...new Set(
-      rows
-        .filter(r => sellerListingCount[r.seller] === 1 && r.itemId)
-        .map(r => r.itemId)
-    ),
-  ];
+  // Fetch quantity for every listing — displayed in the table for all sellers,
+  // and used as the bundle_count proxy for single-listing sellers.
+  const targetItemIds = [...new Set(rows.filter(r => r.itemId).map(r => r.itemId))];
   if (!targetItemIds.length) return rows;
 
   try {
