@@ -110,7 +110,14 @@ function getFilteredSellers(rows, issueCount, filters, sortBy) {
   // 4. Compute per-seller metrics
   for (const data of Object.values(sellerMap)) {
     const uniqueIssues = new Set(data.listings.map(l => l.issue));
-    data.bundle_count = issueCount === 1 ? data.listings.length : uniqueIssues.size;
+    if (issueCount === 1) {
+      // Multiple listings → count listings; single listing → count available quantity
+      data.bundle_count = data.listings.length >= 2
+        ? data.listings.length
+        : (data.listings[0]?.quantity ?? 1);
+    } else {
+      data.bundle_count = uniqueIssues.size;
+    }
 
     // Cheapest listing per unique issue
     const cheapestPerIssue = {};
@@ -171,6 +178,41 @@ function getFilteredSellers(rows, issueCount, filters, sortBy) {
   return entries;
 }
 
+// ── Quantity enrichment (single-issue mode) ───────────────────────────────────
+
+// For single-issue searches, fetch available quantity for sellers that have only
+// one listing — these are excluded by the 2-listing bundle rule but may have
+// multiple copies available on a single listing.
+async function enrichWithQuantities(rows) {
+  const sellerListingCount = {};
+  for (const r of rows) sellerListingCount[r.seller] = (sellerListingCount[r.seller] || 0) + 1;
+
+  const targetItemIds = [
+    ...new Set(
+      rows
+        .filter(r => sellerListingCount[r.seller] === 1 && r.itemId)
+        .map(r => r.itemId)
+    ),
+  ];
+  if (!targetItemIds.length) return rows;
+
+  try {
+    const res = await fetch("/api/item-quantities", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ itemIds: targetItemIds }),
+    });
+    if (!res.ok) return rows;
+    const { quantities } = await res.json();
+    return rows.map(r => ({
+      ...r,
+      quantity: r.itemId && quantities[r.itemId] != null ? quantities[r.itemId] : (r.quantity ?? null),
+    }));
+  } catch {
+    return rows;
+  }
+}
+
 // ── Analytics ─────────────────────────────────────────────────────────────────
 
 function track(event, data) {
@@ -195,6 +237,7 @@ export default function Preview() {
   const [isDragging, setIsDragging] = useState(false);
   const [uploadMsg, setUploadMsg] = useState("");
   const [wave2Loading, setWave2Loading] = useState(false);
+  const [quantityLoading, setQuantityLoading] = useState(false);
   const [userZip, setUserZip] = useState(null);
   const [userCountry, setUserCountry] = useState(null);
 
@@ -307,9 +350,10 @@ export default function Preview() {
   }
 
   async function executeSearch(issues) {
-    setResults(null); setWave2Loading(false); startProgress();
+    setResults(null); setWave2Loading(false); setQuantityLoading(false); startProgress();
+    const isSingle = issues.length === 1;
     try {
-      await runEbaySearch(issues, userZip, {
+      const finalRows = await runEbaySearch(issues, userZip, {
         onWave1(rows) {
           const bundleCount = new Set(rows.filter(r => r.bundle_count >= 2).map(r => r.seller)).size;
           track("search_completed", { issue_count: issues.length, bundle_count: bundleCount });
@@ -320,8 +364,20 @@ export default function Preview() {
         onWave2(merged) { setResults(prev => ({ ...prev, rows: merged })); },
         onWave2End() { setWave2Loading(false); },
       }, userCountry);
+
+      // After all waves settle, enrich single-issue results with per-listing quantity data
+      if (isSingle && finalRows) {
+        setQuantityLoading(true);
+        try {
+          const enriched = await enrichWithQuantities(finalRows);
+          setResults(prev => prev ? { ...prev, rows: enriched } : null);
+        } finally {
+          setQuantityLoading(false);
+        }
+      }
     } catch (err) {
       finishProgress(false);
+      setQuantityLoading(false);
       setStatus({ msg: `Error: ${err.message}. Try again in a moment.`, type: "error" });
     }
   }
@@ -557,6 +613,12 @@ export default function Preview() {
                 Loading additional results…
               </div>
             )}
+            {quantityLoading && (
+              <div className="wave2-banner">
+                <span className="wave2-spinner" />
+                Checking availability…
+              </div>
+            )}
 
             <div className="stats-row">
               <div className="stat-box"><div className="stat-number">{results.issueCount}</div><div className="stat-label">{singleIssueMode ? "Issue Searched" : "Issues Searched"}</div></div>
@@ -765,11 +827,16 @@ export default function Preview() {
                   ? `save ~$${data.shippingSavings.toFixed(2)} shipping`
                   : null;
 
+                const isQtyBundle = singleIssueMode && data.listings.length === 1 && (data.listings[0]?.quantity ?? 1) > 1;
+                const bundleBadge = isQtyBundle
+                  ? `${data.bundle_count} copies available`
+                  : `${data.bundle_count} ${singleIssueMode ? "listings" : "issues"} — bundle shipping!`;
+
                 return (
                   <div className="seller-group" key={name}>
                     <div className="seller-header">
                       <span className="seller-name">{esc(name)}</span>
-                      <span className="bundle-badge">{singleIssueMode ? `${data.bundle_count} listings` : `${data.bundle_count} issues`} — bundle shipping!</span>
+                      <span className="bundle-badge">{bundleBadge}</span>
                       <span className="subtotal-badge">from ${data.subtotal.toFixed(2)} in items</span>
                       <span className="badge-est">{estPerIssueStr}</span>
                       {savingsStr && <span className="badge-savings">{savingsStr}</span>}
@@ -796,7 +863,14 @@ export default function Preview() {
                           }
                           return (<tr key={i}>
                             <td className="col-issue">{esc(l.issue)}</td>
-                            <td className="col-title">{esc(l.title)}</td>
+                            <td className="col-title">
+                              {esc(l.title)}
+                              {l.quantity != null && l.quantity > 1 && (
+                                <span style={{ display: "block", fontSize: "0.72rem", color: "#666", fontWeight: 600, marginTop: "2px" }}>
+                                  {l.quantity} available
+                                </span>
+                              )}
+                            </td>
                             <td className="col-price">${parseFloat(l.price).toFixed(2)}</td>
                             <td className="col-ship">{shipDisplay}</td>
                             <td className="col-link"><a className="listing-link" href={l.url} target="_blank" rel="noopener noreferrer">View →</a></td>

@@ -52,6 +52,7 @@ function buildRows(sellerIssues) {
           shipping: listing.shipping,
           promotions: listing.promotions,
           url: listing.url,
+          itemId: listing.itemId,
         });
       }
     }
