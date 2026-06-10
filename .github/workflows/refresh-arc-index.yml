@@ -21,10 +21,8 @@
 name: Refresh Arc Index
 
 on:
-  # Schedule disabled until initial full backfill is complete.
-  # Re-enable by uncommenting the schedule block below.
-  # schedule:
-  #   - cron: "30 6 * * *"   # 6:30 AM UTC daily (2:30 AM Eastern)
+  schedule:
+    - cron: "30 6 * * *"   # 6:30 AM UTC daily (2:30 AM Eastern)
   workflow_dispatch:
     inputs:
       offset:
