@@ -274,6 +274,9 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
             {seoBlurb} This page finds sellers who carry multiple issues you need so you can save
             on combined shipping instead of paying separately for every book. Results are updated daily.
           </p>
+          <p style={{ marginTop: "0.75rem", fontSize: "0.78rem", color: "#888", lineHeight: 1.5, margin: "0.75rem 0 0" }}>
+            Some links on this page may be eBay Partner Network affiliate links. A small commission may be earned if you purchase through these links, at no extra cost to you. These commissions help support the site.
+          </p>
         </div>
 
         <div className="panel">
