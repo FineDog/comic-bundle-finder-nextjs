@@ -75,4 +75,6 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add public/data/arc-index.json public/data/arc-issues.json
           [ -f public/data/arc-manifest.json ] && git add public/data/arc-manifest.json || true
-          git diff --staged --quiet || (git commit -m "chore: refresh arc index" && git push)
+          # Pull --rebase before pushing: main may have moved during a multi-hour run,
+          # and a rejected push would lose the entire run's data with the runner.
+          git diff --staged --quiet || (git commit -m "chore: refresh arc index" && git pull --rebase origin main && git push)
