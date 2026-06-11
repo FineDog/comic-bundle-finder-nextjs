@@ -14,9 +14,11 @@
 #     ... etc.
 #
 # Required GitHub secrets:
-#   METRON_USERNAME     — Metron account username
-#   METRON_PASSWORD     — Metron account password
-#   BLOB_READ_WRITE_TOKEN — Vercel Blob token
+#   METRON_USERNAME — Metron account username
+#   METRON_PASSWORD — Metron account password
+#   DATABASE_URL    — Neon Postgres connection string (issue lists are stored in
+#                     Postgres, not Vercel Blob — Blob puts are Advanced Operations
+#                     with a 2,000/month budget)
 
 name: Refresh Series Issues
 
@@ -50,9 +52,9 @@ jobs:
         run: npm ci
       - name: Refresh series issue lists
         env:
-          METRON_USERNAME:       ${{ secrets.METRON_USERNAME }}
-          METRON_PASSWORD:       ${{ secrets.METRON_PASSWORD }}
-          BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
-          METRON_SERIES_OFFSET:  ${{ github.event.inputs.offset }}
-          METRON_SERIES_LIMIT:   ${{ github.event.inputs.limit }}
+          METRON_USERNAME:      ${{ secrets.METRON_USERNAME }}
+          METRON_PASSWORD:      ${{ secrets.METRON_PASSWORD }}
+          DATABASE_URL:         ${{ secrets.DATABASE_URL }}
+          METRON_SERIES_OFFSET: ${{ github.event.inputs.offset }}
+          METRON_SERIES_LIMIT:  ${{ github.event.inputs.limit }}
         run: node scripts/refresh-series-issues.js

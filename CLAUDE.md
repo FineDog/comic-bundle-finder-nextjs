@@ -338,24 +338,33 @@ if (burstRemaining <= 3 || sustainedRemaining <= 3) {
 
 ### Architecture for arc/series data
 
-- **Nightly script** fetches from Metron → writes to **Vercel Blob** cache
-- **Live API routes** read from Blob cache only (`getBlobBaseUrl()` + plain `fetch()`)
+- **Nightly scripts** fetch from Metron → write to static repo files (arcs/series index)
+  and **Postgres** (series issue lists)
+- **Live API routes** read from those caches only
 - **On cache miss**: return `{ issues: null }` — show "not yet indexed" message to user
 - Never fall back to a live Metron call on cache miss in a Vercel function
 
-### Blob cache keys
+### Cache locations
 
-| Data | Blob key | TTL | Writer |
+| Data | Location | TTL | Writer |
 |---|---|---|---|
-| Arc issue list | `arc-issues/{arcId}.json` | none (static) | `scripts/refresh-arc-index.js` |
-| Series issue list | `dynamic-series/metron-{id}/issues.json` | 7d | `lib/metron-issues.js` (getStaticProps only) |
-| Series eBay results | `dynamic-series/metron-{id}/ebay/{start}-{count}.json` | 1h | Client POST to `/api/series/[slug]/results` after Wave 2 completes |
+| Arc index + issue lists | repo: `public/data/arc-index.json`, `arc-issues.json` | none (static) | `scripts/refresh-arc-index.js` |
+| Series index | repo: `public/data/series-index.json` | none (static) | `scripts/refresh-series-index.js` |
+| Series issue list | Postgres: `series_issues` table | 30d | `scripts/refresh-series-issues.js` ONLY |
+| Series issues sync manifest | Postgres: `series_sync_state` table | — | `scripts/refresh-series-issues.js` |
+| Series eBay results | Blob: `dynamic-series/metron-{id}/ebay/{start}-{count}.json` | 1h | Client POST to `/api/series/[slug]/results` after Wave 2 completes |
+
+Series issue lists live in **Postgres, NOT Vercel Blob** — every Blob `put()` is an
+Advanced Operation (2,000/month budget) and the ~16k-series backfill alone would be
+8× the budget. Do not move them back to Blob.
 
 ### Required secrets
 
-`BLOB_READ_WRITE_TOKEN` must be set in **both**:
-- Vercel project environment variables (all environments: Production, Preview, Development)
-- GitHub repository secrets (used by `refresh-arc-index.yml` to write Blob cache)
+- `BLOB_READ_WRITE_TOKEN` in Vercel project env vars (eBay results caching)
+- `DATABASE_URL` in **both** Vercel env vars and GitHub repository secrets
+  (used by `refresh-series-issues.yml` to write the `series_issues` table)
+- `METRON_USERNAME` / `METRON_PASSWORD` in GitHub repository secrets only
+  (no Vercel code may ever call Metron)
 
 ---
 
@@ -492,8 +501,9 @@ exhausted by an earlier version of the series page caching. Rules:
 
 - **Read from cache** using a plain `fetch()` to the public CDN URL — this is bandwidth only,
   not an advanced operation.
-- **Write to cache** (`put()`) only on a cache miss — this is a Simple Operation (cheap).
-- **Never use** `list()` or `head()` in hot paths — these are Advanced Operations and will
-  burn through the budget fast.
-- If a new feature would require frequent `list()` or `head()` calls, find an alternative
-  (e.g. store a manifest in a known key, or use Postgres).
+- **`put()`, `list()`, `head()`, `copy()` are ALL Advanced Operations.** (An earlier version
+  of this file incorrectly called `put()` a cheap Simple Operation — it is not, and acting
+  on that mistake blew the monthly budget.)
+- Write to Blob only for small, low-frequency data (e.g. the 1-hour eBay results cache,
+  written at most a few dozen times a day). Anything written in bulk or per-entity at scale
+  (issue lists, indexes, backfills) goes in **Postgres or committed repo files** instead.
