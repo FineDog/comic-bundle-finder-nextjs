@@ -1,21 +1,25 @@
 // scripts/refresh-series-issues.js
 //
-// Populates Vercel Blob with per-series issue lists for all "metron-*" dynamic series.
-// This is the ONLY place that should write issue list Blob entries — never from Vercel.
-// API routes read from Blob only. If the Blob entry is missing they return "not yet indexed".
+// Populates Postgres (Neon) with per-series issue lists for all "metron-*" dynamic series.
+// This is the ONLY place that should write series_issues rows — never from Vercel.
+// API routes read from Postgres only. If the row is missing they return "not yet indexed".
+//
+// WHY POSTGRES, NOT VERCEL BLOB: every Blob put() is an Advanced Operation, and the
+// plan allows only 2,000/month. A full backfill is ~16,000 writes. Postgres rows are
+// free to read and write, and the database is already provisioned (DATABASE_URL).
 //
 // ── HOW IT RUNS ───────────────────────────────────────────────────────────────
 //
 // INCREMENTAL MODE (default — runs nightly via GitHub Actions):
-//   Reads a manifest from Blob CDN at dynamic-series/series-issues-manifest.json.
-//   If the manifest exists: calls GET /api/series/?modified_gt={lastRun} to find only
+//   Reads the lastRun timestamp from the series_sync_state table.
+//   If present: calls GET /api/series/?modified_gt={lastRun} to find only
 //   the series that changed since the last run. Typically 0–20 Metron calls per night.
-//   If no manifest: creates one (timestamps "now") so future runs can be incremental.
-//   Note: run a BACKFILL first to seed the cache before relying on incremental updates.
+//   If absent: creates one (timestamps "now") so future runs can be incremental.
+//   Note: run a BACKFILL first to seed the table before relying on incremental updates.
 //
 // BACKFILL MODE (first-time / recovery — set METRON_SERIES_OFFSET + METRON_SERIES_LIMIT):
 //   Processes a contiguous slice of series-index.json. For each series in the slice,
-//   checks the Blob CDN entry; skips if current, fetches and writes if missing/stale.
+//   checks the existing Postgres row; skips if current, fetches and writes if missing/stale.
 //
 //   GitHub Actions has a 6-hour limit. At ~3.5s/request and ~2 API calls/series avg,
 //   METRON_SERIES_LIMIT=1500 per run takes ~3–4 hours (safely within the limit).
@@ -25,12 +29,12 @@
 //     METRON_SERIES_OFFSET=3000  METRON_SERIES_LIMIT=1500   (run 3)
 //     ... etc.
 //   Series with issueCount=0 are skipped automatically.
-//   Already-current Blob entries are skipped (idempotent).
+//   Already-current rows are skipped (idempotent).
 //
 // ── REQUIRED ENV VARS ─────────────────────────────────────────────────────────
-//   METRON_USERNAME      — Metron account username
-//   METRON_PASSWORD      — Metron account password
-//   BLOB_READ_WRITE_TOKEN — Vercel Blob token (read + write)
+//   METRON_USERNAME — Metron account username
+//   METRON_PASSWORD — Metron account password
+//   DATABASE_URL    — Neon Postgres connection string
 //
 // ── METRON API RULES (DO NOT VIOLATE) ─────────────────────────────────────────
 //   Rate limits:  20 requests/minute (burst)  ·  5,000 requests/day (sustained)
@@ -42,21 +46,23 @@
 
 import { readFileSync } from "fs";
 import { join }         from "path";
-import { put }          from "@vercel/blob";
+import pg               from "pg";
 
 // ── Env / auth ────────────────────────────────────────────────────────────────
-const USERNAME   = process.env.METRON_USERNAME;
-const PASSWORD   = process.env.METRON_PASSWORD;
-const BLOB_TOKEN = process.env.BLOB_READ_WRITE_TOKEN;
+const USERNAME     = process.env.METRON_USERNAME;
+const PASSWORD     = process.env.METRON_PASSWORD;
+const DATABASE_URL = process.env.DATABASE_URL;
 
 if (!USERNAME || !PASSWORD) {
   console.error("METRON_USERNAME and METRON_PASSWORD must be set.");
   process.exit(1);
 }
-if (!BLOB_TOKEN) {
-  console.error("BLOB_READ_WRITE_TOKEN must be set.");
+if (!DATABASE_URL) {
+  console.error("DATABASE_URL must be set.");
   process.exit(1);
 }
+
+const pool = new pg.Pool({ connectionString: DATABASE_URL });
 
 const AUTH = Buffer.from(`${USERNAME}:${PASSWORD}`).toString("base64");
 // User-Agent is required by Metron ToS. Do NOT use a browser UA or omit this.
@@ -68,22 +74,10 @@ const HEADERS = {
 // ── Constants ─────────────────────────────────────────────────────────────────
 const REQUEST_DELAY_MS       = 3500;  // ~17 req/min, safely under 20/min burst limit
 const RATE_LIMIT_LOW_THRESHOLD = 3;
-// If a Blob entry exists but has no `modified` field to compare against, treat it
+// If a row exists but has no `modified` field to compare against, treat it
 // as fresh if written within this window (avoids re-fetching every series on first backfill).
-const BLOB_FRESH_NO_MODIFIED_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
-const MANIFEST_PATHNAME = "dynamic-series/series-issues-manifest.json";
-
-// Derive the Blob public CDN base URL from the token.
-// Token format: vercel_blob_rw_{storeId}_{secret}
-const BLOB_BASE_URL = (() => {
-  const m = /vercel_blob_rw_([^_]+)_/.exec(BLOB_TOKEN);
-  return m ? `https://${m[1]}.public.blob.vercel-storage.com` : null;
-})();
-
-if (!BLOB_BASE_URL) {
-  console.error("Could not derive Blob CDN URL from BLOB_READ_WRITE_TOKEN. Check the token format.");
-  process.exit(1);
-}
+const FRESH_NO_MODIFIED_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
+const MANIFEST_KEY = "series-issues-manifest";
 
 // ── Rate-limit-aware Metron fetch ─────────────────────────────────────────────
 function sleep(ms) { return new Promise((r) => setTimeout(r, ms)); }
@@ -209,31 +203,56 @@ async function fetchIssuesForSeries(metronId) {
   return issues;
 }
 
-// ── Blob helpers ──────────────────────────────────────────────────────────────
-async function readBlobEntry(pathname) {
-  try {
-    const res = await fetch(`${BLOB_BASE_URL}/${pathname}`, { cache: "no-store" });
-    if (!res.ok) return null;
-    return await res.json();
-  } catch {
-    return null;
-  }
+// ── Postgres helpers ──────────────────────────────────────────────────────────
+// Tables are created on first run; subsequent CREATE IF NOT EXISTS calls are no-ops.
+await pool.query(`
+  CREATE TABLE IF NOT EXISTS series_issues (
+    metron_id INTEGER PRIMARY KEY,
+    issues    JSONB NOT NULL,
+    modified  TEXT,
+    cached_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  )
+`);
+await pool.query(`
+  CREATE TABLE IF NOT EXISTS series_sync_state (
+    key   TEXT PRIMARY KEY,
+    value JSONB NOT NULL
+  )
+`);
+
+// Returns { modified, cachedAtMs } for an existing row, or null if absent.
+async function readDbEntry(metronId) {
+  const { rows } = await pool.query(
+    "SELECT modified, cached_at FROM series_issues WHERE metron_id = $1",
+    [metronId]
+  );
+  if (!rows.length) return null;
+  return { modified: rows[0].modified, cachedAtMs: new Date(rows[0].cached_at).getTime() };
 }
 
-async function writeBlobIssues(metronId, issues, modified) {
-  const pathname = `dynamic-series/metron-${metronId}/issues.json`;
-  await put(
-    pathname,
-    JSON.stringify({ issues, cachedAt: Date.now(), modified: modified || null }),
-    { access: "public", addRandomSuffix: false, allowOverwrite: true, contentType: "application/json" }
+async function writeDbIssues(metronId, issues, modified) {
+  await pool.query(
+    `INSERT INTO series_issues (metron_id, issues, modified, cached_at)
+     VALUES ($1, $2, $3, NOW())
+     ON CONFLICT (metron_id)
+     DO UPDATE SET issues = $2, modified = $3, cached_at = NOW()`,
+    [metronId, JSON.stringify(issues), modified || null]
   );
 }
 
+async function readManifest() {
+  const { rows } = await pool.query(
+    "SELECT value FROM series_sync_state WHERE key = $1",
+    [MANIFEST_KEY]
+  );
+  return rows.length ? rows[0].value : null;
+}
+
 async function writeManifest(lastRun, meta = {}) {
-  await put(
-    MANIFEST_PATHNAME,
-    JSON.stringify({ lastRun, ...meta }),
-    { access: "public", addRandomSuffix: false, allowOverwrite: true, contentType: "application/json" }
+  await pool.query(
+    `INSERT INTO series_sync_state (key, value) VALUES ($1, $2)
+     ON CONFLICT (key) DO UPDATE SET value = $2`,
+    [MANIFEST_KEY, JSON.stringify({ lastRun, ...meta })]
   );
 }
 
@@ -274,15 +293,15 @@ if (isBackfill) {
     const s = slice[i];
     process.stdout.write(`  [${i + 1}/${slice.length}] id=${s.id} "${(s.name || "").slice(0, 38).padEnd(38)}" `);
 
-    // Skip series with no issues (saves both a CDN check and a Metron fetch)
+    // Skip series with no issues (saves both a DB check and a Metron fetch)
     if ((s.issueCount ?? 1) === 0) {
       process.stdout.write("skip (issueCount=0)\n");
       skipped++;
       continue;
     }
 
-    // Check existing Blob entry via CDN (cheap — no API call)
-    const existing = await readBlobEntry(`dynamic-series/metron-${s.id}/issues.json`);
+    // Check existing Postgres row (free — no Metron call, no Blob operation)
+    const existing = await readDbEntry(s.id);
 
     if (existing) {
       // If both sides have a `modified` timestamp, compare them exactly.
@@ -291,9 +310,9 @@ if (isBackfill) {
         skipped++;
         continue;
       }
-      // If no `modified` to compare but the entry was cached recently, treat as fresh.
-      if (!s.modified && existing.cachedAt &&
-          Date.now() - existing.cachedAt < BLOB_FRESH_NO_MODIFIED_MS) {
+      // If no `modified` to compare but the row was written recently, treat as fresh.
+      if (!s.modified && existing.cachedAtMs &&
+          Date.now() - existing.cachedAtMs < FRESH_NO_MODIFIED_MS) {
         process.stdout.write("skip (recently cached, no modified field)\n");
         skipped++;
         continue;
@@ -307,7 +326,7 @@ if (isBackfill) {
       continue;
     }
 
-    await writeBlobIssues(s.id, issues, s.modified || null);
+    await writeDbIssues(s.id, issues, s.modified || null);
     process.stdout.write(`wrote ${issues.length} issues.\n`);
     fetched++;
   }
@@ -315,6 +334,7 @@ if (isBackfill) {
   console.log(`\nBackfill complete: ${fetched} written, ${skipped} skipped, ${failed} failed.`);
   console.log(`\nTip: the nightly incremental run will keep these entries up to date going forward.`);
   console.log(`After all chunks are complete, the first incremental run will seed the manifest.`);
+  await pool.end();
   process.exit(0);
 }
 
@@ -323,16 +343,16 @@ if (isBackfill) {
 // ═══════════════════════════════════════════════════════════════════════════════
 console.log("\nINCREMENTAL MODE: checking for series modified since last run...");
 
-const manifest = await readBlobEntry(MANIFEST_PATHNAME);
+const manifest = await readManifest();
 
 if (!manifest?.lastRun) {
   // No manifest exists yet — this is expected before the first backfill.
   // Create a manifest timestamped "now" so future incremental runs work correctly.
-  // Series added/modified before this timestamp will need a backfill to get into Blob.
+  // Series added/modified before this timestamp will need a backfill to get into Postgres.
   const now = new Date().toISOString();
   await writeManifest(now, { note: "Seeded by first incremental run. Run backfill to populate existing series." });
   console.log(`No manifest found. Created manifest with lastRun = ${now}.`);
-  console.log(`\nACTION REQUIRED: The Blob issue-list cache is not yet populated.`);
+  console.log(`\nACTION REQUIRED: The series_issues table is not yet populated.`);
   console.log(`Run a backfill to seed it:`);
   console.log(`  METRON_SERIES_OFFSET=0 METRON_SERIES_LIMIT=1500 node scripts/refresh-series-issues.js`);
   console.log(`  METRON_SERIES_OFFSET=1500 METRON_SERIES_LIMIT=1500 node scripts/refresh-series-issues.js`);
@@ -377,7 +397,7 @@ for (let i = 0; i < toUpdate.length; i++) {
   const issues = await fetchIssuesForSeries(s.id);
   if (issues === null) { failed++; continue; }
 
-  await writeBlobIssues(s.id, issues, s.modified || null);
+  await writeDbIssues(s.id, issues, s.modified || null);
   process.stdout.write(`wrote ${issues.length} issues.\n`);
   updated++;
 }
@@ -387,3 +407,4 @@ const nowIso = new Date().toISOString();
 await writeManifest(nowIso, { updatedInLastRun: updated });
 console.log(`\nIncremental update complete: ${updated} updated, ${failed} failed.`);
 console.log(`Manifest updated: lastRun = ${nowIso}`);
+await pool.end();
