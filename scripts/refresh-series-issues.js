@@ -225,7 +225,7 @@ async function writeBlobIssues(metronId, issues, modified) {
   await put(
     pathname,
     JSON.stringify({ issues, cachedAt: Date.now(), modified: modified || null }),
-    { access: "public", addRandomSuffix: false, contentType: "application/json" }
+    { access: "public", addRandomSuffix: false, allowOverwrite: true, contentType: "application/json" }
   );
 }
 
@@ -233,7 +233,7 @@ async function writeManifest(lastRun, meta = {}) {
   await put(
     MANIFEST_PATHNAME,
     JSON.stringify({ lastRun, ...meta }),
-    { access: "public", addRandomSuffix: false, contentType: "application/json" }
+    { access: "public", addRandomSuffix: false, allowOverwrite: true, contentType: "application/json" }
   );
 }
 
