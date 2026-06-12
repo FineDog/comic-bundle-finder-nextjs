@@ -1,7 +1,9 @@
 /**
  * Daily digest runner — executed by GitHub Actions once per day.
  * For each opted-in user with saved lists, runs the eBay bundle search
- * and emails full results via Resend.
+ * and emails full results via Resend — but only when the results contain
+ * at least one (seller, issue) bundle pair not present in the last digest
+ * sent to that user (tracked in users.digest_last_bundles).
  *
  * Required environment variables (set as GitHub Actions secrets):
  *   DATABASE_URL, EBAY_APP_ID, EBAY_SECRET, RESEND_API_KEY
@@ -59,9 +61,24 @@ function dedupeIssues(...lists) {
   return result;
 }
 
+// ── Bundle fingerprinting ─────────────────────────────────────────────────────
+// A digest is only sent when it contains at least one (seller, issue) pair the
+// user hasn't been emailed before. Pairs from the last sent digest are stored
+// in users.digest_last_bundles (JSONB array of keys).
+
+const pairKey = (seller, issue) => `${seller}|${issue}`;
+
+function bundlePairs(rows) {
+  const pairs = new Set();
+  for (const r of rows) {
+    if (r.bundle_count >= 2) pairs.add(pairKey(r.seller, r.issue));
+  }
+  return pairs;
+}
+
 // ── Email ─────────────────────────────────────────────────────────────────────
 
-function buildDigestEmail(rows, issueCount) {
+function buildDigestEmail(rows, issueCount, newPairs) {
   // Group by seller, bundle sellers only
   const sellerMap = {};
   for (const r of rows) {
@@ -84,10 +101,13 @@ function buildDigestEmail(rows, issueCount) {
       const shipping = best.shipping === "0.00" ? "Free shipping"
         : best.shipping === "unknown" ? "Shipping TBD"
         : `+$${parseFloat(best.shipping).toFixed(2)} shipping`;
+      const newBadge = newPairs.has(pairKey(name, issue))
+        ? `<span style="background:#ffe066;color:#1a1a1a;padding:1px 6px;margin-right:6px;font-family:'Arial Black',sans-serif;font-size:0.62rem;letter-spacing:1px;vertical-align:middle">NEW</span>`
+        : "";
       return `
         <tr>
           <td style="padding:7px 14px;border-bottom:1px solid #e8e0cc;font-size:0.85rem">
-            <a href="${best.url}" style="color:#003399;text-decoration:none">${best.title}</a>
+            ${newBadge}<a href="${best.url}" style="color:#003399;text-decoration:none">${best.title}</a>
           </td>
           <td style="padding:7px 14px;border-bottom:1px solid #e8e0cc;font-size:0.85rem;white-space:nowrap;color:#1a1a1a;font-weight:600">${price}</td>
           <td style="padding:7px 14px;border-bottom:1px solid #e8e0cc;font-size:0.78rem;color:#666;white-space:nowrap">${shipping}</td>
@@ -121,7 +141,8 @@ function buildDigestEmail(rows, issueCount) {
       <h2 style="margin:0 0 4px;font-family:'Arial Black',Gadget,sans-serif;font-size:1.3rem;letter-spacing:1px;color:#003399">YOUR DAILY BUNDLE DIGEST</h2>
       <p style="margin:0 0 20px;color:#555;font-size:0.92rem;line-height:1.6">
         Searched <strong>${issueCount} issue${issueCount === 1 ? "" : "s"}</strong> from your wish list and found
-        <strong>${sellers.length} seller${sellers.length === 1 ? "" : "s"}</strong> with bundle opportunities today.
+        <strong>${sellers.length} seller${sellers.length === 1 ? "" : "s"}</strong> with bundle opportunities today,
+        including <strong>${newPairs.size} new match${newPairs.size === 1 ? "" : "es"}</strong> since your last digest.
       </p>
       ${sellerHtml}
     </div>
@@ -151,8 +172,10 @@ function buildDigestEmail(rows, issueCount) {
 async function main() {
   console.log(`[digest] Starting — ${new Date().toISOString()}`);
 
+  await pool.query("ALTER TABLE users ADD COLUMN IF NOT EXISTS digest_last_bundles JSONB");
+
   const { rows: users } = await pool.query(`
-    SELECT id, email, locg_list, clz_list, manual_list
+    SELECT id, email, locg_list, clz_list, manual_list, digest_last_bundles
     FROM users
     WHERE digest_enabled = true
       AND email IS NOT NULL
@@ -181,7 +204,18 @@ async function main() {
 
     try {
       const rows = await runSearch(token, issues);
-      const result = buildDigestEmail(rows, issues.length);
+
+      const currentPairs = bundlePairs(rows);
+      const previousPairs = new Set(user.digest_last_bundles || []);
+      const newPairs = new Set([...currentPairs].filter(p => !previousPairs.has(p)));
+
+      if (currentPairs.size && !newPairs.size) {
+        console.log(`[digest] ${user.email} — ${currentPairs.size} bundle pair(s), none new, skipping`);
+        skipped++;
+        continue;
+      }
+
+      const result = buildDigestEmail(rows, issues.length, newPairs);
 
       if (!result) {
         console.log(`[digest] ${user.email} — no bundle results, skipping`);
@@ -196,9 +230,12 @@ async function main() {
         html: result.html,
       });
 
-      await pool.query("UPDATE users SET digest_last_sent = NOW() WHERE id = $1", [user.id]);
+      await pool.query(
+        "UPDATE users SET digest_last_sent = NOW(), digest_last_bundles = $2 WHERE id = $1",
+        [user.id, JSON.stringify([...currentPairs])],
+      );
 
-      console.log(`[digest] ${user.email} — sent (${result.sellerCount} seller${result.sellerCount === 1 ? "" : "s"})`);
+      console.log(`[digest] ${user.email} — sent (${result.sellerCount} seller${result.sellerCount === 1 ? "" : "s"}, ${newPairs.size} new pair${newPairs.size === 1 ? "" : "s"})`);
       sent++;
     } catch (e) {
       console.error(`[digest] ${user.email} — error:`, e.message);
