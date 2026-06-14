@@ -58,12 +58,17 @@ export default async function handler(req, res) {
     params.success_url = `${origin}/account?upgraded=1`;
   } else {
     // ── Guest checkout: Stripe collects the email and creates the customer. ──
-    // The account is created/linked in the webhook; /welcome then signs them in.
-    params.customer_creation = "always";
+    // (In subscription mode a customer is always created — customer_creation is
+    // not a valid param here.) The account is created/linked in the webhook;
+    // /welcome then signs them in.
     params.success_url = `${origin}/welcome?session_id={CHECKOUT_SESSION_ID}`;
   }
 
-  const checkoutSession = await stripe.checkout.sessions.create(params);
-
-  return res.status(200).json({ url: checkoutSession.url });
+  try {
+    const checkoutSession = await stripe.checkout.sessions.create(params);
+    return res.status(200).json({ url: checkoutSession.url });
+  } catch (err) {
+    console.error("[stripe/checkout] failed to create session:", err);
+    return res.status(500).json({ error: "Could not start checkout. Please try again." });
+  }
 }
