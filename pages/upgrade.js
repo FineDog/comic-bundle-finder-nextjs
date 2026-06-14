@@ -1,6 +1,6 @@
 ﻿import { useState } from "react";
 import Head from "next/head";
-import { useSession, signIn } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import SiteNav from "../components/SiteNav";
 import SiteFooter from "../components/SiteFooter";
 
@@ -35,10 +35,9 @@ export default function Upgrade() {
   const priceId = billing === "annual" ? annualPriceId : monthlyPriceId;
 
   async function handleCheckout() {
-    if (!session) {
-      signIn(undefined, { callbackUrl: "/upgrade" });
-      return;
-    }
+    // No sign-in gate: logged-out users go straight into Stripe Checkout, which
+    // collects their email and creates their account on the way through. See the
+    // webhook (account upsert) and /welcome (post-checkout sign-in link).
     setCheckoutLoading(true);
     setCheckoutError("");
     try {
