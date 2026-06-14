@@ -23,10 +23,8 @@
 name: Refresh Series Issues
 
 on:
-  # Schedule disabled until initial full backfill is complete.
-  # Re-enable by uncommenting the schedule block below.
-  # schedule:
-  #   - cron: "0 8 * * *"    # 8:00 AM UTC daily
+  schedule:
+    - cron: "0 8 * * *"    # 8:00 AM UTC daily
   workflow_dispatch:
     inputs:
       offset:
