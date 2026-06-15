@@ -2,6 +2,18 @@
 // Returns { zip } for US visitors so Browse API can estimate calculated shipping.
 // Called once on page load; result is sent with every subsequent search request.
 export default async function handler(req, res) {
+  // TEMP: inspect which Vercel geo headers are populated on the current plan.
+  // Hit the deployed /api/geolocate route, then check the Vercel deployment logs.
+  // Remove once we know what Hobby returns.
+  console.log("VERCEL_GEO_HEADERS", JSON.stringify({
+    country: req.headers["x-vercel-ip-country"] || null,
+    region: req.headers["x-vercel-ip-country-region"] || null,
+    city: req.headers["x-vercel-ip-city"] || null,
+    postal: req.headers["x-vercel-ip-postal-code"] || null,
+    lat: req.headers["x-vercel-ip-latitude"] || null,
+    lon: req.headers["x-vercel-ip-longitude"] || null,
+  }));
+
   const forwarded = req.headers["x-forwarded-for"];
   const ip = (forwarded ? forwarded.split(",")[0] : req.socket?.remoteAddress || "").trim();
 
