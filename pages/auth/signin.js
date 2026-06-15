@@ -1,12 +1,22 @@
 import { useState } from "react";
-import { signIn, getProviders } from "next-auth/react";
+import { signIn } from "next-auth/react";
 import Head from "next/head";
 import SiteNav from "../../components/SiteNav";
 import SiteFooter from "../../components/SiteFooter";
+import { authOptions } from "../api/auth/[...nextauth]";
 
 export async function getServerSideProps() {
-  const providers = await getProviders();
-  return { props: { providers: providers ?? {} } };
+  // Derive the provider list directly from authOptions rather than calling
+  // getProviders(), which makes an internal HTTP request to /api/auth/providers
+  // that returns null on Vercel when the base URL can't be resolved — leaving
+  // the sign-in panel empty. Reading authOptions is local and can't fail.
+  const hasGoogle = Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
+  const providers = {};
+  for (const p of authOptions.providers) {
+    if (p.id === "google" && !hasGoogle) continue; // hide a Google button we can't honor
+    providers[p.id] = { id: p.id, name: p.name, type: p.type };
+  }
+  return { props: { providers } };
 }
 
 const PREMIUM_PERKS = [
