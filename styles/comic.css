@@ -245,8 +245,23 @@ body {
 .listing-link:hover { text-decoration: underline; }
 
 @media (max-width: 600px) {
+  /* Hide the wide listing-title column and re-budget the remaining four so
+     price/shipping/link have room to render without wrapping or truncating. */
   .col-title { display: none; }
-  .col-issue { width: 40%; }
+  .col-issue { width: 36%; }
+  .col-price { width: 18%; }
+  .col-ship  { width: 24%; }
+  .col-link  { width: 22%; }
+
+  .listings-table { font-size: 0.8rem; }
+  .listings-table th,
+  .listings-table td { padding: 0.4rem 0.4rem; }
+  /* Keep header labels and the numeric/link cells on a single line so the
+     "EST. SHIPPING" / "LINK" headers and "$5.19" / "View →" never wrap. */
+  .listings-table th { letter-spacing: 0.3px; font-size: 0.62rem; }
+  .col-price, .col-ship, .col-link { white-space: nowrap; }
+  /* Issue cell still wraps long titles like "Batman / Huntress #2". */
+  .col-issue { word-break: break-word; }
 }
 
 /* ── Wave 2 Banner ──────────────────────────────────────────────────── */
