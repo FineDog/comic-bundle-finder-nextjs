@@ -6,12 +6,12 @@ import SiteFooter from "../components/SiteFooter";
 
 const FREE_FEATURES = [
   "Unlimited manual searching",
-  "Filter & sort results",
   "Collection Guides (series & arc pages)",
 ];
 
 const PREMIUM_FEATURES = [
   { label: "Everything in Free", divider: true },
+  "Filter & sort results",
   "File upload (LOCG, CLZ, .csv, .txt)",
   "Gap Analyzer",
   "Save & share results",

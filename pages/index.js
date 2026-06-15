@@ -6,7 +6,7 @@ import SiteFooter from "../components/SiteFooter";
 import { runEbaySearch } from "../lib/ebay-search";
 import { parseCSVLine, yearFromDateString, cleanSeriesName, parseIssueNum } from "../lib/parse-utils";
 import { useSession, signIn } from "next-auth/react";
-import { PremiumGate, PremiumLock } from "../components/PremiumGate.js";
+import { PremiumGate, PremiumLock, PremiumModal } from "../components/PremiumGate.js";
 import { canAccess } from "../lib/features.js";
 
 const STAGES = [
@@ -215,11 +215,14 @@ function track(event, data) {
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function Preview() {
-  const { data: session } = useSession();
+  const { data: session, status: sessionStatus } = useSession();
   const userPlan = session?.user?.plan ?? 'free';
   const canUpload       = canAccess(userPlan, 'file-upload');
   const canSaveResults  = canAccess(userPlan, 'save-results');
   const canEmailResults = canAccess(userPlan, 'email-results');
+  // Filter & Sort is premium. Optimistically unlocked while the session loads so
+  // premium users don't see a locked flash; locks once resolved for free users.
+  const filterLocked    = sessionStatus !== 'loading' && !canAccess(userPlan, 'filter-sort');
 
 
   // Search tab state
@@ -236,6 +239,7 @@ export default function Preview() {
 
   // Filter + sort state
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [showPremium, setShowPremium] = useState(false);
   const [filters, setFilters] = useState({
     minPrice: "",
     maxPrice: "",
@@ -622,21 +626,30 @@ export default function Preview() {
               <div className="stat-box"><div className="stat-number">{sellerCount}</div><div className="stat-label">{singleIssueMode ? "Multi-Copy Sellers" : "Bundle Opportunities"}</div></div>
             </div>
 
-            {/* Filter & Sort — always visible so users can adjust when filtered to zero */}
+            {/* Filter & Sort — premium. Free/signed-out users get a locked toggle. */}
             <div className="filter-toggle-row">
-              <button
-                className={`btn-filter-toggle${filtersOpen ? " active" : ""}`}
-                onClick={() => setFiltersOpen(o => !o)}
-              >
-                Filter &amp; Sort {filtersOpen ? "▲" : "▼"}
-                {filtersActive && !filtersOpen && <span className="filter-active-dot" />}
-              </button>
-              {filtersActive && (
+              {filterLocked ? (
+                <button className="btn-filter-toggle" onClick={() => setShowPremium(true)}>
+                  Filter &amp; Sort 🔒
+                  <span className="filter-premium-pill">Premium</span>
+                </button>
+              ) : (
+                <button
+                  className={`btn-filter-toggle${filtersOpen ? " active" : ""}`}
+                  onClick={() => setFiltersOpen(o => !o)}
+                >
+                  Filter &amp; Sort {filtersOpen ? "▲" : "▼"}
+                  {filtersActive && !filtersOpen && <span className="filter-active-dot" />}
+                </button>
+              )}
+              {!filterLocked && filtersActive && (
                 <button className="btn-filter-reset" onClick={resetFilters}>Reset</button>
               )}
             </div>
 
-            {filtersOpen && (
+            {showPremium && <PremiumModal onClose={() => setShowPremium(false)} />}
+
+            {filtersOpen && !filterLocked && (
               <div className="filter-panel">
                 <div className="filter-grid">
                   {/* Price range */}

@@ -84,8 +84,8 @@ export function PremiumGate({ feature, children }) {
       <div style={RETRO.badge}>Premium Feature</div>
       <h2 style={RETRO.heading}>{featureName} is a Premium Feature</h2>
       <p style={RETRO.body}>
-        Upgrade to Premium to unlock {featureName}, plus file uploads, email alerts,
-        saved searches, and more.
+        Upgrade to Premium to unlock {featureName}, plus filter &amp; sort, file uploads,
+        email alerts, saved searches, and more.
       </p>
       <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
         <button style={RETRO.btn} onClick={() => signIn()}>
@@ -118,6 +118,7 @@ export function PremiumLock({ feature, children, label }) {
 }
 
 const MODAL_FEATURES = [
+  'Filter & Sort results',
   'File Upload (LOCG, CLZ, plain text)',
   'Gap Analyzer',
   'Save & Share Results',

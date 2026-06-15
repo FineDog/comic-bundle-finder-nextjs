@@ -366,6 +366,7 @@ body {
 .btn-filter-toggle.active{background:#003399;color:#fffdf4}
 .btn-filter-toggle.active:hover{background:#0044cc}
 .filter-active-dot{width:8px;height:8px;background:#cc1f00;border:1.5px solid #1a1a1a;border-radius:50%;display:inline-block;margin-left:2px;vertical-align:middle}
+.filter-premium-pill{display:inline-block;background:#cc1f00;color:#fffdf4;border:1.5px solid #1a1a1a;font-size:0.6rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:0 5px;margin-left:6px;vertical-align:middle;line-height:1.5}
 .btn-filter-reset{background:none;border:none;color:#cc1f00;font-family:'Oswald',sans-serif;font-size:0.75rem;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;cursor:pointer;text-decoration:underline;padding:0}
 .filter-panel{background:#f8f3e3;border:2px solid #1a1a1a;padding:1.1rem 1.25rem;margin-bottom:1.5rem}
 .filter-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem 2rem}

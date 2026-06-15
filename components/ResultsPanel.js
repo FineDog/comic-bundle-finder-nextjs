@@ -17,6 +17,9 @@
  */
 
 import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import { canAccess } from "../lib/features.js";
+import { PremiumModal } from "./PremiumGate.js";
 
 function esc(s) { return String(s || ""); }
 
@@ -96,6 +99,14 @@ export default function ResultsPanel({
   hint,
   resetKey,
 }) {
+  const { data: session, status } = useSession();
+  const plan = session?.user?.plan ?? "free";
+  // Filter & Sort is a premium feature. Treat the still-loading session as
+  // unlocked so premium users never see a locked flash; once resolved, free /
+  // signed-out users get the locked toggle.
+  const filterLocked = status !== "loading" && !canAccess(plan, "filter-sort");
+  const [showPremium, setShowPremium] = useState(false);
+
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [filters, setFilters] = useState({
     minPrice: "",
@@ -153,20 +164,29 @@ export default function ResultsPanel({
 
       {/* Filter & Sort */}
       <div className="filter-toggle-row">
-        <button
-          className={`btn-filter-toggle${filtersOpen ? " active" : ""}`}
-          onClick={() => setFiltersOpen(o => !o)}
-        >
-          Filter &amp; Sort {filtersOpen ? "▲" : "▼"}
-          {filtersActive && !filtersOpen && <span className="filter-active-dot" />}
-        </button>
-        {filtersActive && (
+        {filterLocked ? (
+          <button className="btn-filter-toggle" onClick={() => setShowPremium(true)}>
+            Filter &amp; Sort 🔒
+            <span className="filter-premium-pill">Premium</span>
+          </button>
+        ) : (
+          <button
+            className={`btn-filter-toggle${filtersOpen ? " active" : ""}`}
+            onClick={() => setFiltersOpen(o => !o)}
+          >
+            Filter &amp; Sort {filtersOpen ? "▲" : "▼"}
+            {filtersActive && !filtersOpen && <span className="filter-active-dot" />}
+          </button>
+        )}
+        {!filterLocked && filtersActive && (
           <button className="btn-filter-reset" onClick={resetFilters}>Reset</button>
         )}
         {hint && <span className="hint" style={{ marginTop: 0 }}>{hint}</span>}
       </div>
 
-      {filtersOpen && (
+      {showPremium && <PremiumModal onClose={() => setShowPremium(false)} />}
+
+      {filtersOpen && !filterLocked && (
         <div className="filter-panel">
           <div className="filter-grid">
             {/* Price range */}

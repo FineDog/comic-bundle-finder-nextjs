@@ -20,6 +20,7 @@ export async function getServerSideProps() {
 }
 
 const PREMIUM_PERKS = [
+  { icon: "🔎", label: "Filter & Sort", desc: "Narrow and reorder results by price, shipping, and bundle size" },
   { icon: "📂", label: "File Upload", desc: "Import your want list from League of Comic Geeks or CLZ" },
   { icon: "🔍", label: "Gap Analyzer", desc: "Find the missing issues in your collection runs" },
   { icon: "💾", label: "Save & Share", desc: "Bookmark results and send them to yourself by email" },
