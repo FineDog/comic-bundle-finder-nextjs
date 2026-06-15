@@ -135,7 +135,7 @@ export default function ArcPage({ slug, arcId, arcName, arcDesc, configError }) 
               rows={rows}
               issues={issues}
               wave2Loading={wave2Loading}
-              defaultMaxPrice="15"
+              defaultMaxPrice=""
             />
           )}
         </div>

@@ -398,7 +398,7 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
                 rows={windowResults}
                 issues={issuesInWindow.map(i => i.issueName)}
                 wave2Loading={wave2Loading}
-                defaultMaxPrice="10"
+                defaultMaxPrice=""
                 hint="All prices cached — filters apply to displayed results"
                 resetKey={startIdx}
               />
