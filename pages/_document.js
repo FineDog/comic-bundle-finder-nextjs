@@ -4,7 +4,9 @@ export default function Document() {
   return (
     <Html lang="en">
       <Head>
-        <script defer src="https://cloud.umami.is/script.js" data-website-id="552861dd-8b3d-476b-b129-fdc57a380c81" />
+        {/* Umami now loads via the gated <UmamiAnalytics> loader in _app.js so
+            testing traffic (local dev, previews, automation, your own devices)
+            is excluded. Do not re-add the script here unconditionally. */}
         <link rel="icon" type="image/x-icon" href="/favicon/favicon.ico" />
         <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png" />
         <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png" />
