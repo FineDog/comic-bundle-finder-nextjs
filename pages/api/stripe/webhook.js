@@ -1,14 +1,10 @@
 // Stripe webhook handler — updates user tier based on subscription events.
 // IMPORTANT: body parsing must be disabled so we can verify the raw signature.
 import Stripe from "stripe";
-import pkg from "pg";
-const { Pool } = pkg;
+import { getStripePool, grantPremium } from "../../../lib/stripe-grant";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-const pool = globalThis._stripePool ?? (globalThis._stripePool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false,
-}));
+const pool = getStripePool();
 
 export const config = { api: { bodyParser: false } };
 
@@ -43,33 +39,9 @@ export default async function handler(req, res) {
         const subscriptionId = session.subscription;
         const email = session.customer_details?.email || session.customer_email || null;
 
-        // 1. Logged-in / returning customer — already linked by stripe_customer_id.
-        const byCustomer = await pool.query(
-          "UPDATE users SET tier = 'premium', stripe_subscription_id = $1 WHERE stripe_customer_id = $2",
-          [subscriptionId, customerId]
-        );
-
-        if (byCustomer.rowCount === 0 && email) {
-          // 2. Guest checkout — match an existing account by email and link it.
-          const byEmail = await pool.query(
-            `UPDATE users
-               SET tier = 'premium',
-                   stripe_customer_id = $1,
-                   stripe_subscription_id = $2
-             WHERE lower(email) = lower($3)`,
-            [customerId, subscriptionId, email]
-          );
-
-          if (byEmail.rowCount === 0) {
-            // 3. Brand-new user — create the account during checkout. They finish
-            //    signing in via the magic link sent from /welcome.
-            await pool.query(
-              `INSERT INTO users (id, email, "emailVerified", tier, stripe_customer_id, stripe_subscription_id)
-               VALUES (gen_random_uuid()::text, $1, now(), 'premium', $2, $3)`,
-              [email, customerId, subscriptionId]
-            );
-          }
-        }
+        // Shared with the /welcome claim endpoint: links the customer, an
+        // existing account by email, or creates a new premium account.
+        await grantPremium(pool, { customerId, subscriptionId, email });
 
         console.log(`[stripe/webhook] upgraded customer ${customerId}${email ? ` (${email})` : ""}`);
         break;

@@ -35,11 +35,17 @@ export default function Welcome() {
 
     (async () => {
       try {
-        const res = await fetch(`/api/stripe/session?session_id=${encodeURIComponent(sessionId)}`);
+        // Verify the checkout with Stripe and grant premium synchronously — this
+        // is what actually unlocks the account, independent of the webhook.
+        const res = await fetch("/api/stripe/claim", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sessionId }),
+        });
         const data = await res.json();
         if (!res.ok || !data.email) throw new Error();
         setEmail(data.email);
-        // Send the magic link so the new premium account can sign in.
+        // Send the magic link so the now-premium account can sign in.
         await signIn("email", { email: data.email, callbackUrl: "/account", redirect: false });
         setState("sent");
       } catch {
