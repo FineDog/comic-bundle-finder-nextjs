@@ -1,7 +1,9 @@
-import { useState, useRef, useEffect } from "react";
+﻿import { useState, useRef, useEffect } from "react";
 import Head from "next/head";
 import Link from "next/link";
 import * as XLSX from "xlsx";
+import { parseCSVLine, yearFromDateString, monthYearFromDateString, yearAfterMonths, cleanSeriesName, parseIssueNum } from "../lib/parse-utils";
+import { runEbaySearch } from "../lib/ebay-search";
 
 const STAGES = [
   { pct: 5,  msg: "Waking up the server…" },
@@ -16,72 +18,11 @@ const STAGES = [
   { pct: 94, msg: "Almost there…" },
 ];
 
-// Wave 1 returns MAX_RESULTS per issue; wave 2 fetches the remainder.
-const EBAY_PAGE_SIZE = 200;
-
 // Estimated USPS Media Mail shipping range (Zone 1 → Zone 8) shown when
 // geolocation is unavailable and the listing uses calculated shipping.
 const SHIPPING_FALLBACK = "~$4–$6";
 
-// ── Utility ───────────────────────────────────────────────────────────────────
-
-function parseCSVLine(line) {
-  const fields = []; let current = ""; let inQuotes = false;
-  for (let i = 0; i < line.length; i++) {
-    const ch = line[i];
-    if (ch === '"') { if (inQuotes && line[i+1]==='"'){current+='"';i++;}else inQuotes=!inQuotes; }
-    else if (ch === ',' && !inQuotes) { fields.push(current.trim()); current = ""; }
-    else { current += ch; }
-  }
-  fields.push(current.trim()); return fields;
-}
-
-function yearFromDateString(s) {
-  if (!s) return "";
-  const m = s.match(/^(\d{4})-/); if (m) return m[1];
-  const clz = s.match(/^[A-Za-z]{3}-(\d{2})$/);
-  if (clz) { const y = parseInt(clz[1], 10); return String(y < 30 ? 2000 + y : 1900 + y); }
-  const d = new Date(s); return isNaN(d) ? "" : String(d.getFullYear());
-}
-
-function monthYearFromDateString(s) {
-  if (!s) return null;
-  const iso = s.match(/^(\d{4})-(\d{2})/);
-  if (iso) return { year: parseInt(iso[1], 10), month: parseInt(iso[2], 10) };
-  const CLZ_MONTHS = { jan:1, feb:2, mar:3, apr:4, may:5, jun:6, jul:7, aug:8, sep:9, oct:10, nov:11, dec:12 };
-  const clz = s.match(/^([A-Za-z]{3})-(\d{2})$/);
-  if (clz) {
-    const month = CLZ_MONTHS[clz[1].toLowerCase()];
-    const y = parseInt(clz[2], 10);
-    return month ? { year: y < 30 ? 2000 + y : 1900 + y, month } : null;
-  }
-  const d = new Date(s);
-  return isNaN(d) ? null : { year: d.getFullYear(), month: d.getMonth() + 1 };
-}
-
-function yearAfterMonths(date, offset) {
-  if (!date) return "";
-  if (!date.month) return String(date.year);
-  return String(Math.floor((date.year * 12 + date.month - 1 + offset) / 12));
-}
-
 function esc(s) { return String(s || ""); }
-
-// ── Series name helpers ───────────────────────────────────────────────────────
-
-function cleanSeriesName(name) {
-  return name
-    .replace(/\s*\(Vol\.\s*\d+\)/gi, "")
-    .replace(/,?\s*Vol\.\s*\d+/gi, "")
-    .replace(/\s*\(\d{4}\s*[-–]\s*(?:\d{4}|[Pp]resent)\)/g, "")
-    .replace(/\s{2,}/g, " ")
-    .trim();
-}
-
-function parseIssueNum(s) {
-  const m = String(s).match(/^(\d+)/);
-  return m ? parseInt(m[1], 10) : null;
-}
 
 // ── Search parsers ────────────────────────────────────────────────────────────
 
@@ -270,24 +211,6 @@ function analyzeGaps(items, threshold = 5) {
 
 // ── Result processing ─────────────────────────────────────────────────────────
 
-// Merge wave 2 rows into wave 1, deduplicated by URL, with bundle counts recomputed.
-function mergeAndRecount(rows1, rows2) {
-  const urlSet = new Set(rows1.map(r => r.url));
-  const merged = [...rows1];
-  for (const r of rows2) {
-    if (!urlSet.has(r.url)) {
-      urlSet.add(r.url);
-      merged.push(r);
-    }
-  }
-  const sellerIssues = {};
-  for (const r of merged) {
-    if (!sellerIssues[r.seller]) sellerIssues[r.seller] = new Set();
-    sellerIssues[r.seller].add(r.issue);
-  }
-  return merged.map(r => ({ ...r, bundle_count: sellerIssues[r.seller].size }));
-}
-
 // Apply filters and sort to raw rows. Returns sorted array of [sellerName, sellerData].
 function getFilteredSellers(rows, issueCount, filters, sortBy) {
   // 1. Row-level price filter
@@ -395,6 +318,7 @@ export default function Preview() {
   const [uploadMsg, setUploadMsg] = useState("");
   const [wave2Loading, setWave2Loading] = useState(false);
   const [userZip, setUserZip] = useState(null);
+  const [userCountry, setUserCountry] = useState(null);
 
   // Filter + sort state
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -430,12 +354,14 @@ export default function Preview() {
   const [isCollectionDragging, setIsCollectionDragging] = useState(false);
   const collectionFileInputRef = useRef(null);
 
-  // Geolocate on mount for shipping estimates
+  // Geolocate on mount for shipping estimates.
+  // US visitors get zip (accurate domestic rates); non-US get country code only
+  // (enough for eBay to return zone-based international estimates).
   useEffect(() => {
     fetch("/api/geolocate")
       .then(r => r.json())
-      .then(({ zip }) => setUserZip(zip || null))
-      .catch(() => setUserZip(null));
+      .then(({ zip, country }) => { setUserZip(zip || null); setUserCountry(country || null); })
+      .catch(() => { setUserZip(null); setUserCountry(null); });
   }, []);
 
   // ── Derived state ──────────────────────────────────────────────────────
@@ -488,46 +414,17 @@ export default function Preview() {
   async function executeSearch(issues) {
     setResults(null); setWave2Loading(false); startProgress();
     try {
-      // Wave 1
-      const res = await fetch("/api/search", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ issues, zip: userZip }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Server error");
-
-      const bundleCount = new Set(data.results.filter(r => r.bundle_count >= 2).map(r => r.seller)).size;
-      track("search_completed", { issue_count: issues.length, bundle_count: bundleCount });
-      finishProgress(true);
-      setResults({ rows: data.results, issueCount: issues.length, issues });
-
-      // Determine which issues need additional pages
-      const wave2Tasks = [];
-      for (const [issue, total] of Object.entries(data.totals || {})) {
-        for (let offset = EBAY_PAGE_SIZE; offset < total; offset += EBAY_PAGE_SIZE) {
-          wave2Tasks.push({ issue, offset });
-        }
-      }
-
-      if (wave2Tasks.length > 0) {
-        setWave2Loading(true);
-        try {
-          const res2 = await fetch("/api/search", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ issueOffsets: wave2Tasks, zip: userZip }),
-          });
-          const data2 = await res2.json();
-          if (res2.ok && data2.results?.length) {
-            setResults(prev => ({
-              ...prev,
-              rows: mergeAndRecount(prev.rows, data2.results),
-            }));
-          }
-        } catch {} // wave 2 failure is non-fatal
-        setWave2Loading(false);
-      }
+      await runEbaySearch(issues, userZip, {
+        onWave1(rows) {
+          const bundleCount = new Set(rows.filter(r => r.bundle_count >= 2).map(r => r.seller)).size;
+          track("search_completed", { issue_count: issues.length, bundle_count: bundleCount });
+          finishProgress(true);
+          setResults({ rows, issueCount: issues.length, issues });
+        },
+        onWave2Start() { setWave2Loading(true); },
+        onWave2(merged) { setResults(prev => ({ ...prev, rows: merged })); },
+        onWave2End() { setWave2Loading(false); },
+      }, userCountry);
     } catch (err) {
       finishProgress(false);
       setStatus({ msg: `Error: ${err.message}. Try again in a moment.`, type: "error" });
@@ -699,7 +596,7 @@ export default function Preview() {
       .panel{background:#fffdf4;border:3px solid #1a1a1a;box-shadow:6px 6px 0 #1a1a1a;padding:1.5rem 1.75rem;margin-bottom:1.75rem}
       .title-panel{background:#cc1f00;text-align:center;padding:1.25rem 1.75rem 1rem}
       .title-panel h1{font-family:'Bangers',cursive;font-size:clamp(2.5rem,8vw,5rem);color:#fffdf4;letter-spacing:4px;text-shadow:4px 4px 0 #1a1a1a;line-height:1}
-      .tagline{color:#ffe066;font-size:0.85rem;letter-spacing:2px;text-transform:uppercase;margin-top:0.4rem;font-weight:400}
+      .tagline{color:#ffe066;font-size:1rem;letter-spacing:2px;text-transform:uppercase;margin-top:0.4rem;font-weight:400}
       .tab-bar{display:flex;gap:0;margin-bottom:1.75rem;border:3px solid #1a1a1a;box-shadow:4px 4px 0 #1a1a1a}
       .tab-btn{flex:1;font-family:'Bangers',cursive;font-size:1.3rem;letter-spacing:2px;padding:0.55rem 1rem 0.65rem;border:none;cursor:pointer;transition:background 0.1s;text-transform:uppercase}
       .tab-btn.active{background:#cc1f00;color:#fffdf4}
@@ -708,29 +605,29 @@ export default function Preview() {
       .tab-btn:first-child{border-right:2px solid #1a1a1a}
       .caption{display:inline-block;background:#ffe066;border:2px solid #1a1a1a;padding:0.3rem 0.7rem;font-size:0.8rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:1rem}
       .label-row{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:0.5rem;flex-wrap:wrap}
-      .label-row label{font-weight:600;font-size:0.9rem;letter-spacing:1px;text-transform:uppercase;margin:0}
+      .label-row label{font-weight:600;font-size:1rem;letter-spacing:1px;text-transform:uppercase;margin:0}
       .btn-upload{background:#fffdf4;color:#1a1a1a;border:2px solid #1a1a1a;box-shadow:2px 2px 0 #1a1a1a;font-family:'Oswald',sans-serif;font-size:0.78rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:0.25rem 0.75rem;cursor:pointer;white-space:nowrap}
       .btn-upload:hover{background:#ffe066}
       .drop-zone{position:relative}
       .drop-zone.dragging textarea{border-color:#003399;box-shadow:0 0 0 3px #003399;background:#f0f4ff}
       .drag-overlay{display:none;position:absolute;inset:0;background:rgba(0,51,153,0.08);border:3px dashed #003399;pointer-events:none;align-items:center;justify-content:center;font-family:'Bangers',cursive;font-size:1.4rem;letter-spacing:2px;color:#003399}
       .drop-zone.dragging .drag-overlay{display:flex}
-      textarea{width:100%;height:150px;border:2px solid #1a1a1a;background:#fffdf4;font-family:'Courier New',monospace;font-size:0.9rem;padding:0.75rem;resize:vertical;color:#1a1a1a}
+      textarea{width:100%;height:150px;border:2px solid #1a1a1a;background:#fffdf4;font-family:'Courier New',monospace;font-size:1rem;padding:0.75rem;resize:vertical;color:#1a1a1a}
       textarea:focus{outline:none;border-color:#003399;box-shadow:2px 2px 0 #003399}
       .hint{font-size:0.78rem;color:#666;margin-top:0.4rem;font-weight:400;line-height:1.5}
       .upload-msg{font-size:0.8rem;font-weight:600;color:#003399;margin-top:0.5rem;letter-spacing:0.5px}
-      label{display:block;font-weight:600;font-size:0.9rem;letter-spacing:1px;text-transform:uppercase;margin-bottom:0.5rem}
+      label{display:block;font-weight:600;font-size:1rem;letter-spacing:1px;text-transform:uppercase;margin-bottom:0.5rem}
       .btn-search{display:inline-block;background:#003399;color:#fffdf4;border:3px solid #1a1a1a;box-shadow:4px 4px 0 #1a1a1a;font-family:'Bangers',cursive;font-size:1.6rem;letter-spacing:2px;padding:0.3rem 2.5rem 0.4rem;cursor:pointer;margin-top:1.25rem;transition:transform 0.08s,box-shadow 0.08s}
       .btn-search:hover{background:#0044cc}
       .btn-search:active{transform:translate(3px,3px);box-shadow:1px 1px 0 #1a1a1a}
       .btn-search:disabled{background:#888;cursor:not-allowed;transform:none;box-shadow:4px 4px 0 #1a1a1a}
-      .s-error{color:#cc1f00;font-weight:600;font-size:0.88rem;margin-top:0.9rem}
-      .s-loading{color:#003399;font-size:0.88rem;margin-top:0.9rem}
+      .s-error{color:#cc1f00;font-weight:600;font-size:1rem;margin-top:0.9rem}
+      .s-loading{color:#003399;font-size:1rem;margin-top:0.9rem}
       .progress-wrap{margin-top:1.25rem}
       .progress-msg{font-size:0.82rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:0.5rem;color:#003399}
       .progress-track{border:2px solid #1a1a1a;background:#f0e6c4;height:24px;position:relative;overflow:hidden}
       .progress-fill{height:100%;background:#cc1f00;transition:width 0.7s ease}
-      .progress-pct{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;font-family:'Bangers',cursive;font-size:0.85rem;letter-spacing:1px;color:#fffdf4;text-shadow:1px 1px 0 #1a1a1a}
+      .progress-pct{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;font-family:'Bangers',cursive;font-size:1rem;letter-spacing:1px;color:#fffdf4;text-shadow:1px 1px 0 #1a1a1a}
       .stats-row{display:flex;gap:1rem;margin-bottom:1.25rem;flex-wrap:wrap}
       .stat-box{flex:1;min-width:110px;background:#ffe066;border:2px solid #1a1a1a;padding:0.6rem 1rem;text-align:center}
       .stat-number{font-family:'Bangers',cursive;font-size:2.2rem;color:#cc1f00;line-height:1}
@@ -752,7 +649,7 @@ export default function Preview() {
       .filter-section{margin-bottom:0}
       .filter-section-label{font-size:0.68rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:#1a1a1a;margin-bottom:0.45rem;display:block}
       .filter-row{display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap}
-      .filter-input{width:72px;border:2px solid #1a1a1a;background:#fffdf4;font-family:'Oswald',sans-serif;font-size:0.9rem;font-weight:600;padding:0.25rem 0.4rem;text-align:center;color:#1a1a1a}
+      .filter-input{width:72px;border:2px solid #1a1a1a;background:#fffdf4;font-family:'Oswald',sans-serif;font-size:1rem;font-weight:600;padding:0.25rem 0.4rem;text-align:center;color:#1a1a1a}
       .filter-input:focus{outline:none;border-color:#003399;box-shadow:2px 2px 0 #003399}
       .filter-radio-group{display:flex;gap:0.65rem;flex-wrap:wrap}
       .filter-radio-label{display:flex;align-items:center;gap:0.3rem;font-size:0.8rem;font-weight:400;cursor:pointer;user-select:none}
@@ -793,14 +690,14 @@ export default function Preview() {
       .btn-copy:hover{background:#ffd700}
       .share-feedback{font-size:0.8rem;font-weight:600;color:#003399;letter-spacing:0.5px;display:block;margin-bottom:0.5rem}
       .email-form{display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;margin-top:0.5rem}
-      .email-input{flex:1;min-width:200px;border:2px solid #1a1a1a;background:#fffdf4;font-family:'Oswald',sans-serif;font-size:0.88rem;padding:0.35rem 0.6rem;color:#1a1a1a}
+      .email-input{flex:1;min-width:200px;border:2px solid #1a1a1a;background:#fffdf4;font-family:'Oswald',sans-serif;font-size:1rem;padding:0.35rem 0.6rem;color:#1a1a1a}
       .email-input:focus{outline:none;border-color:#003399;box-shadow:2px 2px 0 #003399}
       .btn-email-send{background:#cc1f00;color:#fffdf4;border:3px solid #1a1a1a;box-shadow:3px 3px 0 #1a1a1a;font-family:'Bangers',cursive;font-size:1.2rem;letter-spacing:2px;padding:0.2rem 1.1rem 0.3rem;cursor:pointer;white-space:nowrap}
       .btn-email-send:hover{background:#a81900}
       .btn-email-send:disabled{opacity:0.6;cursor:default}
       .gap-upload-area{border:3px dashed #1a1a1a;background:#fffdf4;padding:2rem;text-align:center;margin-bottom:1.25rem;position:relative;transition:border-color 0.1s,background 0.1s}
       .gap-upload-area.dragging{border-color:#003399;background:#f0f4ff}
-      .gap-upload-area p{font-size:0.88rem;font-weight:400;color:#555;margin-top:0.5rem}
+      .gap-upload-area p{font-size:1rem;font-weight:400;color:#555;margin-top:0.5rem}
       .gap-drag-overlay{display:none;position:absolute;inset:0;background:rgba(0,51,153,0.08);align-items:center;justify-content:center;font-family:'Bangers',cursive;font-size:1.4rem;letter-spacing:2px;color:#003399;pointer-events:none}
       .gap-upload-area.dragging .gap-drag-overlay{display:flex}
       .gap-upload-area.dragging .gap-upload-contents{visibility:hidden}
@@ -816,7 +713,7 @@ export default function Preview() {
       .btn-gap-secondary{background:#fffdf4;color:#1a1a1a;border:2px solid #1a1a1a;box-shadow:3px 3px 0 #1a1a1a;font-family:'Oswald',sans-serif;font-size:0.82rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:0.35rem 1rem;cursor:pointer;white-space:nowrap}
       .btn-gap-secondary:hover{background:#ffe066}
       .copy-msg{font-size:0.8rem;font-weight:600;color:#003399;letter-spacing:0.5px}
-      .gap-empty{color:#666;font-size:0.9rem;font-weight:400;padding:1rem 0}
+      .gap-empty{color:#666;font-size:1rem;font-weight:400;padding:1rem 0}
       .search-action-row{display:flex;align-items:center;gap:1rem;margin-top:1.25rem;flex-wrap:wrap}
       .or-text{font-family:'Bangers',cursive;font-size:1.1rem;letter-spacing:2px;color:#1a1a1a;white-space:nowrap}
       .btn-guides{display:inline-block;background:#ffe066;color:#1a1a1a;border:3px solid #1a1a1a;box-shadow:4px 4px 0 #1a1a1a;font-family:'Bangers',cursive;font-size:1.35rem;letter-spacing:2px;padding:0.3rem 1.75rem 0.4rem;cursor:pointer;text-decoration:none;transition:transform 0.08s,box-shadow 0.08s,background 0.08s}
@@ -825,7 +722,7 @@ export default function Preview() {
       .ship-fallback{color:#888;font-size:0.75rem}
       @media(max-width:600px){.col-title{display:none}.col-issue{width:40%}.filter-grid{grid-template-columns:1fr}}
     `}</style>
-    <div className="container">
+    <div className="page-wrap">
       <div className="panel title-panel">
         <h1>Comic Bundle Finder</h1>
         <div className="tagline">Find sellers with multiple issues you need &mdash; save on shipping</div>
@@ -837,7 +734,7 @@ export default function Preview() {
       </div>
 
       {activeTab === "search" && (<>
-        <div className="panel" style={{ fontSize: "0.88rem", fontWeight: 400, lineHeight: 1.8, color: "#333" }}>
+        <div className="panel" style={{ fontSize:"1rem", fontWeight: 400, lineHeight: 1.8, color: "#333" }}>
           Buying back issues on eBay? Shipping costs can turn a $2 comic into a $10 purchase. But most sellers combine shipping —
           so if you can find one seller who has several issues you need, you save big. Comic Bundle Finder searches eBay for every
           issue on your want list, then ranks sellers by how many of your issues they carry. Paste your list, hit search, and find
@@ -1133,7 +1030,7 @@ export default function Preview() {
       {activeTab === "analyzer" && (
         <div className="panel">
           <div className="caption">Gap Analyzer</div>
-          <p style={{ fontSize: "0.88rem", fontWeight: 400, lineHeight: 1.8, color: "#333", marginBottom: "1.25rem" }}>
+          <p style={{ fontSize:"1rem", fontWeight: 400, lineHeight: 1.8, color: "#333", marginBottom: "1.25rem" }}>
             Upload your collection export to find gaps in your runs — issues you&rsquo;re missing between ones you own.
             The analyzer groups your collection by series and finds small gaps worth filling.
           </p>
@@ -1145,7 +1042,7 @@ export default function Preview() {
             onDrop={onCollectionDrop}
           >
             <div className="gap-upload-contents">
-              <button className="btn-upload" style={{ fontSize: "0.88rem", padding: "0.4rem 1.25rem" }} onClick={() => collectionFileInputRef.current?.click()}>
+              <button className="btn-upload" style={{ fontSize:"1rem", padding: "0.4rem 1.25rem" }} onClick={() => collectionFileInputRef.current?.click()}>
                 Upload Collection File
               </button>
               <p>League of Comic Geeks (.xlsx), CLZ (.csv), or plain text (.txt) — or drag and drop here</p>

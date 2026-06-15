@@ -1,5 +1,6 @@
-import Head from "next/head";
+﻿import Head from "next/head";
 import { getBlobUrl } from "../../lib/blob-url";
+import SiteNav from "../../components/SiteNav";
 
 function esc(s) { return String(s || ""); }
 
@@ -38,11 +39,11 @@ export default function ResultsPage({ data }) {
     <style>{`
       *{box-sizing:border-box;margin:0;padding:0}
       body{background-color:#f0e6c4;background-image:radial-gradient(circle,#c8b98a 1px,transparent 1px);background-size:10px 10px;min-height:100vh;font-family:'Oswald',sans-serif;color:#1a1a1a;padding:2rem 1rem 4rem}
-      .container{max-width:860px;margin:0 auto;padding:24px 16px}
+
       .panel{background:#fffdf4;border:3px solid #1a1a1a;box-shadow:6px 6px 0 #1a1a1a;padding:1.5rem 1.75rem;margin-bottom:1.5rem}
       .title-panel{background:#cc1f00;text-align:center;padding:1.25rem 1.75rem 1rem}
       .title-panel h1{font-family:'Bangers',cursive;font-size:clamp(2.5rem,8vw,5rem);color:#fffdf4;letter-spacing:4px;text-shadow:4px 4px 0 #1a1a1a;line-height:1}
-      .tagline{color:#ffe066;font-size:0.85rem;letter-spacing:2px;text-transform:uppercase;margin-top:0.4rem;font-weight:400}
+      .tagline{color:#ffe066;font-size:1rem;letter-spacing:2px;text-transform:uppercase;margin-top:0.4rem;font-weight:400}
       .saved-banner{background:#003399;color:#fffdf4;border:3px solid #1a1a1a;box-shadow:6px 6px 0 #1a1a1a;padding:0.75rem 1.75rem;margin-bottom:1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem}
       .saved-label{font-family:'Bangers',cursive;font-size:1.3rem;letter-spacing:2px}
       .saved-date{font-size:0.78rem;font-weight:400;opacity:0.8}
@@ -71,11 +72,8 @@ export default function ResultsPage({ data }) {
       .disclosure{font-size:0.72rem;color:#888;text-align:center;font-weight:400;margin-top:1.25rem;line-height:1.5;border-top:1px solid #d4c9a8;padding-top:0.75rem}
       @media(max-width:600px){.col-title{display:none}.col-issue{width:40%}}
     `}</style>
-    <div className="container">
-      <div className="panel title-panel">
-        <h1>Comic Bundle Finder</h1>
-        <div className="tagline">Find sellers with multiple issues you need &mdash; save on shipping</div>
-      </div>
+    <div className="page-wrap">
+      <SiteNav />
 
       <div className="saved-banner">
         <div>
