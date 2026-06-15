@@ -49,7 +49,7 @@ export default function ArcPage({ slug, arcId, arcName, arcDesc, configError }) 
 
   const metaDesc = `Find eBay bundle deals for the ${arcName} story arc. Sellers ranked by how many issues they carry — save on combined shipping. Buy the complete ${arcName} reading order in one place.`;
   const pageTitle = `${arcName} — Story Arc Bundle Deals — Comic Bundle Finder`;
-  const pageUrl = `https://www.comicbundlefinder.com/arc/${slug || ""}`;
+  const pageUrl = `https://comicbundlefinder.com/arc/${slug || ""}`;
   const keywords = `${arcName}, ${arcName} comic, ${arcName} reading order, ${arcName} ebay, ${arcName} bundle, ${arcName} back issues, buy ${arcName} comics`;
 
   const structuredData = {
@@ -60,14 +60,14 @@ export default function ArcPage({ slug, arcId, arcName, arcDesc, configError }) 
         "name": pageTitle,
         "description": metaDesc,
         "url": pageUrl,
-        "isPartOf": { "@type": "WebSite", "name": "Comic Bundle Finder", "url": "https://www.comicbundlefinder.com" },
+        "isPartOf": { "@type": "WebSite", "name": "Comic Bundle Finder", "url": "https://comicbundlefinder.com" },
         "about": { "@type": "CreativeWorkSeries", "name": arcName, ...(arcDesc ? { description: arcDesc } : {}) },
       },
       {
         "@type": "BreadcrumbList",
         "itemListElement": [
-          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.comicbundlefinder.com" },
-          { "@type": "ListItem", "position": 2, "name": "Collection Guides", "item": "https://www.comicbundlefinder.com/collection-guides" },
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://comicbundlefinder.com" },
+          { "@type": "ListItem", "position": 2, "name": "Collection Guides", "item": "https://comicbundlefinder.com/collection-guides" },
           { "@type": "ListItem", "position": 3, "name": arcName, "item": pageUrl },
         ],
       },
@@ -84,7 +84,7 @@ export default function ArcPage({ slug, arcId, arcName, arcDesc, configError }) 
         <meta property="og:description" content={metaDesc} />
         <meta property="og:type" content="website" />
         <meta property="og:url" content={pageUrl} />
-        <meta property="og:image" content="https://www.comicbundlefinder.com/preview.png" />
+        <meta property="og:image" content="https://comicbundlefinder.com/preview.png" />
         <meta name="robots" content="index, follow" />
         <link rel="canonical" href={pageUrl} />
         <script

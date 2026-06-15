@@ -43,7 +43,7 @@ function findLocalSlug(metronName) {
 
 export default function SeriesGuidePage({ groupName, groupSlug, volumes }) {
   const title = `${groupName} — Series Guide | Comic Bundle Finder`;
-  const guideUrl = `https://www.comicbundlefinder.com/series-guide/${groupSlug}`;
+  const guideUrl = `https://comicbundlefinder.com/series-guide/${groupSlug}`;
   const description = `Browse all ${groupName} volumes and find eBay bundle deals for every issue.`;
 
   const structuredData = {
@@ -54,14 +54,14 @@ export default function SeriesGuidePage({ groupName, groupSlug, volumes }) {
         "name": title,
         "description": description,
         "url": guideUrl,
-        "isPartOf": { "@type": "WebSite", "name": "Comic Bundle Finder", "url": "https://www.comicbundlefinder.com" },
+        "isPartOf": { "@type": "WebSite", "name": "Comic Bundle Finder", "url": "https://comicbundlefinder.com" },
         "about": { "@type": "ComicSeries", "name": groupName },
       },
       {
         "@type": "BreadcrumbList",
         "itemListElement": [
-          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.comicbundlefinder.com" },
-          { "@type": "ListItem", "position": 2, "name": "Collection Guides", "item": "https://www.comicbundlefinder.com/collection-guides" },
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://comicbundlefinder.com" },
+          { "@type": "ListItem", "position": 2, "name": "Collection Guides", "item": "https://comicbundlefinder.com/collection-guides" },
           { "@type": "ListItem", "position": 3, "name": groupName, "item": guideUrl },
         ],
       },
@@ -83,13 +83,13 @@ export default function SeriesGuidePage({ groupName, groupSlug, volumes }) {
         <meta property="og:type" content="website" />
         <meta
           property="og:url"
-          content={`https://www.comicbundlefinder.com/series-guide/${groupSlug}`}
+          content={`https://comicbundlefinder.com/series-guide/${groupSlug}`}
         />
-        <meta property="og:image" content="https://www.comicbundlefinder.com/preview.png" />
+        <meta property="og:image" content="https://comicbundlefinder.com/preview.png" />
         <meta name="robots" content="index, follow" />
         <link
           rel="canonical"
-          href={`https://www.comicbundlefinder.com/series-guide/${groupSlug}`}
+          href={`https://comicbundlefinder.com/series-guide/${groupSlug}`}
         />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />

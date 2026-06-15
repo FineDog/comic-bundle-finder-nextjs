@@ -12,4 +12,4 @@ Disallow: /welcome
 User-agent: facebookexternalhit
 Allow: /
 
-Sitemap: https://www.comicbundlefinder.com/sitemap.xml
+Sitemap: https://comicbundlefinder.com/sitemap.xml

@@ -102,10 +102,10 @@ export default function CollectionGuides({ arcs }) {
           content="Browse pre-built collection guides for classic comic runs and story arcs. Find eBay bundle deals issue by issue."
         />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://www.comicbundlefinder.com/collection-guides" />
-        <meta property="og:image" content="https://www.comicbundlefinder.com/preview.png" />
+        <meta property="og:url" content="https://comicbundlefinder.com/collection-guides" />
+        <meta property="og:image" content="https://comicbundlefinder.com/preview.png" />
         <meta name="robots" content="index, follow" />
-        <link rel="canonical" href="https://www.comicbundlefinder.com/collection-guides" />
+        <link rel="canonical" href="https://comicbundlefinder.com/collection-guides" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -115,11 +115,11 @@ export default function CollectionGuides({ arcs }) {
               "name": "Collection Guides — Comic Bundle Finder",
               "description":
                 "Browse pre-built collection guides for classic comic runs and story arcs. Find eBay bundle deals issue by issue.",
-              "url": "https://www.comicbundlefinder.com/collection-guides",
+              "url": "https://comicbundlefinder.com/collection-guides",
               "isPartOf": {
                 "@type": "WebSite",
                 "name": "Comic Bundle Finder",
-                "url": "https://www.comicbundlefinder.com",
+                "url": "https://comicbundlefinder.com",
               },
             }),
           }}

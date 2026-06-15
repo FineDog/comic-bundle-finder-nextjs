@@ -580,11 +580,11 @@ export default function Preview() {
       <meta property="og:title" content="Comic Bundle Finder" />
       <meta property="og:description" content="Find eBay sellers who carry multiple issues from your comic want list. Save on combined shipping." />
       <meta property="og:type" content="website" />
-      <meta property="og:url" content="https://www.comicbundlefinder.com" />
-      <meta property="og:image" content="https://www.comicbundlefinder.com/preview.png" />
+      <meta property="og:url" content="https://comicbundlefinder.com" />
+      <meta property="og:image" content="https://comicbundlefinder.com/preview.png" />
       <meta name="robots" content="index, follow" />
       <meta name="google-site-verification" content="gk8gi9ve5gW7xgq_LqiuiLSwhH4I8k8JUbsYKYRK8V4" />
-      <link rel="canonical" href="https://www.comicbundlefinder.com" />
+      <link rel="canonical" href="https://comicbundlefinder.com" />
       <link rel="preconnect" href="https://fonts.googleapis.com" />
       <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Oswald:wght@400;600&display=swap" rel="stylesheet" />

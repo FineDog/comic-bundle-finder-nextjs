@@ -216,7 +216,7 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
 
   const metaDescription = `Find the best eBay bundle deals for ${displayName} (${subtitle}). Browse all ${totalIssues} issues and find sellers carrying multiple issues you need — save big on combined shipping.`;
   const keywords = `${displayName}, ${displayName} ${subtitle}, ${displayName} ebay, ${displayName} back issues, ${displayName} bundle, buy ${displayName} comics, ${displayName} key issues`;
-  const seriesUrl = `https://www.comicbundlefinder.com/series/${slug}`;
+  const seriesUrl = `https://comicbundlefinder.com/series/${slug}`;
 
   const structuredData = {
     "@context": "https://schema.org",
@@ -226,16 +226,16 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
         "name": seoTitle,
         "description": metaDescription,
         "url": seriesUrl,
-        "isPartOf": { "@type": "WebSite", "name": "Comic Bundle Finder", "url": "https://www.comicbundlefinder.com" },
+        "isPartOf": { "@type": "WebSite", "name": "Comic Bundle Finder", "url": "https://comicbundlefinder.com" },
         "about": { "@type": "ComicSeries", "name": displayName, "description": seoBlurb },
       },
       {
         "@type": "BreadcrumbList",
         "itemListElement": [
-          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.comicbundlefinder.com" },
-          { "@type": "ListItem", "position": 2, "name": "Collection Guides", "item": "https://www.comicbundlefinder.com/collection-guides" },
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://comicbundlefinder.com" },
+          { "@type": "ListItem", "position": 2, "name": "Collection Guides", "item": "https://comicbundlefinder.com/collection-guides" },
           ...(groupSlug
-            ? [{ "@type": "ListItem", "position": 3, "name": displayName, "item": `https://www.comicbundlefinder.com/series-guide/${groupSlug}` },
+            ? [{ "@type": "ListItem", "position": 3, "name": displayName, "item": `https://comicbundlefinder.com/series-guide/${groupSlug}` },
                { "@type": "ListItem", "position": 4, "name": `${displayName} ${subtitle}`, "item": seriesUrl }]
             : [{ "@type": "ListItem", "position": 3, "name": `${displayName} ${subtitle}`, "item": seriesUrl }]),
         ],
@@ -252,8 +252,8 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
         <meta property="og:title" content={seoTitle} />
         <meta property="og:description" content={metaDescription} />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content={`https://www.comicbundlefinder.com/series/${slug}`} />
-        <meta property="og:image" content="https://www.comicbundlefinder.com/preview.png" />
+        <meta property="og:url" content={`https://comicbundlefinder.com/series/${slug}`} />
+        <meta property="og:image" content="https://comicbundlefinder.com/preview.png" />
         <meta name="robots" content="index, follow" />
         <link rel="canonical" href={seriesUrl} />
         <script
