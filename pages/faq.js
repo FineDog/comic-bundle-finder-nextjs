@@ -8,12 +8,39 @@ export async function getStaticProps() {
   return { props: faq };
 }
 
-export default function Faq({ frontmatter, html }) {
+export default function Faq({ frontmatter, html, faqItems = [] }) {
+  const title = "FAQ — Comic Bundle Finder";
+  const description = "How Comic Bundle Finder works: search eBay for the comics on your want list, find sellers carrying multiple issues, and save on combined shipping. Pricing, file uploads, the Gap Analyzer, and more.";
+  const pageUrl = "https://www.comicbundlefinder.com/faq";
+
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": faqItems.map((i) => ({
+      "@type": "Question",
+      "name": i.question,
+      "acceptedAnswer": { "@type": "Answer", "text": i.answer },
+    })),
+  };
+
   return (
     <>
       <Head>
-        <title>FAQ — Comic Bundle Finder</title>
-        <meta name="description" content="Frequently asked questions about Comic Bundle Finder." />
+        <title>{title}</title>
+        <meta name="description" content={description} />
+        <meta property="og:title" content={title} />
+        <meta property="og:description" content={description} />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={pageUrl} />
+        <meta property="og:image" content="https://www.comicbundlefinder.com/preview.png" />
+        <meta name="robots" content="index, follow" />
+        <link rel="canonical" href={pageUrl} />
+        {faqItems.length > 0 && (
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+          />
+        )}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Oswald:wght@400;600&display=swap" rel="stylesheet" />
