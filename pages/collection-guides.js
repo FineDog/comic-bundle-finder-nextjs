@@ -151,9 +151,6 @@ export default function CollectionGuides({ arcs }) {
         .arc-coming-soon{font-size:1rem;font-weight:400;color:#888;font-style:italic}
         @media(max-width:540px){.arc-result-card{flex-direction:column;align-items:flex-start}}
         .series-stat-badge{display:inline-block;background:#ffe066;border:1.5px solid #1a1a1a;padding:0.1rem 0.45rem;font-size:0.7rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-left:0.4rem;vertical-align:middle}
-        .search-btn{background:#cc1f00;color:#fffdf4;border:3px solid #1a1a1a;box-shadow:3px 3px 0 #1a1a1a;font-family:'Bangers',cursive;font-size:1rem;letter-spacing:1.5px;padding:0.35rem 1rem 0.4rem;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:transform 0.08s,box-shadow 0.08s}
-        .search-btn:hover{background:#a81800}
-        .search-btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 #1a1a1a}
       `}</style>
 
       <div className="page-wrap">
@@ -243,13 +240,6 @@ export default function CollectionGuides({ arcs }) {
               autoComplete="off"
               style={{ flex: 1 }}
             />
-            <button
-              type="button"
-              className="search-btn"
-              onClick={ensureSeriesIndex}
-            >
-              Search
-            </button>
           </div>
 
           {/* Hint before typing */}
