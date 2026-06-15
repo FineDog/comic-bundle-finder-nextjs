@@ -43,16 +43,43 @@ function findLocalSlug(metronName) {
 
 export default function SeriesGuidePage({ groupName, groupSlug, volumes }) {
   const title = `${groupName} — Series Guide | Comic Bundle Finder`;
+  const guideUrl = `https://www.comicbundlefinder.com/series-guide/${groupSlug}`;
+  const description = `Browse all ${groupName} volumes and find eBay bundle deals for every issue.`;
+
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "CollectionPage",
+        "name": title,
+        "description": description,
+        "url": guideUrl,
+        "isPartOf": { "@type": "WebSite", "name": "Comic Bundle Finder", "url": "https://www.comicbundlefinder.com" },
+        "about": { "@type": "ComicSeries", "name": groupName },
+      },
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.comicbundlefinder.com" },
+          { "@type": "ListItem", "position": 2, "name": "Collection Guides", "item": "https://www.comicbundlefinder.com/collection-guides" },
+          { "@type": "ListItem", "position": 3, "name": groupName, "item": guideUrl },
+        ],
+      },
+    ],
+  };
 
   return (
     <>
       <Head>
         <title>{title}</title>
-        <meta
-          name="description"
-          content={`Browse all ${groupName} volumes and find eBay bundle deals for every issue.`}
+        <meta name="description" content={description} />
+        <meta name="keywords" content={`${groupName}, ${groupName} comics, ${groupName} ebay, ${groupName} back issues, buy ${groupName} comics`} />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
         />
         <meta property="og:title" content={title} />
+        <meta property="og:description" content={description} />
         <meta property="og:type" content="website" />
         <meta
           property="og:url"

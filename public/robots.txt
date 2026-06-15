@@ -1,5 +1,13 @@
 User-agent: *
 Allow: /
+Disallow: /api/
+Disallow: /account
+Disallow: /auth/
+Disallow: /results/
+Disallow: /upgrade
+Disallow: /newsletter-prep
+Disallow: /preview
+Disallow: /welcome
 
 User-agent: facebookexternalhit
 Allow: /

@@ -215,32 +215,50 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
   }, [loading, wave2Loading, data, startIdx]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const metaDescription = `Find the best eBay bundle deals for ${displayName} (${subtitle}). Browse all ${totalIssues} issues and find sellers carrying multiple issues you need — save big on combined shipping.`;
+  const keywords = `${displayName}, ${displayName} ${subtitle}, ${displayName} ebay, ${displayName} back issues, ${displayName} bundle, buy ${displayName} comics, ${displayName} key issues`;
+  const seriesUrl = `https://www.comicbundlefinder.com/series/${slug}`;
+
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebPage",
+        "name": seoTitle,
+        "description": metaDescription,
+        "url": seriesUrl,
+        "isPartOf": { "@type": "WebSite", "name": "Comic Bundle Finder", "url": "https://www.comicbundlefinder.com" },
+        "about": { "@type": "ComicSeries", "name": displayName, "description": seoBlurb },
+      },
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.comicbundlefinder.com" },
+          { "@type": "ListItem", "position": 2, "name": "Collection Guides", "item": "https://www.comicbundlefinder.com/collection-guides" },
+          ...(groupSlug
+            ? [{ "@type": "ListItem", "position": 3, "name": displayName, "item": `https://www.comicbundlefinder.com/series-guide/${groupSlug}` },
+               { "@type": "ListItem", "position": 4, "name": `${displayName} ${subtitle}`, "item": seriesUrl }]
+            : [{ "@type": "ListItem", "position": 3, "name": `${displayName} ${subtitle}`, "item": seriesUrl }]),
+        ],
+      },
+    ],
+  };
 
   return (
     <>
       <Head>
         <title>{seoTitle}</title>
         <meta name="description" content={metaDescription} />
+        <meta name="keywords" content={keywords} />
         <meta property="og:title" content={seoTitle} />
         <meta property="og:description" content={metaDescription} />
         <meta property="og:type" content="website" />
         <meta property="og:url" content={`https://www.comicbundlefinder.com/series/${slug}`} />
         <meta property="og:image" content="https://www.comicbundlefinder.com/preview.png" />
         <meta name="robots" content="index, follow" />
-        <link rel="canonical" href={`https://www.comicbundlefinder.com/series/${slug}`} />
+        <link rel="canonical" href={seriesUrl} />
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "WebPage",
-              "name": seoTitle,
-              "description": metaDescription,
-              "url": `https://www.comicbundlefinder.com/series/${slug}`,
-              "isPartOf": { "@type": "WebSite", "name": "Comic Bundle Finder", "url": "https://www.comicbundlefinder.com" },
-              "about": { "@type": "ComicSeries", "name": displayName, "description": seoBlurb },
-            }),
-          }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
         />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />

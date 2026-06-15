@@ -47,14 +47,39 @@ export default function ArcPage({ slug, arcId, arcName, arcDesc, configError }) 
       .catch(() => setStatus("error"));
   }, [arcId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const metaDesc = `Find eBay bundle deals for the ${arcName} story arc. Sellers ranked by how many issues they carry — save on combined shipping.`;
+  const metaDesc = `Find eBay bundle deals for the ${arcName} story arc. Sellers ranked by how many issues they carry — save on combined shipping. Buy the complete ${arcName} reading order in one place.`;
+  const pageTitle = `${arcName} — Story Arc Bundle Deals — Comic Bundle Finder`;
   const pageUrl = `https://www.comicbundlefinder.com/arc/${slug || ""}`;
+  const keywords = `${arcName}, ${arcName} comic, ${arcName} reading order, ${arcName} ebay, ${arcName} bundle, ${arcName} back issues, buy ${arcName} comics`;
+
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebPage",
+        "name": pageTitle,
+        "description": metaDesc,
+        "url": pageUrl,
+        "isPartOf": { "@type": "WebSite", "name": "Comic Bundle Finder", "url": "https://www.comicbundlefinder.com" },
+        "about": { "@type": "CreativeWorkSeries", "name": arcName, ...(arcDesc ? { description: arcDesc } : {}) },
+      },
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.comicbundlefinder.com" },
+          { "@type": "ListItem", "position": 2, "name": "Collection Guides", "item": "https://www.comicbundlefinder.com/collection-guides" },
+          { "@type": "ListItem", "position": 3, "name": arcName, "item": pageUrl },
+        ],
+      },
+    ],
+  };
 
   return (
     <>
       <Head>
-        <title>{arcName} — Story Arc Bundle Deals — Comic Bundle Finder</title>
+        <title>{pageTitle}</title>
         <meta name="description" content={metaDesc} />
+        <meta name="keywords" content={keywords} />
         <meta property="og:title" content={`${arcName} — Story Arc Bundle Deals`} />
         <meta property="og:description" content={metaDesc} />
         <meta property="og:type" content="website" />
@@ -62,6 +87,10 @@ export default function ArcPage({ slug, arcId, arcName, arcDesc, configError }) 
         <meta property="og:image" content="https://www.comicbundlefinder.com/preview.png" />
         <meta name="robots" content="index, follow" />
         <link rel="canonical" href={pageUrl} />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+        />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
