@@ -12,18 +12,50 @@ GitHub repo: github.com/FineDog/comic-bundle-finder-nextjs (branch: main)
 
 ---
 
-## Active Development Notice
+## Branch & Deploy Model
 
-**The site is currently mid-redesign.** Two separate branches and Vercel projects are in use:
+**The UI redesign shipped.** As of 2026-06 the `ui-redesign` branch was merged into `main`
+and the redesign is live in production. The old two-branch / two-Vercel-project split is
+**retired** — do all work (frontend and backend) on `main` now.
 
 - **`main` branch → `comic-bundle-finder-nextjs` Vercel project** — the live production site.
-  Backend changes (API routes, scripts, lib/) are fine here. Do not touch the live UI pages
-  (`pages/index.js` and other user-facing pages) unless specifically asked.
-- **`ui-redesign` branch → `comic-bundle-finder-preview` Vercel project** — where all UI
-  redesign work happens. Frontend changes go here.
+  Auto-deploys on every push. Both UI and backend changes go here.
+- `comic-bundle-finder-preview` (the old `ui-redesign` deploy target) is no longer the
+  development surface. Keep it on **Stripe test keys** if used for staging so it never
+  creates real charges.
+- The `ui-redesign` branch and the local `ui-redesign-premerge` safety branch are leftover
+  from the merge and can be deleted once you're confident in production.
 
-Some things (e.g. GitHub Actions scripts) must land on `main` to work correctly, but the
-default assumption is: backend changes to `main`, UI changes to `ui-redesign`.
+### Maintenance mode
+
+`proxy.js` (repo root — Next.js "proxy", the v16 successor to `middleware.js`) is an
+**env-gated maintenance page**. It is inert unless `MAINTENANCE_MODE=1` is set in the Vercel
+project. When active it serves a styled 503 to all visitors; set `MAINTENANCE_BYPASS_TOKEN`
+and visit `/?bypass=<token>` once to browse normally (8-hour cookie). Used during the
+redesign rollout; currently **off**. Remember env changes need a redeploy to take effect.
+
+### What shipped in the 2026-06 rollout
+
+- Merged `ui-redesign` → `main` (full UI redesign + backend work: NextAuth, Stripe guest
+  checkout, newsletter-prep sources, international shipping `country` param, item-quantities).
+- **Stripe is live** (production uses `sk_live_…` + a live-mode webhook endpoint; local and
+  any staging stay on `sk_test_…`). All four Stripe values — secret key, webhook secret, and
+  both `NEXT_PUBLIC_STRIPE_*_PRICE_ID`s — must be the **same mode**; mixing modes fails
+  checkout with "No such price".
+- **Filter & Sort is now a Premium feature** (gated on the main search page and on the
+  series/arc collection-guide pages via `ResultsPanel`).
+- Series/arc collection-guide pages **no longer apply a default max-price cap** (was $10/$15);
+  they show the full price range like the main search page (`defaultMaxPrice=""`).
+- Closed premium-enforcement gaps: **file uploads** (account page + `/api/user/lists` PATCH)
+  and the **daily digest / email-alerts** (account toggle + `/api/user/preferences` +
+  `daily-digest.mjs` now filters `tier = 'premium'`).
+
+### Known follow-ups (not yet done)
+
+- `pages/api/newsletter/metron-releases.js` makes a **live Metron call from a deployed Vercel
+  route** — violates the Metron golden rule below. Needs a guard to refuse running on Vercel
+  (`if (process.env.VERCEL) return 503`).
+- `/api/item-quantities` is unauthenticated with no batch cap — minor abuse/cost hardening.
 
 ---
 
@@ -119,7 +151,10 @@ After changing env vars, trigger a manual redeploy from the Deployments tab.
 - Stats row: Issues Searched / Total Sellers Found / Bundle Opportunities
 - Single-issue mode (one issue searched): bundle badge shows listing count instead of issue count
 
-**Filter & Sort**
+**Filter & Sort** (Premium feature — `filter-sort`)
+- Free/signed-out users see a locked "Filter & Sort 🔒 Premium" toggle that opens the upgrade
+  modal instead of the panel. Default (unfiltered) results still render for everyone; only the
+  controls are gated. Same gating on the series/arc pages via `ResultsPanel`.
 - Collapsible panel, toggled by "Filter & Sort" button. Active filters shown with a red dot.
 - **Price per issue:** min and max dollar inputs
 - **Free shipping:** Any / Free only / No free
@@ -249,11 +284,14 @@ To test a major change before replacing the live page, save it as `pages/preview
    listings as a premium feature. Slug `ebay-price-data` is already registered in
    `lib/features.js`; implementation not yet built.
 
-3. **Upgrade / payment flow** — no payment processor is wired up yet. To manually upgrade
-   a user: `UPDATE users SET plan = 'premium' WHERE email = '...'` directly in Neon.
+3. **Upgrade / payment flow — DONE.** Stripe is wired up and live (guest checkout via
+   `/api/stripe/checkout`, customer portal, webhook account provisioning). To manually
+   upgrade a user: `UPDATE users SET tier = 'premium' WHERE email = '...'` directly in Neon
+   (the plan column is named **`tier`**, not `plan`).
 
-4. **Auth sign-in/verify pages** — `pages/auth/signin.js` and `pages/auth/verify.js` need
-   to be built. NextAuth falls back to its default pages until they exist.
+4. **Auth sign-in/verify pages — DONE.** `pages/auth/signin.js` exists (Google + email
+   magic link). Note: derive providers from `authOptions` directly, not `getProviders()` —
+   the latter returns null on Vercel and leaves the panel empty.
 
 ---
 
@@ -263,8 +301,14 @@ Free and premium tiers are defined in `lib/features.js`. This is the single sour
 for what's gated.
 
 **Free tier:** manual search, collection guides.
-**Premium tier:** file upload, gap analyzer, save results, email results, email alerts,
-saved searches, eBay price data (future).
+**Premium tier:** filter & sort, file upload, gap analyzer, save results, email results,
+email alerts (daily digest), saved searches, eBay price data (future).
+
+**Enforce gated features in BOTH layers.** UI gating alone is not enough — every premium
+API route must also enforce server-side (`requireFeature` or an inline `canAccess` check),
+or a free user can call the endpoint directly. Confirmed enforced: `save-results`,
+`email-results`, `file-upload` (`/api/user/lists` PATCH), `email-alerts` (`/api/user/preferences`
++ `daily-digest.mjs`). `filter-sort` and `gap-analyzer` are UI-gated only (no writable API).
 
 ### Adding a new gated feature
 
@@ -463,8 +507,9 @@ series page's auto-advance logic uses it to check whether a window has any raw b
    - Handing off to `<ResultsPanel>` once data is available
 
 2. **Use ResultsPanel for all results output.** Do not re-implement the filter panel,
-   seller cards, or badge logic. Pass `defaultMaxPrice` appropriate for the guide type
-   (series uses `"10"`, arcs use `"15"`).
+   seller cards, or badge logic. Series and arc pages pass `defaultMaxPrice=""` (no cap) so
+   they show the full price range like the main search page. (The prop still defaults to
+   `"10"` if omitted, but current guide pages override it to `""`.)
 
 3. **Wire up geolocation** with `fetch("/api/geolocate")` on mount and pass `zip` to
    `runEbaySearch` so calculated-shipping listings return accurate estimates.
