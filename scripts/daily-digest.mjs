@@ -178,6 +178,7 @@ async function main() {
     SELECT id, email, locg_list, clz_list, manual_list, digest_last_bundles
     FROM users
     WHERE digest_enabled = true
+      AND tier = 'premium'
       AND email IS NOT NULL
       AND (locg_list IS NOT NULL OR clz_list IS NOT NULL OR manual_list IS NOT NULL)
   `);

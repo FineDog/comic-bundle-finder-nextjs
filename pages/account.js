@@ -8,6 +8,7 @@ import { parseCSVLine, yearFromDateString, cleanSeriesName } from "../lib/parse-
 import SiteNav from "../components/SiteNav";
 import SiteFooter from "../components/SiteFooter";
 import { PremiumGate } from "../components/PremiumGate.js";
+import { canAccess } from "../lib/features.js";
 
 export { authProps as getServerSideProps };
 
@@ -185,6 +186,7 @@ function ManageBillingButton() {
 
 export default function Account() {
   const { data: session } = useSession();
+  const canDigest = canAccess(session?.user?.plan ?? "free", "email-alerts");
 
   // Account deletion
   const [deleteState, setDeleteState] = useState(null); // null | 'confirm' | 'deleting' | 'error'
@@ -435,19 +437,30 @@ export default function Account() {
 
           <div className="digest-row">
             <div>
-              <div className="digest-label">Daily bundle digest emails</div>
+              <div className="digest-label">
+                Daily bundle digest emails
+                {!canDigest && <span className="tier-badge" style={{ background: "#cc1f00" }}>Premium</span>}
+              </div>
               <div className="digest-meta">
-                {digestEnabled
+                {!canDigest
+                  ? "A Premium feature — get a daily email with eBay bundle opportunities from your saved lists"
+                  : digestEnabled
                   ? digestLastSent
                     ? `Last sent ${formatDate(digestLastSent)}`
                     : "Will send tomorrow morning"
                   : "Get a daily email with eBay bundle opportunities from your saved lists"}
               </div>
             </div>
-            <label className="toggle">
-              <input type="checkbox" checked={digestEnabled} onChange={e => toggleDigest(e.target.checked)} />
-              <span className="toggle-slider" />
-            </label>
+            {canDigest ? (
+              <label className="toggle">
+                <input type="checkbox" checked={digestEnabled} onChange={e => toggleDigest(e.target.checked)} />
+                <span className="toggle-slider" />
+              </label>
+            ) : (
+              <Link href="/upgrade" className="btn-edit" style={{ textDecoration: "none", whiteSpace: "nowrap" }}>
+                Upgrade
+              </Link>
+            )}
           </div>
         </div>
 
