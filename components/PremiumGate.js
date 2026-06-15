@@ -88,9 +88,15 @@ export function PremiumGate({ feature, children }) {
         email alerts, saved searches, and more.
       </p>
       <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
-        <button style={RETRO.btn} onClick={() => signIn()}>
-          Sign In / Upgrade
-        </button>
+        {session ? (
+          <Link href="/upgrade" style={{ ...RETRO.btn, display: 'inline-block' }}>
+            Upgrade to Premium
+          </Link>
+        ) : (
+          <button style={RETRO.btn} onClick={() => signIn()}>
+            Sign In / Upgrade
+          </button>
+        )}
       </div>
     </div>
   )

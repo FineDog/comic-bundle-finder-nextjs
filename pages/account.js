@@ -7,6 +7,7 @@ import * as XLSX from "xlsx";
 import { parseCSVLine, yearFromDateString, cleanSeriesName } from "../lib/parse-utils";
 import SiteNav from "../components/SiteNav";
 import SiteFooter from "../components/SiteFooter";
+import { PremiumGate } from "../components/PremiumGate.js";
 
 export { authProps as getServerSideProps };
 
@@ -456,6 +457,8 @@ export default function Account() {
           <p className="placeholder-msg">Your saved searches will appear here. Coming soon.</p>
         </div>
 
+        {/* ── Want-list uploads (premium: file-upload) ── */}
+        <PremiumGate feature="file-upload">
         {/* ── League of Comic Geeks ── */}
         <div className="panel">
           <div className="caption">League of Comic Geeks</div>
@@ -543,6 +546,7 @@ export default function Account() {
             </>
           )}
         </div>
+        </PremiumGate>
 
         <SiteFooter />
       </div>

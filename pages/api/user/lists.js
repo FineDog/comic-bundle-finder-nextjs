@@ -1,5 +1,6 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/pages/api/auth/[...nextauth]";
+import { canAccess } from "@/lib/features";
 import { Pool } from "pg";
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
@@ -25,6 +26,10 @@ export default async function handler(req, res) {
   }
 
   if (req.method === "PATCH") {
+    // Saving an uploaded want list is a premium (file-upload) feature.
+    if (!canAccess(session.user.plan ?? "free", "file-upload")) {
+      return res.status(403).json({ error: "premium_required", feature: "file-upload" });
+    }
     const { source, items, username, collectionItems } = req.body;
     if (!["locg", "clz", "manual"].includes(source)) {
       return res.status(400).json({ error: "Invalid source." });
