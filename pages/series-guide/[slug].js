@@ -3,6 +3,7 @@ import path from "path";
 import Head from "next/head";
 import Link from "next/link";
 import { SERIES } from "../../lib/series-config";
+import { metronIdToSlug } from "../../lib/series-slug";
 import SiteNav from "../../components/SiteNav";
 import SiteFooter from "../../components/SiteFooter";
 
@@ -153,7 +154,7 @@ export default function SeriesGuidePage({ groupName, groupSlug, volumes }) {
                   </div>
                   {v.seoBlurb && <div className="volume-blurb">{v.seoBlurb}</div>}
                   <Link
-                    href={"/series/" + (v.localSlug || "metron-" + v.metronId)}
+                    href={"/series/" + (v.localSlug || v.slug)}
                     className="btn-series"
                   >
                     Browse Series &rarr;
@@ -259,6 +260,7 @@ export async function getStaticProps({ params }) {
 
     return {
       metronId: s.id,
+      slug: metronIdToSlug(s.id),
       name: s.name,
       subtitle,
       seoBlurb: localConfig ? localConfig.seoBlurb : "",

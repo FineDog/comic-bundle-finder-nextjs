@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Head from "next/head";
 import Link from "next/link";
 import { SERIES, SERIES_GROUPS, getSeriesConfig } from "../../lib/series-config";
+import { slugToMetronId, metronIdToSlug } from "../../lib/series-slug";
 import SiteNav from "../../components/SiteNav";
 import SiteFooter from "../../components/SiteFooter";
 import ResultsPanel from "../../components/ResultsPanel";
@@ -41,7 +42,7 @@ function hasBundles(rows) {
   return Object.values(perSeller).some(s => s.size >= 2);
 }
 
-export default function SeriesPage({ slug, displayName, subtitle, totalIssues, seoBlurb, seoTitle, groupSlug, prevVolSlug, nextVolSlug }) {
+export default function SeriesPage({ slug, metronId, displayName, subtitle, totalIssues, seoBlurb, seoTitle, groupSlug, prevVolSlug, nextVolSlug }) {
   const [startIdx, setStartIdx]     = useState(0);
   const [batchSize, setBatchSize]   = useState(10);
   const [showSlider, setShowSlider] = useState(false);
@@ -109,7 +110,7 @@ export default function SeriesPage({ slug, displayName, subtitle, totalIssues, s
               if (!cancelled && res2.ok && data2.results?.length) {
                 const merged = mergeAndRecount(json.results, data2.results);
                 setData(prev => ({ ...prev, results: merged }));
-                if (/^metron-\d+$/.test(slug)) {
+                if (metronId != null) {
                   fetch(`/api/series/${slug}/results`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -466,10 +467,8 @@ function loadSeriesIndex() {
 export async function getStaticProps({ params }) {
   const { slug } = params;
 
-  const metronMatch = /^metron-(\d+)$/.exec(slug);
-  if (metronMatch) {
-    const metronId = parseInt(metronMatch[1], 10);
-
+  const metronId = slugToMetronId(slug);
+  if (metronId != null) {
     let seriesName = "";
     let yearEnd = null;
     let vol = null;
@@ -515,12 +514,12 @@ export async function getStaticProps({ params }) {
           return yA - yB;
         });
       const currentIdx = siblings.findIndex((s) => s.id === metronId);
-      if (currentIdx > 0) prevVolSlug = `metron-${siblings[currentIdx - 1].id}`;
-      if (currentIdx !== -1 && currentIdx < siblings.length - 1) nextVolSlug = `metron-${siblings[currentIdx + 1].id}`;
+      if (currentIdx > 0) prevVolSlug = metronIdToSlug(siblings[currentIdx - 1].id);
+      if (currentIdx !== -1 && currentIdx < siblings.length - 1) nextVolSlug = metronIdToSlug(siblings[currentIdx + 1].id);
     }
 
     return {
-      props: { slug, displayName: baseName, subtitle, totalIssues: totalIssuesNum, seoBlurb, seoTitle, groupSlug, prevVolSlug, nextVolSlug },
+      props: { slug, metronId, displayName: baseName, subtitle, totalIssues: totalIssuesNum, seoBlurb, seoTitle, groupSlug, prevVolSlug, nextVolSlug },
       revalidate: 86400,
     };
   }
@@ -546,6 +545,7 @@ export async function getStaticProps({ params }) {
   return {
     props: {
       slug,
+      metronId: null,
       displayName: config.displayName,
       subtitle: config.subtitle,
       totalIssues: allIssues.length,

@@ -22,6 +22,7 @@ import path from "path";
 import { put } from "@vercel/blob";
 import { getEbayToken, searchEbay, aggregateRows } from "../../../../lib/ebay";
 import { getSeriesConfig } from "../../../../lib/series-config";
+import { slugToMetronId } from "../../../../lib/series-slug";
 import { getMetronIssuesCached, getBlobBaseUrl } from "../../../../lib/metron-issues";
 
 const CONCURRENCY = 8;
@@ -46,11 +47,10 @@ async function readEbayCache(pathname) {
 export default async function handler(req, res) {
   const { slug } = req.query;
 
-  // POST: client uploads merged Wave 1+2 results to Blob cache (metron-* series only).
+  // POST: client uploads merged Wave 1+2 results to Blob cache (dynamic series only).
   if (req.method === "POST") {
-    const metronMatch = /^metron-(\d+)$/.exec(slug);
-    if (!metronMatch) return res.status(405).json({ error: "Cache write not supported for this series type." });
-    const metronId = parseInt(metronMatch[1], 10);
+    const metronId = slugToMetronId(slug);
+    if (metronId == null) return res.status(405).json({ error: "Cache write not supported for this series type." });
     const { rows, startIdx, count } = req.body;
     if (!rows || startIdx == null || !count) return res.status(400).json({ error: "Missing rows, startIdx, or count." });
     const ebayBlobPathname = `dynamic-series/metron-${metronId}/ebay/${startIdx}-${count}.json`;
@@ -72,11 +72,9 @@ export default async function handler(req, res) {
   const count = Math.min(50, Math.max(1, parseInt(req.query.count || "50", 10)));
   const zip = req.query.zip || null;
 
-  // ─── Dynamic series: metron-{id} ───────────────────────────────────────────
-  const metronMatch = /^metron-(\d+)$/.exec(slug);
-  if (metronMatch) {
-    const metronId = parseInt(metronMatch[1], 10);
-
+  // ─── Dynamic series: name-based slug resolving to a metron ID ───────────────
+  const metronId = slugToMetronId(slug);
+  if (metronId != null) {
     // Read issue list from Blob (written by nightly GitHub Actions — never calls Metron).
     // Returns null if the series has not yet been indexed by the nightly job.
     const allIssues = await getMetronIssuesCached(metronId);
