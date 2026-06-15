@@ -88,7 +88,12 @@ function buildDigestEmail(rows, issueCount, newPairs) {
     sellerMap[r.seller].byIssue[r.issue].push(r);
   }
 
+  // Only show sellers that have at least one new (seller, issue) pair since the
+  // last digest. Unchanged bundles are omitted so the email reflects what's new;
+  // for the sellers we do show, the full current bundle is rendered for context.
   const sellers = Object.entries(sellerMap)
+    .filter(([name, data]) =>
+      Object.keys(data.byIssue).some(issue => newPairs.has(pairKey(name, issue))))
     .sort((a, b) => b[1].bundle_count - a[1].bundle_count);
 
   if (!sellers.length) return null;
@@ -141,8 +146,9 @@ function buildDigestEmail(rows, issueCount, newPairs) {
       <h2 style="margin:0 0 4px;font-family:'Arial Black',Gadget,sans-serif;font-size:1.3rem;letter-spacing:1px;color:#003399">YOUR DAILY BUNDLE DIGEST</h2>
       <p style="margin:0 0 20px;color:#555;font-size:0.92rem;line-height:1.6">
         Searched <strong>${issueCount} issue${issueCount === 1 ? "" : "s"}</strong> from your wish list and found
-        <strong>${sellers.length} seller${sellers.length === 1 ? "" : "s"}</strong> with bundle opportunities today,
-        including <strong>${newPairs.size} new match${newPairs.size === 1 ? "" : "es"}</strong> since your last digest.
+        <strong>${newPairs.size} new match${newPairs.size === 1 ? "" : "es"}</strong> since your last digest, across
+        <strong>${sellers.length} seller${sellers.length === 1 ? "" : "s"}</strong> with a bundle opportunity.
+        Sellers whose bundles haven't changed are hidden — only what's new is shown below.
       </p>
       ${sellerHtml}
     </div>
