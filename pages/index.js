@@ -145,16 +145,21 @@ function getFilteredSellers(rows, issueCount, filters, sortBy) {
     const sumCheapest = Object.values(cheapestPerIssue).reduce((a, l) => a + (parseFloat(l.price) || 0), 0);
     const numUnique = Object.keys(cheapestPerIssue).length;
 
+    // Estimated bundle shipping: assume the seller charges their highest single
+    // shipping fee as a base, then ~$1 for each additional item. Deliberately
+    // errs high so we never overstate the savings.
+    const estBundleShipping = numUnique > 0 ? maxShipping + (numUnique - 1) : 0;
+
     data.cheapestPerIssue = cheapestPerIssue;
-    data.maxShipping = maxShipping;
+    data.estBundleShipping = estBundleShipping;
     data.hasUnknownShipping = hasUnknownShipping;
     // Sum of cheapest prices (not including shipping)
     data.subtotal = sumCheapest;
-    // Est. total = cheapest prices + one shipping charge
-    data.estTotal = sumCheapest + maxShipping;
+    // Est. total = cheapest prices + estimated bundle shipping
+    data.estTotal = sumCheapest + estBundleShipping;
     data.estPerIssue = numUnique > 0 ? data.estTotal / numUnique : 0;
     // How much you'd save vs buying each item separately from this seller
-    data.shippingSavings = hasUnknownShipping ? null : Math.max(0, totalIndividualShipping - maxShipping);
+    data.shippingSavings = hasUnknownShipping ? null : Math.max(0, totalIndividualShipping - estBundleShipping);
   }
 
   // 5. Seller-level filters
@@ -171,7 +176,7 @@ function getFilteredSellers(rows, issueCount, filters, sortBy) {
   // 6. Sort
   entries.sort(([, a], [, b]) => {
     if (sortBy === "est_price_per_issue") return a.estPerIssue - b.estPerIssue;
-    if (sortBy === "est_shipping") return a.maxShipping - b.maxShipping;
+    if (sortBy === "est_shipping") return a.estBundleShipping - b.estBundleShipping;
     return b.bundle_count - a.bundle_count;
   });
 

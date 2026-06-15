@@ -76,16 +76,20 @@ export function groupResults(rows, filters, sortBy) {
 
     const sumCheapest = Object.values(cheapestPerIssue).reduce((a, l) => a + (parseFloat(l.price) || 0), 0);
     const numUnique = Object.keys(cheapestPerIssue).length;
+    // Estimated bundle shipping: assume the seller charges their highest single
+    // shipping fee as a base, then ~$1 for each additional item. Deliberately
+    // errs high so we never overstate the savings.
+    const estBundleShipping = numUnique > 0 ? maxShipping + (numUnique - 1) : 0;
     s[name].subtotal = sumCheapest;
-    s[name].maxShipping = maxShipping;
-    s[name].estPerIssue = numUnique > 0 ? (sumCheapest + maxShipping) / numUnique : 0;
-    s[name].shippingSavings = hasUnknownShipping ? null : Math.max(0, totalIndividualShipping - maxShipping);
+    s[name].estBundleShipping = estBundleShipping;
+    s[name].estPerIssue = numUnique > 0 ? (sumCheapest + estBundleShipping) / numUnique : 0;
+    s[name].shippingSavings = hasUnknownShipping ? null : Math.max(0, totalIndividualShipping - estBundleShipping);
   }
 
   const entries = Object.entries(s);
   entries.sort(([nameA, a], [nameB, b]) => {
     if (sortBy === "est_price_per_issue") return a.estPerIssue - b.estPerIssue;
-    if (sortBy === "est_shipping") return a.maxShipping - b.maxShipping;
+    if (sortBy === "est_shipping") return a.estBundleShipping - b.estBundleShipping;
     return b.bundle_count - a.bundle_count || nameA.localeCompare(nameB);
   });
   return entries;
