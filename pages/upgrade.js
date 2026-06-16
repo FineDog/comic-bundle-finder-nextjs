@@ -171,13 +171,13 @@ export default function Upgrade() {
               {billing === "monthly" ? (
                 <>
                   <div className="price-main">$5<span className="price-period">/mo</span></div>
-                  <div className="price-sub">Billed monthly — cancel anytime</div>
+                  <div className="price-sub">7-day free trial, then $5/mo — cancel anytime</div>
                 </>
               ) : (
                 <>
                   <div className="price-main">$3<span className="price-period">/mo</span></div>
                   <div className="price-billed">Billed $36/year — save 40%</div>
-                  <div className="price-sub">Cancel anytime</div>
+                  <div className="price-sub">7-day free trial, then $36/year — cancel anytime</div>
                 </>
               )}
             </div>
@@ -215,11 +215,7 @@ export default function Upgrade() {
                     onClick={handleCheckout}
                     disabled={checkoutLoading}
                   >
-                    {checkoutLoading
-                      ? "Loading…"
-                      : !session
-                      ? "Get Premium →"
-                      : `Upgrade — $${billing === "annual" ? "36/yr" : "5/mo"} →`}
+                    {checkoutLoading ? "Loading…" : "Start 7-Day Free Trial →"}
                   </button>
                   {checkoutError && <div className="checkout-error">{checkoutError}</div>}
                 </>
@@ -243,8 +239,11 @@ export default function Upgrade() {
           <div className="faq-q">What does the Gap Analyzer do?</div>
           <div className="faq-a">It will run through your collection list and check for gaps of a certain size (default is 5). For example, if you have issues #3, #5, and #9&ndash;11 of a 20-issue series, it will detect that you are missing issues #1&ndash;2, #4, and #6&ndash;8. It will detect leading gaps (issues #1&ndash;2) because every series starts with #1 (well, <em>almost</em> every series), but it won&rsquo;t detect issues #12&ndash;20, because it&rsquo;s only trying to fill gaps and a series could be infinitely long.</div>
 
+          <div className="faq-q">How does the free trial work?</div>
+          <div className="faq-a">New subscribers get Premium free for 7 days. We collect a card up front so your access continues automatically when the trial ends — monthly or annual, whichever you picked. Cancel anytime before day 7 from your account page and you won&rsquo;t be charged a cent.</div>
+
           <div className="faq-q">Can I cancel anytime?</div>
-          <div className="faq-a">Yes. Cancel from your account page and you keep Premium access until the end of your billing period. No questions asked.</div>
+          <div className="faq-a">Yes. Cancel from your account page and you keep Premium access until the end of your billing period. No questions asked. Anything you uploaded — want lists, saved searches — stays in your account if you cancel; you just can&rsquo;t use it for searches until you resubscribe.</div>
 
           <div className="faq-q">What&rsquo;s the difference between monthly and annual?</div>
           <div className="faq-a">Same features either way — annual is just $36 upfront instead of $5/month, which works out to $3/month. You save $24 over the year.</div>
