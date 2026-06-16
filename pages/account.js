@@ -104,9 +104,22 @@ function useDropZone(onFile) {
 function SavedSummary({ saved, label, drop, accept, uploadingMsg }) {
   const [showDrop, setShowDrop] = useState(false);
   const hasSaved = saved?.items?.length > 0;
+  const isLocked = !hasSaved && !!saved?.locked;
 
-  if (!hasSaved && !uploadingMsg) return null;
-  if (!hasSaved) return <div className="upload-msg">{uploadingMsg}</div>;
+  if (!hasSaved && !isLocked && !uploadingMsg) return null;
+  if (!hasSaved && !isLocked) return <div className="upload-msg">{uploadingMsg}</div>;
+
+  // Locked: the list is still saved in the DB but the user is no longer premium,
+  // so we only have a count (no usable items). Show it as a reminder + upgrade nudge.
+  if (isLocked) {
+    const n = saved.count || 0;
+    return (
+      <div className="saved-summary saved-locked">
+        <span>🔒 {n} {label || "item"}{n === 1 ? "" : "s"} saved · still here when you come back</span>
+        <Link href="/upgrade" className="btn-edit">Upgrade to use →</Link>
+      </div>
+    );
+  }
 
   const wishCount = saved.items.length;
   const collCount = saved.collectionItems?.length || 0;
@@ -223,9 +236,12 @@ export default function Account() {
     fetch("/api/user/lists")
       .then(r => r.json())
       .then(data => {
-        if (data.locg?.items?.length) setLocgSaved(data.locg);
-        if (data.clz?.items?.length)    setClzSaved(data.clz);
-        if (data.manual?.items?.length) setPlainSaved(data.manual);
+        // A list is worth showing if it has usable items OR is locked
+        // (saved while premium, now gated — show count + an upgrade nudge).
+        const present = (l) => (l?.items?.length || l?.locked) ? l : null;
+        if (present(data.locg))   setLocgSaved(data.locg);
+        if (present(data.clz))    setClzSaved(data.clz);
+        if (present(data.manual)) setPlainSaved(data.manual);
         setDigestEnabled(data.digest_enabled ?? false);
         setDigestLastSent(data.digest_last_sent ?? null);
       })
@@ -349,6 +365,8 @@ export default function Account() {
         .plain-hint{font-size:0.82rem;color:#888;margin-bottom:0.75rem;line-height:1.6}
         code{background:#f0e6c4;border:1px solid #c8b98a;padding:0.1rem 0.35rem;font-size:0.8rem}
         .saved-summary{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:0.85rem;font-size:1rem;font-weight:600;color:#1a1a1a}
+        .saved-locked{background:#f7f1da;border:2px dashed #b8a96f;padding:0.6rem 0.85rem;color:#6b6244}
+        .saved-locked .btn-edit{background:#ffe066;text-decoration:none;white-space:nowrap}
         .digest-row{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-top:1.1rem;padding-top:1.1rem;border-top:1px solid #e0d8c0}
         .digest-label{font-size:1rem;font-weight:600;letter-spacing:0.3px}
         .digest-meta{font-size:0.78rem;color:#888;font-weight:400;margin-top:0.15rem}

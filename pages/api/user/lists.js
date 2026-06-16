@@ -16,10 +16,23 @@ export default async function handler(req, res) {
       [userId]
     );
     if (!rows.length) return res.status(404).json({ error: "User not found." });
+
+    // Reading back usable want lists (for search / gap analysis) is the premium
+    // `file-upload` feature. For free/downgraded users the saved lists stay in
+    // the DB untouched, but we withhold the usable `items` so they can't be fed
+    // into a search — only the presence + count is returned so the UI can show
+    // "X items saved — upgrade to use".
+    const canUse = canAccess(session.user.plan ?? "free", "file-upload");
+    const present = (list) => {
+      if (!list) return null;
+      if (canUse) return list;
+      return { locked: true, count: Array.isArray(list.items) ? list.items.length : 0, updatedAt: list.updatedAt ?? null };
+    };
+
     return res.json({
-      locg:             rows[0].locg_list       ?? null,
-      clz:              rows[0].clz_list         ?? null,
-      manual:           rows[0].manual_list      ?? null,
+      locg:             present(rows[0].locg_list),
+      clz:              present(rows[0].clz_list),
+      manual:           present(rows[0].manual_list),
       digest_enabled:   rows[0].digest_enabled   ?? false,
       digest_last_sent: rows[0].digest_last_sent ?? null,
     });
