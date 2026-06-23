@@ -30,8 +30,8 @@ const SHIPPING_FALLBACK = "~$4–$6";
 // A contiguous run from a hugely popular, abundant-on-eBay series so the demo
 // reliably surfaces sellers carrying several issues (the bundling payoff).
 const DEMO_ISSUES = [
-  "Saga #1", "Saga #2", "Saga #3", "Saga #4",
-  "Saga #5", "Saga #6", "Saga #7", "Saga #8",
+  "Absolute Batman 21 2026", "Absolute Wonder Woman 20 2026", "Absolute Superman 19 2026", "Absolute Flash 16 2026",
+  "Absolute Green Lantern 15 2026",
 ];
 
 function esc(s) { return String(s || ""); }
@@ -289,21 +289,6 @@ export default function Preview() {
       .then(({ zip, country }) => { setUserZip(zip || null); setUserCountry(country || null); })
       .catch(() => { setUserZip(null); setUserCountry(null); });
   }, []);
-
-  // First-visit demo: auto-run a sample search so new users see the bundling
-  // payoff immediately instead of bouncing off an empty box. Runs once per
-  // browser (localStorage) and yields to any real pre-fill source.
-  // NOTE: must read its inputs before the wishlist/gap effects below consume them.
-  useEffect(() => {
-    try {
-      const params = new URLSearchParams(window.location.search);
-      if (params.get("wishlist")) return;
-      if (sessionStorage.getItem("gap_search")) return;
-      if (localStorage.getItem("cbf_demo_seen")) return;
-      localStorage.setItem("cbf_demo_seen", "1");
-      runDemo(true);
-    } catch {}
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Pre-fill search from LOCG wishlist (account page → ?wishlist=...)
   useEffect(() => {
@@ -617,10 +602,9 @@ export default function Preview() {
       <SiteNav />
 
       <div className="panel" style={{ fontSize: "1rem", fontWeight: 400, lineHeight: 1.8, color: "#333" }}>
-          Buying back issues on eBay? Shipping costs can turn a $2 comic into a $10 purchase. But most sellers combine shipping —
+          Buying back issues on eBay? Shipping costs can turn a $2 comic into a $10 purchase. But most sellers combine shipping, 
           so if you can find one seller who has several issues you need, you save big. Comic Bundle Finder searches eBay for every
-          issue on your want list, then ranks sellers by how many of your issues they carry. Paste your list, hit search, and find
-          your best bundle deals in seconds.
+          issue on your want list, then ranks sellers by how many of your issues they carry. Paste your list, hit search, and start saving on shipping.
           <div style={{ marginTop: "0.75rem", fontSize: "0.78rem", color: "#888", lineHeight: 1.5 }}>
             Some links on this page may be eBay Partner Network affiliate links. A small commission may be earned if you purchase through these links, at no extra cost to you. These commissions help support the site.
           </div>
@@ -635,7 +619,7 @@ export default function Preview() {
           )}
           {!results && !demoActive && (
             <div className="value-prop">
-              Paste your <strong>whole</strong> want list, not a few issues at a time — the more issues you add, the more a single seller can bundle and the more you save on shipping.
+              Paste your <strong>whole</strong> want list, not a few issues at a time. The more issues you add, the more a single seller can bundle and the more you save on shipping.
             </div>
           )}
           <div className="label-row">
