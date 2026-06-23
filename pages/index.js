@@ -613,7 +613,7 @@ export default function Preview() {
           <div className="caption">Enter your missing issues</div>
           {demoActive && (
             <div className="demo-banner">
-              <span>▶ <strong>Live demo</strong> — these are real eBay results for a sample want list (Saga #1–8). The more issues you search at once, the bigger the bundles we find.</span>
+              <span>▶ <strong>Live demo</strong> — these are real eBay results for a sample want list of recent Absolute Universe comics. The more issues you search at once, the bigger the bundles we find.</span>
               <button className="btn-demo-clear" onClick={clearDemo}>Clear &amp; search my own list</button>
             </div>
           )}
