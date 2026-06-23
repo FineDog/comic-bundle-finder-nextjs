@@ -365,17 +365,17 @@ export default function Preview() {
   }
 
   // Demo search — populates the box with a sample list and runs it live, with a
-  // banner explaining it's a demo. Triggered by the "See an example" button and
-  // the first-visit autorun. Demo runs are tagged so they stay out of real
-  // search analytics (search_completed carries demo:true; demo_search is fired
-  // instead of search_started).
-  function runDemo(auto) {
+  // banner explaining it's a demo. Triggered by the "See an example" button.
+  // Demo runs are tagged so they stay out of real search analytics
+  // (search_completed carries demo:true; demo_search is fired instead of
+  // search_started).
+  function runDemo() {
     setIssueInput(DEMO_ISSUES.join("\n"));
     setStatus({ msg: "", type: "" }); setUploadMsg("");
     setSavedId(null); setShareMsg(""); setShowEmailForm(false); setEmailMsg("");
     setFilters(f => ({ ...f, requiredIssues: [] }));
     setDemoActive(true);
-    track("demo_search", { auto: !!auto });
+    track("demo_search");
     executeSearch(DEMO_ISSUES, { demo: true });
   }
   function clearDemo() {
@@ -644,7 +644,7 @@ export default function Preview() {
           </div>
           <div className="search-action-row">
             <button className="btn-search" style={{ marginTop: 0 }} onClick={handleSearch} disabled={progress.visible}>Find Bundles!</button>
-            <button className="btn-demo" onClick={() => runDemo(false)} disabled={progress.visible}>▶ See an example</button>
+            <button className="btn-demo" onClick={runDemo} disabled={progress.visible}>▶ See an example</button>
           </div>
           {status.msg && <div className={status.type === "error" ? "s-error" : "s-loading"}>{status.msg}</div>}
           {progress.visible && (
