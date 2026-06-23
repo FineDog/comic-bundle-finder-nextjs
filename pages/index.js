@@ -26,6 +26,14 @@ const STAGES = [
 // geolocation is unavailable and the listing uses calculated shipping.
 const SHIPPING_FALLBACK = "~$4–$6";
 
+// Sample want list for the "see an example" demo and first-visit autorun.
+// A contiguous run from a hugely popular, abundant-on-eBay series so the demo
+// reliably surfaces sellers carrying several issues (the bundling payoff).
+const DEMO_ISSUES = [
+  "Saga #1", "Saga #2", "Saga #3", "Saga #4",
+  "Saga #5", "Saga #6", "Saga #7", "Saga #8",
+];
+
 function esc(s) { return String(s || ""); }
 
 // ── Search parsers ────────────────────────────────────────────────────────────
@@ -239,6 +247,7 @@ export default function Preview() {
   const [uploadMsg, setUploadMsg] = useState("");
   const [wave2Loading, setWave2Loading] = useState(false);
   const [quantityLoading, setQuantityLoading] = useState(false);
+  const [demoActive, setDemoActive] = useState(false);
   const [userZip, setUserZip] = useState(null);
   const [userCountry, setUserCountry] = useState(null);
 
@@ -267,6 +276,10 @@ export default function Preview() {
   const [emailMsg, setEmailMsg] = useState("");
   const [emailing, setEmailing] = useState(false);
 
+  // Funnel: mark every landing so we can measure landed → search_started →
+  // search with a full want list (the metric onboarding is meant to move).
+  useEffect(() => { track("landed"); }, []);
+
   // Geolocate on mount for shipping estimates.
   // US visitors get zip (accurate domestic rates); non-US get country code only
   // (enough for eBay to return zone-based international estimates).
@@ -276,6 +289,21 @@ export default function Preview() {
       .then(({ zip, country }) => { setUserZip(zip || null); setUserCountry(country || null); })
       .catch(() => { setUserZip(null); setUserCountry(null); });
   }, []);
+
+  // First-visit demo: auto-run a sample search so new users see the bundling
+  // payoff immediately instead of bouncing off an empty box. Runs once per
+  // browser (localStorage) and yields to any real pre-fill source.
+  // NOTE: must read its inputs before the wishlist/gap effects below consume them.
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("wishlist")) return;
+      if (sessionStorage.getItem("gap_search")) return;
+      if (localStorage.getItem("cbf_demo_seen")) return;
+      localStorage.setItem("cbf_demo_seen", "1");
+      runDemo(true);
+    } catch {}
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Pre-fill search from LOCG wishlist (account page → ?wishlist=...)
   useEffect(() => {
@@ -344,21 +372,43 @@ export default function Preview() {
     if (!issues.length) { setStatus({ msg: "Please enter at least one issue.", type: "error" }); return; }
     setStatus({ msg: "", type: "" }); setResults(null); setUploadMsg("");
     setSavedId(null); setShareMsg(""); setShowEmailForm(false); setEmailMsg("");
-    setFilters(f => ({ ...f, requiredIssues: [] }));
+    setFilters(f => ({ ...f, requiredIssues: [] })); setDemoActive(false);
     const source = searchSource.current || "manual";
     track("search_started", { source, issue_count: issues.length });
     searchSource.current = null;
     executeSearch(issues);
   }
 
-  async function executeSearch(issues) {
+  // Demo search — populates the box with a sample list and runs it live, with a
+  // banner explaining it's a demo. Triggered by the "See an example" button and
+  // the first-visit autorun. Demo runs are tagged so they stay out of real
+  // search analytics (search_completed carries demo:true; demo_search is fired
+  // instead of search_started).
+  function runDemo(auto) {
+    setIssueInput(DEMO_ISSUES.join("\n"));
+    setStatus({ msg: "", type: "" }); setUploadMsg("");
+    setSavedId(null); setShareMsg(""); setShowEmailForm(false); setEmailMsg("");
+    setFilters(f => ({ ...f, requiredIssues: [] }));
+    setDemoActive(true);
+    track("demo_search", { auto: !!auto });
+    executeSearch(DEMO_ISSUES, { demo: true });
+  }
+  function clearDemo() {
+    setDemoActive(false); setIssueInput(""); setResults(null);
+    setStatus({ msg: "", type: "" }); setUploadMsg("");
+    searchSource.current = null;
+    track("demo_cleared");
+    setTimeout(() => document.getElementById("issue-input")?.focus(), 0);
+  }
+
+  async function executeSearch(issues, { demo = false } = {}) {
     setResults(null); setWave2Loading(false); setQuantityLoading(false); startProgress();
     const isSingle = issues.length === 1;
     try {
       const finalRows = await runEbaySearch(issues, userZip, {
         onWave1(rows) {
           const bundleCount = new Set(rows.filter(r => r.bundle_count >= 2).map(r => r.seller)).size;
-          track("search_completed", { issue_count: issues.length, bundle_count: bundleCount });
+          track("search_completed", { issue_count: issues.length, bundle_count: bundleCount, demo });
           finishProgress(true);
           setResults({ rows, issueCount: issues.length, issues });
         },
@@ -517,6 +567,16 @@ export default function Preview() {
       .btn-search:hover{background:#0044cc}
       .btn-search:active{transform:translate(3px,3px);box-shadow:1px 1px 0 #1a1a1a}
       .btn-search:disabled{background:#888;cursor:not-allowed;transform:none;box-shadow:4px 4px 0 #1a1a1a}
+      .btn-demo{display:inline-block;background:#ffe066;color:#1a1a1a;border:3px solid #1a1a1a;box-shadow:4px 4px 0 #1a1a1a;font-family:'Bangers',cursive;font-size:1.25rem;letter-spacing:2px;padding:0.35rem 1.5rem 0.45rem;cursor:pointer;transition:transform 0.08s,box-shadow 0.08s}
+      .btn-demo:hover{background:#ffd700}
+      .btn-demo:active{transform:translate(3px,3px);box-shadow:1px 1px 0 #1a1a1a}
+      .btn-demo:disabled{background:#cfc79f;cursor:not-allowed;transform:none;box-shadow:4px 4px 0 #1a1a1a}
+      .value-prop{font-size:0.95rem;line-height:1.5;color:#1a1a1a;font-weight:600;margin-bottom:1rem}
+      .demo-banner{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;background:#ffe066;border:2px solid #1a1a1a;box-shadow:3px 3px 0 #1a1a1a;padding:0.6rem 0.9rem;margin-bottom:1rem;font-size:0.9rem;font-weight:600;color:#1a1a1a;line-height:1.45}
+      .demo-banner span{flex:1;min-width:220px}
+      .btn-demo-clear{background:#fffdf4;color:#1a1a1a;border:2px solid #1a1a1a;box-shadow:2px 2px 0 #1a1a1a;font-family:'Oswald',sans-serif;font-size:0.75rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:0.3rem 0.8rem;cursor:pointer;white-space:nowrap}
+      .btn-demo-clear:hover{background:#f0e6c4}
+      .btn-demo-clear:active{transform:translate(2px,2px);box-shadow:0 0 0 #1a1a1a}
       .s-error{color:#cc1f00;font-weight:600;font-size:1rem;margin-top:0.9rem}
       .s-loading{color:#003399;font-size:1rem;margin-top:0.9rem}
 
@@ -567,6 +627,17 @@ export default function Preview() {
         </div>
         <div className="panel">
           <div className="caption">Enter your missing issues</div>
+          {demoActive && (
+            <div className="demo-banner">
+              <span>▶ <strong>Live demo</strong> — these are real eBay results for a sample want list (Saga #1–8). The more issues you search at once, the bigger the bundles we find.</span>
+              <button className="btn-demo-clear" onClick={clearDemo}>Clear &amp; search my own list</button>
+            </div>
+          )}
+          {!results && !demoActive && (
+            <div className="value-prop">
+              Paste your <strong>whole</strong> want list, not a few issues at a time — the more issues you add, the more a single seller can bundle and the more you save on shipping.
+            </div>
+          )}
           <div className="label-row">
             <label htmlFor="issue-input">Paste your list — one issue per line:</label>
             {canUpload ? (
@@ -579,7 +650,7 @@ export default function Preview() {
             )}
           </div>
           <div className={`drop-zone${isDragging && canUpload ? " dragging" : ""}`} onDragOver={canUpload ? onDragOver : undefined} onDragLeave={canUpload ? onDragLeave : undefined} onDrop={canUpload ? onDrop : undefined}>
-            <textarea id="issue-input" value={issueInput} onChange={e => { setIssueInput(e.target.value); setUploadMsg(""); searchSource.current = null; }} placeholder={"Batgirl: Year One #2\nBlack Widow #10\nBlack Widow #11 (2014)"} />
+            <textarea id="issue-input" value={issueInput} onChange={e => { setIssueInput(e.target.value); setUploadMsg(""); searchSource.current = null; setDemoActive(false); }} placeholder={"Batgirl: Year One #2\nBlack Widow #10\nBlack Widow #11 (2014)"} />
             <div className="drag-overlay">Drop file here</div>
           </div>
           {uploadMsg && <div className="upload-msg">✓ {uploadMsg}</div>}
@@ -589,6 +660,7 @@ export default function Preview() {
           </div>
           <div className="search-action-row">
             <button className="btn-search" style={{ marginTop: 0 }} onClick={handleSearch} disabled={progress.visible}>Find Bundles!</button>
+            <button className="btn-demo" onClick={() => runDemo(false)} disabled={progress.visible}>▶ See an example</button>
           </div>
           {status.msg && <div className={status.type === "error" ? "s-error" : "s-loading"}>{status.msg}</div>}
           {progress.visible && (
