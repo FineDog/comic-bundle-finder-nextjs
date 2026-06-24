@@ -38,6 +38,11 @@ redesign rollout; currently **off**. Remember env changes need a redeploy to tak
 
 - Merged `ui-redesign` → `main` (full UI redesign + backend work: NextAuth, Stripe guest
   checkout, newsletter-prep sources, international shipping `country` param, item-quantities).
+  **Note:** the newsletter-prep tool (`/newsletter-prep` page + `pages/api/newsletter/*`) was
+  later extracted into a separate standalone project (`../comic-newsletter-prep`) so it can
+  evolve independently — it no longer lives in this repo. It hands selected titles off to the
+  live CBF site via `localStorage` (`newsletter_search_prefill`) + `/?prefill=newsletter`;
+  CBF does not yet consume that prefill.
 - **Stripe is live** (production uses `sk_live_…` + a live-mode webhook endpoint; local and
   any staging stay on `sk_test_…`). All four Stripe values — secret key, webhook secret, and
   both `NEXT_PUBLIC_STRIPE_*_PRICE_ID`s — must be the **same mode**; mixing modes fails
@@ -52,9 +57,6 @@ redesign rollout; currently **off**. Remember env changes need a redeploy to tak
 
 ### Known follow-ups (not yet done)
 
-- `pages/api/newsletter/metron-releases.js` makes a **live Metron call from a deployed Vercel
-  route** — violates the Metron golden rule below. Needs a guard to refuse running on Vercel
-  (`if (process.env.VERCEL) return 503`).
 - `/api/item-quantities` is unauthenticated with no batch cap — minor abuse/cost hardening.
 
 ---

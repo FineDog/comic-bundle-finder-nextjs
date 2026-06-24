@@ -49,5 +49,4 @@ next-env.d.ts
 frontmatter.json
 
 # Local dev / one-off files
-newsletter.bat
 *.pdf

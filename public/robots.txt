@@ -5,7 +5,6 @@ Disallow: /account
 Disallow: /auth/
 Disallow: /results/
 Disallow: /upgrade
-Disallow: /newsletter-prep
 Disallow: /preview
 Disallow: /welcome
 
