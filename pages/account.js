@@ -326,8 +326,11 @@ export default function Account() {
         .user-info{display:flex;align-items:center;gap:1rem;margin-bottom:1.25rem}
         .avatar{width:52px;height:52px;border:2px solid #1a1a1a;border-radius:50%;object-fit:cover}
         .avatar-placeholder{width:52px;height:52px;border:2px solid #1a1a1a;background:#ffe066;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Bangers',cursive;font-size:1.4rem;color:#1a1a1a}
-        .user-name{font-size:1.1rem;font-weight:600;letter-spacing:1px}
-        .user-email{font-size:1rem;color:#555;font-weight:400}
+        .user-name{font-size:1.1rem;font-weight:600;letter-spacing:1px;overflow-wrap:anywhere}
+        .user-email{font-size:1rem;color:#555;font-weight:400;overflow-wrap:anywhere}
+        /* Let the name/email column shrink so long emails wrap instead of
+           pushing the avatar row past the panel edge on narrow screens. */
+        .user-info>div{min-width:0}
         .tier-badge{display:inline-block;background:#003399;color:#fffdf4;border:2px solid #1a1a1a;padding:0.2rem 0.65rem;font-size:0.72rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;margin-left:0.5rem}
         .btn-signout{background:#fffdf4;color:#1a1a1a;border:2px solid #1a1a1a;box-shadow:3px 3px 0 #1a1a1a;font-family:'Oswald',sans-serif;font-size:1rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:0.4rem 1rem;cursor:pointer}
         .btn-signout:hover{background:#ffe066}
@@ -387,6 +390,17 @@ export default function Account() {
         .btn-delete-confirm:not(:disabled):hover{background:#e02200}
         .btn-cancel{background:#fffdf4;color:#1a1a1a;border:2px solid #1a1a1a;box-shadow:2px 2px 0 #1a1a1a;font-family:'Oswald',sans-serif;font-size:0.82rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:0.4rem 0.9rem;cursor:pointer}
         .btn-cancel:hover{background:#ffe066}
+
+        /* ── Mobile ──────────────────────────────────────────────────── */
+        @media (max-width:600px){
+          /* Ease the big display title so it never overruns a narrow panel. */
+          .title-panel{padding:1rem 1rem 0.85rem}
+          .title-panel h1{font-size:2rem;letter-spacing:2px}
+          /* Roomier tap targets for the small management buttons. */
+          .btn-edit{padding:0.5rem 0.9rem}
+          .btn-external{padding:0.55rem 0.95rem}
+          .btn-save{padding:0.6rem 1rem}
+        }
       `}</style>
 
       <div className="page-wrap">

@@ -245,23 +245,99 @@ body {
 .listing-link:hover { text-decoration: underline; }
 
 @media (max-width: 600px) {
-  /* Hide the wide listing-title column and re-budget the remaining four so
-     price/shipping/link have room to render without wrapping or truncating. */
-  .col-title { display: none; }
-  .col-issue { width: 36%; }
-  .col-price { width: 18%; }
-  .col-ship  { width: 24%; }
-  .col-link  { width: 22%; }
+  /* On phones the 5-column table can't show everything — earlier versions hid
+     the listing title entirely, which stripped out condition/grade/variant info
+     (the most important field for deciding to buy). Instead, collapse each row
+     into a stacked "card": issue + full title on top, then labelled
+     price / shipping / link rows. Driven by data-label attributes on the cells. */
+  .listings-table,
+  .listings-table tbody,
+  .listings-table tr,
+  .listings-table td { display: block; width: auto; }
+  .listings-table { border: none; }
+  .listings-table thead { display: none; }
 
-  .listings-table { font-size: 0.8rem; }
-  .listings-table th,
-  .listings-table td { padding: 0.4rem 0.4rem; }
-  /* Keep header labels and the numeric/link cells on a single line so the
-     "EST. SHIPPING" / "LINK" headers and "$5.19" / "View →" never wrap. */
-  .listings-table th { letter-spacing: 0.3px; font-size: 0.62rem; }
-  .col-price, .col-ship, .col-link { white-space: nowrap; }
-  /* Issue cell still wraps long titles like "Batman / Huntress #2". */
-  .col-issue { word-break: break-word; }
+  .listings-table tr {
+    border: 2px solid #1a1a1a;
+    box-shadow: 3px 3px 0 #1a1a1a;
+    background: #fffdf4;
+    margin-bottom: 0.85rem;
+    padding: 0.2rem 0 0.35rem;
+  }
+  /* Override the desktop zebra striping — cards are uniform cream. */
+  .listings-table tr:nth-child(even) td { background: transparent; }
+  .listings-table td {
+    border-bottom: none;
+    padding: 0.25rem 0.7rem;
+    overflow: visible;
+    white-space: normal;
+  }
+
+  /* Issue: bold header line. Title: full listing text right beneath it. */
+  .listings-table .col-issue {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #1a1a1a;
+    padding-top: 0.5rem;
+    word-break: break-word;
+  }
+  .listings-table .col-title {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 400;
+    color: #444;
+    line-height: 1.35;
+    padding-bottom: 0.45rem;
+    margin-bottom: 0.4rem;
+    border-bottom: 1.5px solid #d4c9a8;
+    text-align: left;
+  }
+
+  /* Price / shipping: label on the left, value on the right. Values are sized
+     up a notch — they're the numbers people actually scan. */
+  .listings-table .col-price,
+  .listings-table .col-ship {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    text-align: right;
+    font-size: 1rem;
+    font-weight: 600;
+  }
+  .listings-table .col-price::before,
+  .listings-table .col-ship::before {
+    content: attr(data-label);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.78rem;
+    letter-spacing: 0.5px;
+    color: #666;
+    text-align: left;
+  }
+
+  /* Full-width "View Listing" tap target. The anchor's desktop text ("View →")
+     is hidden and swapped for a fuller label via ::after, so the narrow desktop
+     Link column is left untouched. */
+  .listings-table .col-link { padding-top: 0.55rem; padding-bottom: 0.4rem; }
+  .listings-table .col-link .listing-link {
+    width: 100%;
+    border: 2px solid #1a1a1a;
+    background: #ffe066;
+    box-shadow: 2px 2px 0 #1a1a1a;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 0;
+  }
+  .listings-table .col-link .listing-link::after {
+    content: "View Listing";
+    font-size: 0.92rem;
+    font-weight: 600;
+  }
 }
 
 /* ── Wave 2 Banner ──────────────────────────────────────────────────── */
@@ -397,6 +473,23 @@ body {
 .filter-checkboxes{display:flex;flex-wrap:wrap;gap:0.4rem;max-height:120px;overflow-y:auto}
 .filter-checkbox-label{display:flex;align-items:center;gap:0.3rem;font-size:0.75rem;font-weight:400;cursor:pointer;background:#fffdf4;border:1.5px solid #1a1a1a;padding:2px 7px;white-space:nowrap;user-select:none}
 .filter-checkbox-label.checked{background:#003399;color:#fffdf4;border-color:#003399}
+
+/* ── Mobile touch / input ergonomics ─────────────────────────────────── */
+@media (max-width: 600px) {
+  /* Inputs below 16px cause iOS to auto-zoom on focus. Bump the small ones. */
+  .price-input { font-size: 16px; }
+
+  /* Comfortable tap targets (~44px) for the small UI buttons and the
+     filter checkbox/radio chips. */
+  .btn-filter-toggle,
+  .btn-filter-reset { min-height: 40px; }
+  .filter-checkbox-label { padding: 7px 11px; }
+  .filter-radio-label { padding: 4px 2px; }
+
+  /* The required-issues list is a nested scroll region; on a touch-scrolled
+     page a 120px window is fiddly. Let it breathe. */
+  .filter-checkboxes { max-height: 280px; }
+}
 
 /* ── Disclosure ─────────────────────────────────────────────────────── */
 /* eBay affiliate disclosure shown at the bottom of result sets */

@@ -383,9 +383,9 @@ export default function ResultsPanel({
                         <tr key={i}>
                           <td className="col-issue">{esc(l.issue)}</td>
                           <td className="col-title">{esc(l.title)}</td>
-                          <td className="col-price">${parseFloat(l.price).toFixed(2)}</td>
-                          <td className="col-ship">{ship}</td>
-                          <td className="col-link">
+                          <td className="col-price" data-label="Price">${parseFloat(l.price).toFixed(2)}</td>
+                          <td className="col-ship" data-label="Shipping">{ship}</td>
+                          <td className="col-link" data-label="Link">
                             <a className="listing-link" href={l.url} target="_blank" rel="noopener noreferrer">
                               View &rarr;
                             </a>

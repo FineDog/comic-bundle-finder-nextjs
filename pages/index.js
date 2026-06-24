@@ -941,9 +941,9 @@ export default function Preview() {
                                 </span>
                               )}
                             </td>
-                            <td className="col-price">${parseFloat(l.price).toFixed(2)}</td>
-                            <td className="col-ship">{shipDisplay}</td>
-                            <td className="col-link"><a className="listing-link" href={l.url} target="_blank" rel="noopener noreferrer">View →</a></td>
+                            <td className="col-price" data-label="Price">${parseFloat(l.price).toFixed(2)}</td>
+                            <td className="col-ship" data-label="Est. Shipping">{shipDisplay}</td>
+                            <td className="col-link" data-label="Link"><a className="listing-link" href={l.url} target="_blank" rel="noopener noreferrer">View →</a></td>
                           </tr>);
                         })}
                       </tbody>
