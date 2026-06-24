@@ -214,7 +214,9 @@ body {
   letter-spacing: 0.8px;
   text-transform: uppercase;
   font-size: 0.7rem;
-  white-space: nowrap;
+  /* Let a wide header ("Est. Shipping") wrap within its column rather than
+     overflow into the neighbouring "Link" header. */
+  white-space: normal;
 }
 .listings-table td {
   padding: 0.45rem 0.6rem;
@@ -228,12 +230,13 @@ body {
 .listings-table tr:last-child td { border-bottom: none; }
 .listings-table tr:nth-child(even) td { background: #f8f3e3; }
 
-/* Column widths — 22/49/9/11/9 gives generous space to listing title */
-.col-issue { width: 22%; }
-.col-title  { width: 49%; }
+/* Column widths — give Link and Est. Shipping enough room that "View →" and the
+   "Est. Shipping" header don't truncate or collide in the narrow desktop range. */
+.col-issue { width: 20%; }
+.col-title  { width: 45%; }
 .col-price  { width: 9%;  text-align: right; }
-.col-ship   { width: 11%; text-align: right; }
-.col-link   { width: 9%;  text-align: center; }
+.col-ship   { width: 14%; text-align: right; }
+.col-link   { width: 12%; text-align: center; }
 
 .listing-link {
   color: #cc1f00;
@@ -244,12 +247,13 @@ body {
 }
 .listing-link:hover { text-decoration: underline; }
 
-@media (max-width: 600px) {
-  /* On phones the 5-column table can't show everything — earlier versions hid
-     the listing title entirely, which stripped out condition/grade/variant info
-     (the most important field for deciding to buy). Instead, collapse each row
-     into a stacked "card": issue + full title on top, then labelled
-     price / shipping / link rows. Driven by data-label attributes on the cells. */
+@media (max-width: 760px) {
+  /* On phones and tablets the 5-column table can't show everything — earlier
+     versions hid the listing title entirely, which stripped out
+     condition/grade/variant info (the most important field for deciding to
+     buy). Instead, collapse each row into a stacked "card": issue + full title
+     on top, then labelled price / shipping / link rows. Driven by data-label
+     attributes on the cells. */
   .listings-table,
   .listings-table tbody,
   .listings-table tr,
@@ -475,7 +479,7 @@ body {
 .filter-checkbox-label.checked{background:#003399;color:#fffdf4;border-color:#003399}
 
 /* ── Mobile touch / input ergonomics ─────────────────────────────────── */
-@media (max-width: 600px) {
+@media (max-width: 760px) {
   /* Inputs below 16px cause iOS to auto-zoom on focus. Bump the small ones. */
   .price-input { font-size: 16px; }
 
