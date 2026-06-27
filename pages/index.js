@@ -602,15 +602,14 @@ export default function Preview() {
       <SiteNav />
 
       <div className="panel" style={{ fontSize: "1rem", fontWeight: 400, lineHeight: 1.8, color: "#333" }}>
-          Buying back issues on eBay? Shipping costs can turn a $2 comic into a $10 purchase. But most sellers combine shipping, 
-          so if you can find one seller who has several issues you need, you save big. Comic Bundle Finder searches eBay for every
-          issue on your want list, then ranks sellers by how many of your issues they carry. Paste your list, hit search, and start saving on shipping.
+          Buying comics on eBay? Shipping costs can turn a $2 comic into a $10 purchase. But most sellers combine shipping.
+          Comic Bundle Finder searches eBay for every issue on your list, then ranks sellers by how many they carry.
+          Paste your list, hit search, and start saving money on shipping.
           <div style={{ marginTop: "0.75rem", fontSize: "0.78rem", color: "#888", lineHeight: 1.5 }}>
             Some links on this page may be eBay Partner Network affiliate links. A small commission may be earned if you purchase through these links, at no extra cost to you. These commissions help support the site.
           </div>
         </div>
         <div className="panel">
-          <div className="caption">Enter your missing issues</div>
           {demoActive && (
             <div className="demo-banner">
               <span>▶ <strong>Live demo</strong> — these are real eBay results for a sample want list of recent Absolute Universe comics. The more issues you search at once, the bigger the bundles we find.</span>
@@ -619,32 +618,27 @@ export default function Preview() {
           )}
           {!results && !demoActive && (
             <div className="value-prop">
-              Paste your <strong>whole</strong> want list, not a few issues at a time. The more issues you add, the more a single seller can bundle and the more you save on shipping.
+              Paste your <strong>whole</strong> list. The more issues you add, the more a single seller can bundle and the more you save on shipping.
             </div>
           )}
-          <div className="label-row">
-            <label htmlFor="issue-input">Paste your list — one issue per line:</label>
-            {canUpload ? (
-              <>
-                <button className="btn-upload" onClick={() => fileInputRef.current?.click()}>Upload want list</button>
-                <input ref={fileInputRef} type="file" accept=".xlsx,.xls,.csv,.txt" style={{ display: "none" }} onChange={onFileSelected} />
-              </>
-            ) : (
-              <PremiumLock feature="file-upload" label="Upload want list" />
-            )}
-          </div>
           <div className={`drop-zone${isDragging && canUpload ? " dragging" : ""}`} onDragOver={canUpload ? onDragOver : undefined} onDragLeave={canUpload ? onDragLeave : undefined} onDrop={canUpload ? onDrop : undefined}>
-            <textarea id="issue-input" value={issueInput} onChange={e => { setIssueInput(e.target.value); setUploadMsg(""); searchSource.current = null; setDemoActive(false); }} placeholder={"Batgirl: Year One #2\nBlack Widow #10\nBlack Widow #11 (2014)"} />
+            <textarea id="issue-input" value={issueInput} onChange={e => { setIssueInput(e.target.value); setUploadMsg(""); searchSource.current = null; setDemoActive(false); }} placeholder={DEMO_ISSUES.join("\n")} />
             <div className="drag-overlay">Drop file here</div>
           </div>
           {uploadMsg && <div className="upload-msg">✓ {uploadMsg}</div>}
-          <div className="hint">
-            Type issues manually, or upload a .xlsx / .csv / .txt want list from League of Comic Geeks or CLZ.<br />
-            Format: Series Name #Number — e.g. &ldquo;Amazing Spider-Man #300&rdquo; or &ldquo;Black Widow #10 (2014)&rdquo;
-          </div>
           <div className="search-action-row">
             <button className="btn-search" style={{ marginTop: 0 }} onClick={handleSearch} disabled={progress.visible}>Find Bundles!</button>
             <button className="btn-demo" onClick={runDemo} disabled={progress.visible}>▶ See an example</button>
+            {canUpload ? (
+              <>
+                <button className="btn-demo" onClick={() => fileInputRef.current?.click()} disabled={progress.visible}>Upload List</button>
+                <input ref={fileInputRef} type="file" accept=".xlsx,.xls,.csv,.txt" style={{ display: "none" }} onChange={onFileSelected} />
+              </>
+            ) : (
+              <button className="btn-demo" onClick={() => setShowPremium(true)} disabled={progress.visible}>
+                Upload List<span className="filter-premium-pill">Premium</span>
+              </button>
+            )}
           </div>
           {status.msg && <div className={status.type === "error" ? "s-error" : "s-loading"}>{status.msg}</div>}
           {progress.visible && (
@@ -708,7 +702,6 @@ export default function Preview() {
               )}
             </div>
 
-            {showPremium && <PremiumModal onClose={() => setShowPremium(false)} />}
 
             {filtersOpen && !filterLocked && (
               <div className="filter-panel">
@@ -957,6 +950,7 @@ export default function Preview() {
         )}
 
       <SiteFooter />
+      {showPremium && <PremiumModal onClose={() => setShowPremium(false)} />}
     </div>
   </>);
 }
