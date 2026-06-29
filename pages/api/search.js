@@ -16,13 +16,22 @@ function hashIp(req) {
   return createHash("sha256").update(ip).digest("hex");
 }
 
-async function logSearch(queries, ipHash) {
+// rawQueries: the lines as searched (trimmed, blanks dropped, duplicates kept) —
+//   lets us see behavior like the same issue typed on five lines.
+// dedupedQueries: the unique set actually sent to eBay.
+// visitorId: stable per-browser id from the client, joins this row to its Umami event.
+async function logSearch({ rawQueries, dedupedQueries, ipHash, visitorId }) {
   try {
     const pool = getPool();
     if (!pool) return;
     await pool.query(
-      "INSERT INTO search_logs (queries, query_count, ip_hash) VALUES ($1, $2, $3)",
-      [JSON.stringify(queries), queries.length, ipHash]
+      `INSERT INTO search_logs (queries, query_count, raw_queries, raw_count, ip_hash, visitor_id)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [
+        JSON.stringify(dedupedQueries), dedupedQueries.length,
+        JSON.stringify(rawQueries), rawQueries.length,
+        ipHash, visitorId || null,
+      ]
     );
   } catch {}
 }
@@ -64,7 +73,7 @@ function buildRows(sellerIssues) {
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed." });
 
-  const { issues, issueOffsets, zip, country } = req.body;
+  const { issues, issueOffsets, zip, country, visitorId } = req.body;
 
   let token;
   try {
@@ -90,9 +99,10 @@ export default async function handler(req, res) {
 
   // Wave 1: normal search across all issues at offset 0
   if (!issues?.length) return res.status(400).json({ error: "No issues provided." });
-  const deduped = [...new Set(issues.map((i) => i.trim()).filter(Boolean))];
+  const rawQueries = issues.map((i) => i.trim()).filter(Boolean);
+  const deduped = [...new Set(rawQueries)];
 
-  logSearch(deduped, hashIp(req)).catch(() => {});
+  logSearch({ rawQueries, dedupedQueries: deduped, ipHash: hashIp(req), visitorId }).catch(() => {});
 
   const sellerIssues = {};
   const totals = {};

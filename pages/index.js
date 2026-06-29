@@ -221,8 +221,24 @@ async function enrichWithQuantities(rows) {
 
 // ── Analytics ─────────────────────────────────────────────────────────────────
 
+// Per-session visitor id so Umami events and the server-side search_logs rows can
+// be joined for the same visit. Stored in sessionStorage (cleared when the tab
+// closes), NOT localStorage — a non-persistent, session-scoped id keeps us clear
+// of EU/UK consent-banner requirements for persistent tracking identifiers.
+// Returns null if storage/crypto is unavailable.
+function getVisitorId() {
+  try {
+    let id = sessionStorage.getItem("cbf_visitor_id");
+    if (!id) {
+      id = crypto?.randomUUID?.() || `v_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+      sessionStorage.setItem("cbf_visitor_id", id);
+    }
+    return id;
+  } catch { return null; }
+}
+
 function track(event, data) {
-  try { window?.umami?.track(event, data); } catch {}
+  try { window?.umami?.track(event, { ...data, visitor_id: getVisitorId() }); } catch {}
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -400,7 +416,7 @@ export default function Preview() {
         onWave2Start() { setWave2Loading(true); },
         onWave2(merged) { setResults(prev => ({ ...prev, rows: merged })); },
         onWave2End() { setWave2Loading(false); },
-      }, userCountry);
+      }, userCountry, getVisitorId());
 
       // After all waves settle, enrich single-issue results with per-listing quantity data
       if (isSingle && finalRows) {
