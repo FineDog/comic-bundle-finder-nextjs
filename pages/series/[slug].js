@@ -524,6 +524,19 @@ export async function getStaticProps({ params }) {
     };
   }
 
+  // Legacy id-based URL redirect: the old /series/metron-<id> scheme was retired in
+  // favour of name-based slugs. Reached only after slugToMetronId returned null above,
+  // so it can't shadow a real name slug like "metron-2018". A 301 to the current URL
+  // preserves link equity from bookmarks and crawlers still working off the long-gone
+  // sitemap. metronIdToSlug reads the static series index only — never calls Metron.
+  const legacyId = /^metron-(\d+)$/.exec(slug);
+  if (legacyId) {
+    const canonical = metronIdToSlug(Number(legacyId[1]));
+    if (canonical) {
+      return { redirect: { destination: `/series/${canonical}`, statusCode: 301 } };
+    }
+  }
+
   const config = getSeriesConfig(slug);
   if (!config) return { notFound: true };
 
