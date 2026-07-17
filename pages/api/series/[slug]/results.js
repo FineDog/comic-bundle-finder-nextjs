@@ -68,6 +68,17 @@ export default async function handler(req, res) {
 
   if (req.method !== "GET") return res.status(405).json({ error: "Method not allowed." });
 
+  // Request telemetry — records who hits the price endpoint (esp. bots/scrapers).
+  // x-forwarded-for's first hop is the real client IP behind Vercel's proxy.
+  const clientIp =
+    (req.headers["x-forwarded-for"] || "").split(",")[0].trim() ||
+    req.socket?.remoteAddress ||
+    "";
+  console.log(
+    `[series/results] slug=${slug} start=${req.query.start || 0} count=${req.query.count || 50} ` +
+      `ip=${clientIp} ua="${req.headers["user-agent"] || ""}"`
+  );
+
   const startIdx = Math.max(0, parseInt(req.query.start || "0", 10));
   const count = Math.min(50, Math.max(1, parseInt(req.query.count || "50", 10)));
   const zip = req.query.zip || null;
@@ -77,7 +88,17 @@ export default async function handler(req, res) {
   if (metronId != null) {
     // Read issue list from Blob (written by nightly GitHub Actions — never calls Metron).
     // Returns null if the series has not yet been indexed by the nightly job.
-    const allIssues = await getMetronIssuesCached(metronId);
+    let allIssues;
+    try {
+      allIssues = await getMetronIssuesCached(metronId);
+    } catch (e) {
+      // A real DB failure — surface as 500 (retryable) rather than a misleading
+      // "not indexed" 503. Logged so it's visible in Vercel logs.
+      console.error(
+        `[series/results] DB read failed slug=${slug} metronId=${metronId}: ${e.code || ""} ${e.message}`
+      );
+      return res.status(500).json({ error: "Temporary error loading this series. Please try again shortly." });
+    }
     if (!allIssues) {
       return res.status(503).json({
         error: "This series has not been indexed yet. It will be available after the next nightly update (usually within 24 hours).",
