@@ -44,6 +44,30 @@ async function readEbayCache(pathname) {
   }
 }
 
+// Heuristic bot check used to avoid spending live eBay API calls on automated
+// traffic. Browser-mimicking scrapers (residential-proxy price/traffic bots) poll
+// a handful of series pages around the clock; each cache-miss would otherwise fire
+// a full live eBay search. A false positive is low-harm: the caller still gets the
+// page and any cached results — just not a fresh live fetch.
+function looksLikeBot(req) {
+  const ua = (req.headers["user-agent"] || "").toLowerCase();
+  if (!ua) return true; // a real browser always sends a UA
+  // Named crawlers and non-browser scripting clients.
+  if (/bot|crawl|spider|slurp|headless|python|curl|wget|scrapy|axios|node-fetch|okhttp|go-http|java\/|libwww|phantom|puppeteer|playwright/.test(ua)) {
+    return true;
+  }
+  // A client CLAIMING to be Chromium but omitting BOTH the fetch-metadata and
+  // client-hint headers that every real Chromium browser sends on a same-origin
+  // fetch() is a spoofed-UA script — which is exactly what the residential-proxy
+  // scraper hitting these pages does. Safari/Firefox don't put "chrome/" in their
+  // UA, so this never flags them.
+  const claimsChromium = ua.includes("chrome/") || ua.includes("chromium/") || ua.includes("edg/");
+  if (claimsChromium && !req.headers["sec-fetch-site"] && !req.headers["sec-ch-ua"]) {
+    return true;
+  }
+  return false;
+}
+
 export default async function handler(req, res) {
   const { slug } = req.query;
 
@@ -120,6 +144,23 @@ export default async function handler(req, res) {
         endIdx: startIdx + batchIssues.length - 1,
         totalIssues: allIssues.length,
         cachedAt: ebayHit.cachedAt,
+      });
+    }
+
+    // Cache miss. Before spending live eBay API calls, bail out for automated
+    // traffic. Browser-mimicking scrapers poll these pages constantly and would
+    // otherwise burn eBay quota on every hit. Real visitors keep the cache warm via
+    // the Wave-2 POST-back, so serving them an empty set here has no lasting effect.
+    if (looksLikeBot(req)) {
+      console.log(`[series/results] skipped live eBay fetch for bot ip=${clientIp} slug=${slug}`);
+      return res.status(200).json({
+        results: [],
+        issueCount: batchIssues.length,
+        startIdx,
+        endIdx: startIdx + batchIssues.length - 1,
+        totalIssues: allIssues.length,
+        cachedAt: Date.now(),
+        skipped: "bot",
       });
     }
 
